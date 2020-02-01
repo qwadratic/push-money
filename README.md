@@ -56,9 +56,8 @@ push.money API
 
 ### Usage
 
-This API is used with [this frontend app](https://github.com/foont1ck/push-money-frontend).
+API is standalone product, which can be used in any frontend app.
 
-However, it's fully open for anyone to use (for now)
 
 ### API
 
