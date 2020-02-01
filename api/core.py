@@ -19,6 +19,19 @@ def push_create():
 
 
 @bp_api.route('/push/<link_id>/info', methods=['GET'])
+def push_info(link_id):
+    wallet = PushWallet.get_or_none(link_id=link_id)
+    if not wallet:
+        return jsonify({'error': 'Link does not exist'})
+
+    return jsonify({
+        'sender': wallet.sender,
+        'recipient': wallet.recipient,
+        'is_protected': wallet.password_hash is not None
+    })
+
+
+@bp_api.route('/push/<link_id>/balance', methods=['GET'])
 def push_balance(link_id):
     payload = request.get_json() or {}
     password = payload.get('password')
@@ -33,11 +46,9 @@ def push_balance(link_id):
     balance = get_address_balance(wallet.address)
     response = {
         'address': wallet.address,
-        'sender': wallet.sender,
-        'recipient': wallet.recipient,
         **balance
     }
-    return jsonify(response)
+    return jsonify(balance)
 
 
 @bp_api.route('/spend/list', methods=['GET'])
