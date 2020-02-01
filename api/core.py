@@ -8,11 +8,29 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 @bp_api.route('/push/create', methods=['POST'])
 def push_create():
-    wallet = generate_and_save_wallet()
+    payload = request.get_json()
+    sender, recipient, password = payload.get('sender'), payload.get('recipient'), payload.get('password')
+
+    wallet = generate_and_save_wallet(sender, recipient, password)
     return jsonify({
         'address': wallet.address,
         'link_id': wallet.link_id
     })
+
+
+@bp_api.route('/push/<link_id>/auth', methods=['POST'])
+def push_auth(link_id):
+    payload = request.get_json()
+    password = payload.get('password')
+
+    wallet = PushWallet.get_or_none(link_id=link_id)
+    if not wallet:
+        return jsonify({'error': 'Link does not exist'})
+
+    if not wallet.auth(password):
+        return jsonify({'error': 'Incorrect password'})
+
+    return jsonify({'meesage': 'Success'})
 
 
 @bp_api.route('/push/<link_id>/balance', methods=['GET'])
