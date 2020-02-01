@@ -32,7 +32,6 @@ def get_address_balance(address):
     usd_value_total = bip_to_usdt(bip_value_total)
     usd_rates = fiat_to_usd_rates()
     return {
-        'address': address,
         'balance': {
             coin: {
                 'value': float(to_bip(balances[coin])),
