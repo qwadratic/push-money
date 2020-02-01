@@ -75,8 +75,6 @@ def get_last_payment_status(phone):
     }
 
 
-# это скорее всего не нужно
-
 def get_info():
     r = requests.post(BIP2PHONE_API_URL, data={'key1': BIP2PHONE_API_KEY, 'curs': 1})
     r.raise_for_status()

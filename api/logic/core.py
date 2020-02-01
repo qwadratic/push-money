@@ -7,7 +7,7 @@ from minter.utils import to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
 from providers.minter import send_all_coins
-from providers.mobile import mobile_top_up
+from providers.biptophone import mobile_top_up
 
 
 def generate_and_save_wallet():
