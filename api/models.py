@@ -15,9 +15,9 @@ class PushWallet(BaseModel):
     link_id = CharField()
     address = CharField()
     mnemonic = TextField()
-    sender = TextField()
-    recipient = TextField()
-    password_hash = TextField()
+    sender = TextField(null=True)
+    recipient = TextField(null=True)
+    password_hash = TextField(null=True)
 
     def auth(self, password):
         if password is None and self.password_hash is not None:

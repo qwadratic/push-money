@@ -46,6 +46,6 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
 
 
 def create_deeplink(to, value, coin=BASE_COIN):
-    tx = MinterSendCoinTx(coin, to, value, nonce=None, gas_coin=None)
+    tx = MinterSendCoinTx(coin, to, value, nonce=None, gas_coin=coin)
     deeplink = MinterDeeplink(tx, data_only=True)
     return deeplink.generate()

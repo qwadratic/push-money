@@ -14,14 +14,13 @@ from providers.biptophone import mobile_top_up
 def generate_and_save_wallet(sender, recipient, password):
     link_id = uuid()
     wallet = MinterWallet.create()
-    password_hash = pbkdf2_sha256.hash(password)
     w = PushWallet.create(
         link_id=link_id,
         address=wallet['address'],
         mnemonic=wallet['mnemonic'],
         sender=sender,
         recipient=recipient,
-        password_hash=password_hash)
+        password_hash=pbkdf2_sha256.hash(password) if password is not None else None)
     return w
 
 
