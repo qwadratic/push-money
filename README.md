@@ -62,4 +62,4 @@ However, it's fully open for anyone to use (for now)
 
 ### API
 
-API docs will be described soon.
+[API docs are available here](https://gist.github.com/eternalflow/f80b488516908f3e501f3989d66e0d08) (in Russian)
