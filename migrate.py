@@ -1,4 +1,4 @@
-from pushmoney.models import create_tables
+from api.models import create_tables
 
 
 if __name__ == '__main__':

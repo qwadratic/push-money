@@ -1,14 +1,20 @@
 from typing import Dict
 
 import requests
+from cachetools.func import ttl_cache
 
 from helpers.misc import retry
+
+
+ONE_MINUTE = 60
+ONE_HOUR = 60 * ONE_MINUTE
 
 MINTER1001_BASE_URL = 'https://minter.1001btc.com/en'
 RATES_API_BASE_URL = 'https://api.exchangeratesapi.io'
 PRIVAT24_API_BASE_URL = 'https://api.privatbank.ua/p24api'
 
 
+@ttl_cache(ttl=10 * ONE_MINUTE)
 @retry(requests.HTTPError, tries=3, delay=3, backoff=2)
 def get_cfg():
     r = requests.get(f'{MINTER1001_BASE_URL}/getcfg')
@@ -16,6 +22,7 @@ def get_cfg():
     return r.json()
 
 
+@ttl_cache(ttl=ONE_HOUR)
 @retry(requests.HTTPError, tries=3, delay=3, backoff=2)
 def ecb_usd_rates():
     """European Central Bank rates"""
@@ -24,6 +31,7 @@ def ecb_usd_rates():
     return r.json()['rates']
 
 
+@ttl_cache(ttl=ONE_HOUR)
 @retry(requests.HTTPError, tries=3, delay=3, backoff=2)
 def privat24_usd_uah():
     params = {

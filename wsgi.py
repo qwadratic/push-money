@@ -1,4 +1,4 @@
-from pushmoney.app_init import app, app_init
+from api.app_init import app, app_init
 
 
 app_init(app)

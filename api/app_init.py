@@ -1,6 +1,6 @@
 from flask import Flask
 
-from pushmoney.api import bp_api
+from api.api import bp_api
 
 app = Flask(__name__)
 

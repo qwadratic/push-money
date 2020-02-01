@@ -10,7 +10,7 @@ class BaseModel(Model):
         database = database
 
 
-class Wallet(BaseModel):
+class PushWallet(BaseModel):
     link_id = CharField()
     address = CharField()
     mnemonic = TextField()
@@ -18,4 +18,4 @@ class Wallet(BaseModel):
 
 def create_tables():
     with database:
-        database.create_tables([Wallet])
+        database.create_tables([PushWallet])
