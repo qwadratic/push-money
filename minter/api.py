@@ -3,6 +3,7 @@ from time import sleep
 from mintersdk.minterapi import MinterAPI
 from requests import ReadTimeout, ConnectTimeout, HTTPError
 
+from config import MSCAN_URL
 from helpers.misc import retry
 
 
@@ -46,3 +47,6 @@ class CustomMinterAPI(MinterAPI):
                 sleep(1)
                 continue
             break
+
+
+API = CustomMinterAPI(MSCAN_URL)

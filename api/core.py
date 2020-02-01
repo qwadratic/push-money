@@ -17,15 +17,15 @@ def push_create():
 
 @bp_api.route('/push/<link_id>/balance', methods=['GET'])
 def push_balance(link_id):
-    wallet = PushWallet.get(link_id=link_id)
+    wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link not exist'})
+        return jsonify({'error': 'Link does not exist'})
 
     response = get_address_balance(wallet.address)
     return jsonify(response)
 
 
-@bp_api.route('/spend/options', methods=['GET'])
+@bp_api.route('/spend/list', methods=['GET'])
 def spend_options():
     categories = get_spend_categories()
     return jsonify(categories)
@@ -33,11 +33,11 @@ def spend_options():
 
 @bp_api.route('/spend/<link_id>/execute', methods=['POST'])
 def spend_execute(link_id):
-    wallet = PushWallet.get(link_id=link_id)
+    wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link not exist'})
+        return jsonify({'error': 'Link does not exist'})
 
-    payload = request.get_json()
+    payload = request.get_json() or {}
     if 'option' not in payload:
         return jsonify({'error': '"option" key is required'})
     allowed_options = ['mobile', 'transfer-minter']

@@ -1,7 +1,6 @@
-from api.app_init import app, app_init
+from api.app_init import app_init
 
-
-app_init(app)
+app = app_init()
 
 
 if __name__ == '__main__':

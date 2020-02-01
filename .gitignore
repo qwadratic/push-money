@@ -133,3 +133,4 @@ nginx.conf
 api-local.py
 
 pushmoney.sqlite
+/http-scratches/

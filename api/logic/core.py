@@ -1,7 +1,8 @@
 from mintersdk.sdk.wallet import MinterWallet
 from shortuuid import uuid
 
-from minter.helpers import API, calc_bip_values
+from minter.helpers import calc_bip_values
+from minter.api import API
 from minter.utils import to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
@@ -22,7 +23,7 @@ def generate_and_save_wallet():
 def get_address_balance(address):
     balances = API.get_balance(address)['balance']
     balances_bip = calc_bip_values(balances)
-    bip_value_total = sum(balances_bip.values())
+    bip_value_total = sum(bal['bip_value'] for bal in balances_bip.values())
     usd_value_total = bip_to_usdt(bip_value_total)
     usd_rates = fiat_to_usd_rates()
     return {
@@ -44,11 +45,11 @@ def get_address_balance(address):
 
 
 def spend_balance(wallet: PushWallet, option, **kwargs):
-    spend_option_logic = {
+    spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_all_coins
     }
-    return spend_option_logic[option](wallet, **kwargs)
+    return spend_option_fns[option](wallet, **kwargs)
 
 
 def get_spend_categories():

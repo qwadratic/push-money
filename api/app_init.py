@@ -1,10 +1,9 @@
 from flask import Flask
 
-from api.api import bp_api
-
-app = Flask(__name__)
+from api.core import bp_api
 
 
-def app_init(flask_app):
-    flask_app.register_blueprint(bp_api)
-
+def app_init():
+    app = Flask(__name__)
+    app.register_blueprint(bp_api)
+    return app
