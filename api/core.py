@@ -8,7 +8,7 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 @bp_api.route('/push/create', methods=['POST'])
 def push_create():
-    payload = request.get_json()
+    payload = request.get_json() or {}
     sender, recipient, password = payload.get('sender'), payload.get('recipient'), payload.get('password')
 
     wallet = generate_and_save_wallet(sender, recipient, password)
@@ -18,9 +18,9 @@ def push_create():
     })
 
 
-@bp_api.route('/push/<link_id>/auth', methods=['POST'])
-def push_auth(link_id):
-    payload = request.get_json()
+@bp_api.route('/push/<link_id>/balance', methods=['GET'])
+def push_balance(link_id):
+    payload = request.get_json() or {}
     password = payload.get('password')
 
     wallet = PushWallet.get_or_none(link_id=link_id)
@@ -29,15 +29,6 @@ def push_auth(link_id):
 
     if not wallet.auth(password):
         return jsonify({'error': 'Incorrect password'})
-
-    return jsonify({'meesage': 'Success'})
-
-
-@bp_api.route('/push/<link_id>/balance', methods=['GET'])
-def push_balance(link_id):
-    wallet = PushWallet.get_or_none(link_id=link_id)
-    if not wallet:
-        return jsonify({'error': 'Link does not exist'})
 
     response = get_address_balance(wallet.address)
     return jsonify(response)
@@ -51,11 +42,16 @@ def spend_options():
 
 @bp_api.route('/spend/<link_id>/execute', methods=['POST'])
 def spend_execute(link_id):
+    payload = request.get_json() or {}
+    password = payload.get('password')
+
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
         return jsonify({'error': 'Link does not exist'})
 
-    payload = request.get_json() or {}
+    if not wallet.auth(password):
+        return jsonify({'error': 'Incorrect password'})
+
     if 'option' not in payload:
         return jsonify({'error': '"option" key is required'})
     allowed_options = ['mobile', 'transfer-minter']
