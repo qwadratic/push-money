@@ -13,6 +13,10 @@ migrate:
 	@echo Executing migration script.
 	@. .venv/bin/activate && python migrate.py
 
+update:
+	@echo checkout, pull, stop, run
+	@git checkout && git pull && make stop && make run prod
+
 run:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" == "dev" ] ; then \
 		. .venv/bin/activate && python wsgi.py; \
@@ -24,7 +28,7 @@ run:
 
 stop:
 	@echo Stopping app
-	@kill `cat gunicorn.pid`
+	@kill `grep -hs ^ gunicorn.pid` 2>/dev/null
 
 %:
 	@:
