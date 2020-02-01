@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
 from api.models import PushWallet
+from minter.helpers import create_deeplink
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -9,13 +10,18 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 @bp_api.route('/push/create', methods=['POST'])
 def push_create():
     payload = request.get_json() or {}
-    sender, recipient, password = payload.get('sender'), payload.get('recipient'), payload.get('password')
+    sender, recipient = payload.get('sender'), payload.get('recipient')
+    password = payload.get('password')
+    amount = payload.get('amount')
 
     wallet = generate_and_save_wallet(sender, recipient, password)
-    return jsonify({
+    response = {
         'address': wallet.address,
         'link_id': wallet.link_id
-    })
+    }
+    if amount:
+        response['deeplink'] = create_deeplink(wallet.address, amount)
+    return jsonify(response)
 
 
 @bp_api.route('/push/<link_id>/info', methods=['GET'])

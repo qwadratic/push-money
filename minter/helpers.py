@@ -1,5 +1,8 @@
 from decimal import Decimal
 
+from mintersdk.sdk.deeplink import MinterDeeplink
+from mintersdk.sdk.transactions import MinterSendCoinTx
+
 from config import TESTNET
 from minter.api import API
 from minter.utils import to_bip, to_pip
@@ -40,3 +43,9 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
         result[coin] = to_bip(will_get_pip)
 
     return result
+
+
+def create_deeplink(to, value, coin=BASE_COIN):
+    tx = MinterSendCoinTx(coin, to, value, nonce=None, gas_coin=None)
+    deeplink = MinterDeeplink(tx, data_only=True)
+    return deeplink.generate()
