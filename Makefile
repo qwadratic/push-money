@@ -16,7 +16,7 @@ migrate:
 
 update:
 	echo checkout, pull, stop, run
-	git checkout && git pull && make stop && make run prod
+	git checkout && git pull && make install && make migrate && make stop && make run prod
 
 run:
 	if [ "$(filter-out $@,$(MAKECMDGOALS))" == "dev" ] ; then \
