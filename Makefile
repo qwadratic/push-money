@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 install:
 	@echo Creating virtualenv
 	@virtualenv .venv
