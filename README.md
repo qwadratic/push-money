@@ -22,7 +22,8 @@ push.money API
     Sample `.env`:
 
         TESTNET = 0
-        MSCAN_APIKEY = ... # Register and obtain API key on https://mscan.dev
+        MSCAN_APIKEY = ... # API key for https://mscan.dev
+        BIP2PHONE_API_KEY = ... # API key for https://biptophone.ru/apiuser.php
 
 3.  Execute migration script:
 

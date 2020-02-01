@@ -8,5 +8,6 @@ dotenv.load_dotenv()
 TESTNET = bool(int(os.environ.get('TESTNET')))
 
 SQLITE_DBNAME = 'pushmoney.sqlite'
+
 MSCAN_APIKEY = os.environ.get('MSCAN_APIKEY')
-MSCAN_URL = f'https://api.mscan.dev/{MSCAN_APIKEY}/{"test_node" if TESTNET else "node"}'
+BIP2PHONE_API_KEY = os.environ.get('BIP2PHONE_API_KEY')

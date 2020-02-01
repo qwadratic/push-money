@@ -23,18 +23,18 @@ def generate_and_save_wallet():
 def get_address_balance(address):
     balances = API.get_balance(address)['balance']
     balances_bip = calc_bip_values(balances)
-    bip_value_total = sum(bal['bip_value'] for bal in balances_bip.values())
+    bip_value_total = sum(balances_bip.values())
     usd_value_total = bip_to_usdt(bip_value_total)
     usd_rates = fiat_to_usd_rates()
     return {
         'address': address,
         'balance': {
             coin: {
-                'value': float(to_bip(bal['pip'])),
-                'bip_value': float(bal['bip_value']),
-                'usd_value': bip_to_usdt(bal['bip_value'])
+                'value': float(to_bip(balances[coin])),
+                'bip_value': float(bip_value),
+                'usd_value': bip_to_usdt(bip_value)
             }
-            for coin, bal in balances_bip.items() if bal['bip_value'] > 0
+            for coin, bip_value in balances_bip.items() if bip_value > 0
         },
         'bip_value_total': float(bip_value_total),
         'usd_value_total': usd_value_total,
