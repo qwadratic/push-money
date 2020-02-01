@@ -1,24 +1,25 @@
 SHELL = /bin/bash
+.SILENT:
 
 install:
-	@echo Creating virtualenv
-	@virtualenv .venv
+	echo Creating virtualenv
+	virtualenv .venv
 
-	@echo Installing requirements
-	@. .venv/bin/activate && pip install -r requirements.txt
+	echo Installing requirements
+	. .venv/bin/activate && pip install -r requirements.txt
 
-	@echo Done.
+	echo Done.
 
 migrate:
-	@echo Executing migration script.
-	@. .venv/bin/activate && python migrate.py
+	echo Executing migration script.
+	. .venv/bin/activate && python migrate.py
 
 update:
-	@echo checkout, pull, stop, run
-	@git checkout && git pull && make stop && make run prod
+	echo checkout, pull, stop, run
+	git checkout && git pull && make stop && make run prod
 
 run:
-	@if [ "$(filter-out $@,$(MAKECMDGOALS))" == "dev" ] ; then \
+	if [ "$(filter-out $@,$(MAKECMDGOALS))" == "dev" ] ; then \
 		. .venv/bin/activate && python wsgi.py; \
 	elif [ "$(filter-out $@,$(MAKECMDGOALS))" == "prod" ] ; then \
 		echo "Running app with gunicorn on 127.0.0.1:8000 (logs: gunicorn.log)"; \
@@ -27,8 +28,8 @@ run:
 	fi;
 
 stop:
-	@echo Stopping app
-	@kill `grep -hs ^ gunicorn.pid` 2>/dev/null
+	echo Stopping app
+	-kill `grep -hs ^ gunicorn.pid` 2>/dev/null
 
 %:
 	@:
