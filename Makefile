@@ -15,8 +15,8 @@ migrate:
 	. .venv/bin/activate && python migrate.py
 
 update:
-	echo checkout, pull, stop, run
-	git checkout && git pull && make install && make migrate && make stop && make run prod
+	echo pull, stop, install, migrate, run
+	git pull && make stop && make install && make migrate && make run prod
 
 run:
 	if [ "$(filter-out $@,$(MAKECMDGOALS))" == "dev" ] ; then \
