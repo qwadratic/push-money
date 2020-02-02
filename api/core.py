@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
 from api.models import PushWallet
@@ -63,8 +63,8 @@ def spend_options():
     return jsonify(categories)
 
 
-@bp_api.route('/spend/<link_id>/execute', methods=['POST'])
-def spend_execute(link_id):
+@bp_api.route('/spend/<link_id>', methods=['POST'])
+def make_spend(link_id):
     payload = request.get_json() or {}
     password = payload.get('password')
 
