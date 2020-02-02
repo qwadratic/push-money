@@ -59,7 +59,7 @@ def push_balance(link_id):
         'address': wallet.address,
         **balance
     }
-    return jsonify(balance)
+    return jsonify(response)
 
 
 @bp_api.route('/spend/list', methods=['GET'])
