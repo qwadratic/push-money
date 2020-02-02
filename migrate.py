@@ -5,5 +5,5 @@ from config import SQLITE_DBNAME
 
 
 if __name__ == '__main__':
-    os.remove(SQLITE_DBNAME)
+    os.rename(SQLITE_DBNAME, SQLITE_DBNAME + '.bak')
     create_tables()

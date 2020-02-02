@@ -10,8 +10,9 @@ def app_init():
     @app.after_request
     def handle_global_response(response):
         response.headers.extend({
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://yyy.cash',
             'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Credentials': 'true'
         })
         return response
     app.register_blueprint(bp_api)
