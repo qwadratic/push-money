@@ -16,7 +16,7 @@ BIP2PHONE_API_URL = 'http://116.203.135.255/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
 
 
-def mobile_top_up(wallet: PushWallet, phone=None):
+def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
     phone_reqs = get_tx_requirements(phone)
     if not phone_reqs:
         return False
@@ -27,18 +27,19 @@ def mobile_top_up(wallet: PushWallet, phone=None):
 
     bip_values = calc_bip_values(balance)
     total_bip = sum(bip_values.values())
+    to_send = amount or total_bip
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
 
     tx = send_coin_tx(
-        private_key, 'BIP', total_bip, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
     fee = to_bip(tx.get_fee())
-    if total_bip < phone_reqs['min_bip_value'] + fee:
+    if to_send < phone_reqs['min_bip_value'] + fee:
         return False
 
     tx = send_coin_tx(
-        private_key, 'BIP', total_bip - fee, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        private_key, 'BIP', to_send - fee, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
     API.send_tx(tx, wait=True)
     return True
