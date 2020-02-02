@@ -20,9 +20,9 @@ class PushWallet(BaseModel):
     password_hash = TextField(null=True)
 
     def auth(self, password):
-        if password is None and self.password_hash is not None:
-            return False
-        return pbkdf2_sha256.verify(password, self.password_hash)
+        if self.password_hash is None:
+            return True
+        return password is not None and pbkdf2_sha256.verify(password, self.password_hash)
 
 
 def create_tables():
