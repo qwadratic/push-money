@@ -61,4 +61,4 @@ API is standalone product, which can be used in any frontend app.
 
 ### API
 
-[API docs are available here](https://gist.github.com/eternalflow/f80b488516908f3e501f3989d66e0d08) (in Russian)
+[API docs are available here](https://push.money) (in Russian)
