@@ -12,6 +12,7 @@ def app_init():
         response.headers.extend({
             'Access-Control-Allow-Origin': '*',
         })
+        return response
     app.register_blueprint(bp_api)
     app.register_blueprint(bp_root)
     return app
