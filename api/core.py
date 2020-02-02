@@ -1,10 +1,15 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, url_for
 
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
 from api.models import PushWallet
 from minter.helpers import create_deeplink
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
+
+
+@bp_api.route('/', methods=['GET'])
+def health():
+    return f'Api ok. <a href={url_for("root.readme")}>Guide</a>'
 
 
 @bp_api.route('/push/create', methods=['POST'])
