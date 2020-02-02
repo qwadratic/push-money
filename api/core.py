@@ -42,7 +42,7 @@ def push_info(link_id):
     })
 
 
-@bp_api.route('/push/<link_id>/balance', methods=['GET'])
+@bp_api.route('/push/<link_id>/balance', methods=['GET', 'POST'])
 def push_balance(link_id):
     payload = request.get_json() or {}
     password = payload.get('password')
