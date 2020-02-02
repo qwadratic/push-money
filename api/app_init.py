@@ -11,6 +11,7 @@ def app_init():
     def handle_global_response(response):
         response.headers.extend({
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
         })
         return response
     app.register_blueprint(bp_api)
