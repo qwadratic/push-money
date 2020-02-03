@@ -7,6 +7,12 @@ from minter.helpers import create_deeplink
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 
+HTTP_400_BAD_REQUEST = 400
+HTTP_401_UNAUTHORIZED = 401
+HTTP_404_NOT_FOUND = 404
+HTTP_500_INTERNAL_SERVER_ERROR = 500
+
+
 @bp_api.route('/', methods=['GET'])
 def health():
     return f'Api ok. <a href={url_for("root.readme")}>Guide</a>'
@@ -33,7 +39,7 @@ def push_create():
 def push_info(link_id):
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'})
+        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     return jsonify({
         'sender': wallet.sender,
@@ -49,10 +55,10 @@ def push_balance(link_id):
 
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'})
+        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     if not wallet.auth(password):
-        return jsonify({'error': 'Incorrect password'})
+        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
 
     balance = get_address_balance(wallet.address)
     response = {
@@ -75,20 +81,21 @@ def make_spend(link_id):
 
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'})
+        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     if not wallet.auth(password):
-        return jsonify({'error': 'Incorrect password'})
+        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
 
     if 'option' not in payload:
-        return jsonify({'error': '"option" key is required'})
+        return jsonify({'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
     allowed_options = ['mobile', 'transfer-minter']
     if payload['option'] not in allowed_options:
         return jsonify({
-            'error': f'Allowed options are: {",".join(option for option in allowed_options)}'})
+            'error': f'Allowed options are: {",".join(option for option in allowed_options)}'
+        }), HTTP_400_BAD_REQUEST
 
     success = spend_balance(wallet, payload['option'], **payload.get('params', {}))
     if not success:
-        return jsonify({'error': 'Internal API error'})
+        return jsonify({'error': 'Internal API error'}), HTTP_500_INTERNAL_SERVER_ERROR
 
     return jsonify({'message': 'Success'})
