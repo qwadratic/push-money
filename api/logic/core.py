@@ -7,7 +7,7 @@ from minter.api import API
 from minter.utils import to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
-from providers.minter import send_all_coins
+from providers.minter import send_coins
 from providers.biptophone import mobile_top_up
 
 
@@ -50,7 +50,7 @@ def get_address_balance(address):
 def spend_balance(wallet: PushWallet, option, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
-        'transfer-minter': send_all_coins
+        'transfer-minter': send_coins
     }
     return spend_option_fns[option](wallet, **kwargs)
 
