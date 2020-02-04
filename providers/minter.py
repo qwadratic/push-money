@@ -7,6 +7,8 @@ from minter.utils import to_bip
 
 
 def send_coins(wallet: PushWallet, to=None, amount=None):
+    amount = float(amount)
+
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
     response = API.get_balance(wallet.address)
     nonce = int(response['transaction_count']) + 1

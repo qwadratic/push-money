@@ -17,6 +17,8 @@ BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
 
 
 def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
+    amount = float(amount)
+
     phone_reqs = get_tx_requirements(phone)
     if not phone_reqs:
         return False
