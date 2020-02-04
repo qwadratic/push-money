@@ -12,7 +12,7 @@ from minter.utils import to_bip
 
 # BIP2PHONE_API_URL = 'https://biptophone.ru/api.php'
 # requests to my proxy, because my server doesn't see API host :)
-BIP2PHONE_API_URL = 'http://116.203.135.255/api.php'
+BIP2PHONE_API_URL = 'https://116.203.135.255/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
 
 
