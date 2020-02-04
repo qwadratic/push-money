@@ -58,7 +58,7 @@ def bip_to_usdt(bip_value) -> float:
 
     fee = usdt_fee if bip_value < min_no_fee else 0
     usdt = float(bip_value) * usdt_rate
-    return 0 if usdt <= fee else usdt - fee
+    return 0 if usdt <= fee else usdt - fee if bip_value > 25 else usdt
 
 
 def fiat_to_usd_rates() -> Dict[str, float]:
