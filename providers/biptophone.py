@@ -34,7 +34,7 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
         private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
     fee = float(to_bip(tx.get_fee()))
-    if to_send < phone_reqs['min_bip_value'] + fee:
+    if to_send < float(phone_reqs['min_bip_value']) + fee:
         return False
 
     tx = send_coin_tx(
