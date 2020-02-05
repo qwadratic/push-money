@@ -1,16 +1,11 @@
 from flask import Blueprint, jsonify, request, url_for
 
+from api.consts import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
 from api.models import PushWallet
 from minter.helpers import create_deeplink
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
-
-
-HTTP_400_BAD_REQUEST = 400
-HTTP_401_UNAUTHORIZED = 401
-HTTP_404_NOT_FOUND = 404
-HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 
 @bp_api.route('/', methods=['GET'])
