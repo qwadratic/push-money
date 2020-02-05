@@ -1,6 +1,6 @@
 import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import SqliteDatabase, Model, CharField, TextField, PostgresqlDatabase
+from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model
 
 from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
 

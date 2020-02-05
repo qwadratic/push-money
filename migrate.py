@@ -1,8 +1,6 @@
 import os
 
-import peeweedbevolve
-
-from api.models import create_tables, database
+from api.models import create_tables, database, BaseModel
 from config import SQLITE_DBNAME, LOCAL
 
 
@@ -13,7 +11,7 @@ def local():
 
 
 def prod():
-    database.evolve()
+    database.evolve(ignore_tables=[BaseModel])
 
 
 if __name__ == '__main__':
