@@ -1,9 +1,11 @@
+import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import SqliteDatabase, Model, CharField, TextField
+from peewee import SqliteDatabase, Model, CharField, TextField, PostgresqlDatabase
 
-from config import SQLITE_DBNAME
+from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
 
-database = SqliteDatabase(SQLITE_DBNAME)
+database = SqliteDatabase(SQLITE_DBNAME) if LOCAL \
+    else PostgresqlDatabase(DB_NAME, user=DB_USER)
 
 
 class BaseModel(Model):

@@ -7,5 +7,7 @@ peewee==3.13.1
 python-dotenv==0.10.5
 cachetools==4.0.0
 passlib==1.7.2
+psycopg2-binary==2.8.4
+peewee-db-evolve==3.7.3
 
 ipdb==0.12.3

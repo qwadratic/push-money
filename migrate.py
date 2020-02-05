@@ -1,10 +1,20 @@
 import os
 
-from api.models import create_tables
-from config import SQLITE_DBNAME
+import peeweedbevolve
+
+from api.models import create_tables, database
+from config import SQLITE_DBNAME, LOCAL
 
 
-if __name__ == '__main__':
+def local():
     if os.path.isfile(SQLITE_DBNAME):
         os.rename(SQLITE_DBNAME, SQLITE_DBNAME + '.bak')
     create_tables()
+
+
+def prod():
+    database.evolve()
+
+
+if __name__ == '__main__':
+    local() if LOCAL else prod()
