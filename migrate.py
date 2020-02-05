@@ -1,6 +1,6 @@
 import os
 
-from api.models import create_tables, database, BaseModel
+from api.models import create_tables, database
 from config import SQLITE_DBNAME, LOCAL
 
 
@@ -11,7 +11,7 @@ def local():
 
 
 def prod():
-    database.evolve(ignore_tables=[BaseModel])
+    database.evolve(ignore_tables=['basemodel'])
 
 
 if __name__ == '__main__':
