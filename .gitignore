@@ -133,4 +133,7 @@ nginx.conf
 api-local.py
 
 pushmoney.sqlite
+pushmoney.sqlite.bak
 /http-scratches/
+gclient-keys.json
+polygon.py

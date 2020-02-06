@@ -1,14 +1,22 @@
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from shortuuid import uuid
+from shortuuid import uuid as _uuid
 
 from minter.helpers import calc_bip_values
-from minter.api import API
 from minter.utils import to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
 from providers.minter import send_coins
+from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
+
+
+def uuid():
+    while True:
+        link_id = _uuid()[:6]
+        if PushWallet.get_or_none(link_id=link_id):
+            continue
+        return link_id
 
 
 def generate_and_save_wallet(sender, recipient, password):
@@ -25,7 +33,7 @@ def generate_and_save_wallet(sender, recipient, password):
 
 
 def get_address_balance(address):
-    balances = API.get_balance(address)['balance']
+    balances = MscanAPI.get_balance(address)['balance']
     balances_bip = calc_bip_values(balances)
     bip_value_total = sum(balances_bip.values())
     usd_value_total = bip_to_usdt(bip_value_total)

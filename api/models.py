@@ -1,6 +1,6 @@
 import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model
+from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField
 
 from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
 
@@ -27,6 +27,11 @@ class PushWallet(BaseModel):
         return password is not None and pbkdf2_sha256.verify(password, self.password_hash)
 
 
+class PushCampaign(BaseModel):
+    sendpulse_addressbook_id = IntegerField(null=True)
+    wallet_link_id = CharField()
+
+
 def create_tables():
     with database:
-        database.create_tables([PushWallet])
+        database.create_tables([PushWallet, PushCampaign])

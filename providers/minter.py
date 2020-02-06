@@ -1,16 +1,16 @@
 from mintersdk.sdk.wallet import MinterWallet
 
 from api.models import PushWallet
-from minter.api import API
 from minter.tx import send_coin_tx
 from minter.utils import to_bip
+from providers.mscan import MscanAPI
 
 
 def send_coins(wallet: PushWallet, to=None, amount=None):
     amount = float(amount)
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
-    response = API.get_balance(wallet.address)
+    response = MscanAPI.get_balance(wallet.address)
     nonce = int(response['transaction_count']) + 1
 
     balance_bip = float(to_bip(response['balance']['BIP']))
@@ -21,5 +21,5 @@ def send_coins(wallet: PushWallet, to=None, amount=None):
         return False
 
     tx = send_coin_tx(private_key, 'BIP', amount, to, nonce)
-    API.send_tx(tx, wait=True)
+    MscanAPI.send_tx(tx, wait=True)
     return True

@@ -3,10 +3,7 @@ from time import sleep
 from mintersdk.minterapi import MinterAPI
 from requests import ReadTimeout, ConnectTimeout, HTTPError
 
-from config import MSCAN_APIKEY, TESTNET
 from helpers.misc import retry
-
-MSCAN_URL = f'https://api.mscan.dev/{MSCAN_APIKEY}/{"test_node" if TESTNET else "node"}'
 
 
 class MinterAPIException(Exception):
@@ -49,6 +46,3 @@ class CustomMinterAPI(MinterAPI):
                 sleep(1)
                 continue
             break
-
-
-API = CustomMinterAPI(MSCAN_URL)

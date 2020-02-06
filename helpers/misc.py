@@ -1,5 +1,6 @@
 import logging
 from functools import wraps
+from logging.handlers import TimedRotatingFileHandler
 from time import sleep
 from typing import Union, Iterable, Callable
 
@@ -35,3 +36,15 @@ def retry(exceptions: Union[Exception, Iterable[Exception]], logger: Callable = 
             return f(*args, **kwargs)
         return f_retry
     return deco_retry
+
+
+def setup_logging():
+    config = dict(
+        force=True,
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            TimedRotatingFileHandler("debug.log", when='midnight', utc=True, backupCount=7)
+        ])
+    logging.basicConfig(**config)

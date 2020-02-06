@@ -4,7 +4,7 @@ from mintersdk.sdk.deeplink import MinterDeeplink
 from mintersdk.sdk.transactions import MinterSendCoinTx
 
 from config import TESTNET
-from minter.api import API
+from providers.mscan import MscanAPI
 from minter.utils import to_bip, to_pip
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
@@ -33,7 +33,7 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
             result[coin] = to_bip(balance)
             continue
 
-        est_sell_response = API.estimate_coin_sell(coin, balance, base_coin)
+        est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, base_coin)
         will_get_pip, comm_pip = int(est_sell_response['will_get']), int(est_sell_response['commission'])
         if subtract_fee and int(balance) <= comm_pip:
             # ignore "dust" balances
