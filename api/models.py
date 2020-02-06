@@ -30,6 +30,7 @@ class PushWallet(BaseModel):
 class PushCampaign(BaseModel):
     sendpulse_addressbook_id = IntegerField(null=True)
     wallet_link_id = CharField()
+    cost_pip = CharField()
 
 
 def create_tables():
