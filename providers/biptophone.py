@@ -24,8 +24,9 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
 
     response = MscanAPI.get_balance(wallet.address)
     balance = response['balance']
+    available_bip = float(to_bip(balance['BIP']))
     nonce = int(response['transaction_count']) + 1
-    to_send = amount or to_bip(balance['BIP'])
+    to_send = amount or available_bip
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
 
@@ -34,11 +35,14 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
         payload=phone_reqs['payload'])
     fee = float(to_bip(tx.get_fee()))
     min_topup = float(phone_reqs['min_bip_value']) + fee
-    if to_send < min_topup:
+    effective_topup = to_send - fee
+    if available_bip < to_send:
+        return 'Not enough balance'
+    if effective_topup < min_topup:
         return f"Minimal top-up: {min_topup} BIP"
 
     tx = send_coin_tx(
-        private_key, 'BIP', to_send - fee, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        private_key, 'BIP', effective_topup, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
     MscanAPI.send_tx(tx, wait=True)
     return True
