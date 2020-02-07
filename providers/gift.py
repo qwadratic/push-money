@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 
 import requests
@@ -25,8 +26,8 @@ def gift_order_create(product):
 
 
 def gift_webhook_controller(request, order_id):
-    print(request.get_json())
-    code = request.get_json()['code']
+    logging.info(request.form)
+    code = request.form['code']
     WebhookEvent.create(provider='gift', event_id=order_id, event_data={'code': code})
 
 
@@ -35,7 +36,9 @@ def gift_buy(wallet, product):
     if isinstance(response, str):
         return response
 
-    send_coins(wallet, to=response['address'], amount=response['price_bip'], wait=True)
+    result = send_coins(wallet, to=response['address'], amount=response['price_bip'], wait=True)
+    if isinstance(result, str):
+        return result
 
     while True:
         sleep(0.2)

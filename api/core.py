@@ -106,7 +106,7 @@ def make_spend(link_id):
         }), HTTP_400_BAD_REQUEST
 
     result = spend_balance(wallet, payload['option'], **payload.get('params', {}))
-    if result is not True:
+    if isinstance(result, str):
         return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
-    return jsonify({'message': 'Success'})
+    return jsonify({'success': result, 'data': result})
