@@ -34,3 +34,30 @@ def prepare_campaign(name, recipients):
         'addressbook_id': book_id,
         'to_send': to_send
     }
+
+
+def campaign_stats(campaign_id):
+    response = SendpulseAPI.get_campaign_info(campaign_id)
+    if response.get('data', {}).get('is_error'):
+        return {
+            'n_emails': 0,
+            'send_date': None,
+            'sent': 0,
+            'delivered': 0,
+            'opened': 0,
+            'clicked': 0
+        }
+    stats = response['statistics']
+    stat_codes = {
+        1: 'sent',
+        2: 'delivered',
+        3: 'opened',
+        4: 'clicked'
+    }
+    stats = {
+        stat_codes.get(stat['code']): stat['count']
+        for stat in stats if stat_codes.get(stat['code'])
+    }
+    stats['n_emails'] = response['all_email_qty']
+    stats['send_date'] = response['send_date']
+    return stats

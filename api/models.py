@@ -28,9 +28,18 @@ class PushWallet(BaseModel):
 
 
 class PushCampaign(BaseModel):
+
     sendpulse_addressbook_id = IntegerField(null=True)
     wallet_link_id = CharField()
     cost_pip = CharField()
+
+    status = CharField()
+    # status:
+    # - created - создана
+    # - paid - оплачена
+    # - progress - рассылка идет
+    # - completed - рассылка окончена
+    # - closed - "лишние" деньги возвращены отправителю
 
 
 def create_tables():

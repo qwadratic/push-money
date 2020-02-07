@@ -23,3 +23,9 @@ def send_coins(wallet: PushWallet, to=None, amount=None):
     tx = send_coin_tx(private_key, 'BIP', amount, to, nonce)
     MscanAPI.send_tx(tx, wait=True)
     return True
+
+
+def ensure_balance(address, required_pip):
+    balance = MscanAPI.get_balance(address)['balance']
+    balance_pip = balance['BIP']
+    return int(balance_pip) >= int(required_pip)

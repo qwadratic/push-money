@@ -13,4 +13,5 @@ peewee-db-evolve==3.7.3
 oauth2client==4.1.3
 gspread==3.2.0
 trafaret==2.0.2
+APScheduler==3.6.3
 -e git://github.com/sendpulse/sendpulse-rest-api-python.git@8d86210d7335de135be156584bfa66c794dc4053#egg=pysendpulse

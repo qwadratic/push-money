@@ -7,17 +7,13 @@ from api.models import PushCampaign, PushWallet
 from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
+from providers.minter import ensure_balance
 from providers.sendpulse import prepare_campaign
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
-# post /email/import
-# получить ссылку на гугл таблицу, провалидировать
-# вернуть:
-#  - id для проверки оплаты
-#  - minter адрес и deeplink для оплаты
-#  - в случае ошибки - адекватный меседж
 
+# https://docs.google.com/spreadsheets/d/16daTxWC-EyTQ0L1LZSoQP09MTu0_LOnzDwOuVJSp5Qo/edit#gid=1668559759
 
 @bp_sharing.route('/email-import', methods=['POST'])
 def email_import():
@@ -64,11 +60,6 @@ def email_import():
         } for email, info in recipients.items()]
     })
 
-# get /<id>/check-payment
-# проверить оплачена ли рассылка
-#  - если нет, вернуть статус неок, сумму для оплаты и диплинк
-#  - если да - статус ок
-
 
 @bp_sharing.route('/<int:campaign_id>/check-payment')
 def campaign_check(campaign_id):
@@ -76,22 +67,38 @@ def campaign_check(campaign_id):
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
-    # if not ensure_balance(wallet.address, campaign.cost_pip):
-    #     return jsonify({'result': False})
+    if not ensure_balance(wallet.address, campaign.cost_pip):
+        return jsonify({'result': False})
     return jsonify({'result': True})
 
 
-# get /<id>/stats
-# детальная статистика по рассылке: email - открытие - переход по ссылке
-# суммарная стата
-# в будущем - пагинация
-
 @bp_sharing.route('/<int:campaign_id>/stats')
 def campaign_stats(campaign_id):
-    pass
+    campaign = PushCampaign.get_or_none(id=campaign_id)
+    if not campaign:
+        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+    stats = campaign_stats(campaign.sendpulse_campaign_id)
+    return stats
 
 
-# рассылочная джоба:
-#   - проверяет оплату неоплаченных рассылок
-#   - генерит линки на шаринг (чеками?)
-#   - рассылает емейлы
+@bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
+def campaign_close(campaign_id):
+    campaign = PushCampaign.get_or_none(id=campaign_id)
+    if not campaign:
+        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+
+    # временно
+    if campaign.status != 'completed':
+        return jsonify({
+            'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
+
+    campaign.status = 'closed'
+    campaign.save()
+
+    # возврат денег
+    amount_left = 0
+    return jsonify({'amount_left': amount_left})
+
+
+# вебхук статистики:
+#   - сохраняет детальную статистику по кампаниям
