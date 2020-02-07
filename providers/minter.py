@@ -18,7 +18,7 @@ def send_coins(wallet: PushWallet, to=None, amount=None, max=False, wait=True):
     # если вдруг пришлют сумму без учета комиссии - не будем мучать ошибками)
     amount = amount - 0.01 if amount == balance_bip else amount
     if amount > balance_bip - 0.01:
-        return False
+        return 'Not enough balance'
 
     tx = send_coin_tx(private_key, 'BIP', amount, to, nonce)
     MscanAPI.send_tx(tx, wait=wait)

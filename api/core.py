@@ -64,8 +64,9 @@ def push_balance(link_id):
     if virtual_balance is not None and not wallet.seen:
         cmp = PushCampaign.get(id=wallet.campaign_id)
         cmp_wallet = PushWallet.get(link_id=cmp.wallet_link_id)
-        send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
-
+        result = send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
+        if result is not True:
+            return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
         wallet.seen = True
         wallet.virtual_balance = '0'
         wallet.save()
@@ -104,8 +105,8 @@ def make_spend(link_id):
             'error': f'Allowed options are: {",".join(option for option in allowed_options)}'
         }), HTTP_400_BAD_REQUEST
 
-    success = spend_balance(wallet, payload['option'], **payload.get('params', {}))
-    if not success:
-        return jsonify({'error': 'Internal API error'}), HTTP_500_INTERNAL_SERVER_ERROR
+    result = spend_balance(wallet, payload['option'], **payload.get('params', {}))
+    if result is not True:
+        return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
     return jsonify({'message': 'Success'})

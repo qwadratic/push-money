@@ -111,7 +111,9 @@ def campaign_close(campaign_id):
         campaign.status = 'closed'
         campaign.save()
         if amount_left > 0:
-            send_coins(wallet, address, amount_left, wait=True)
+            result = send_coins(wallet, address, amount_left, wait=True)
+            if result is not True:
+                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
     return jsonify({'amount_left': amount_left if amount_left >= 0 else 0})
 

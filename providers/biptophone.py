@@ -6,7 +6,6 @@ from mintersdk.sdk.wallet import MinterWallet
 from api.models import PushWallet
 from config import BIP2PHONE_API_KEY
 from providers.mscan import MscanAPI
-from minter.helpers import calc_bip_values
 from minter.tx import send_coin_tx
 from minter.utils import to_bip
 
@@ -21,7 +20,7 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
 
     phone_reqs = get_tx_requirements(phone)
     if not phone_reqs:
-        return False
+        return f'Phone number {phone} not supported or invalid'
 
     response = MscanAPI.get_balance(wallet.address)
     balance = response['balance']
@@ -34,8 +33,9 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None):
         private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
     fee = float(to_bip(tx.get_fee()))
-    if to_send < float(phone_reqs['min_bip_value']) + fee:
-        return False
+    min_topup = float(phone_reqs['min_bip_value']) + fee
+    if to_send < min_topup:
+        return f"Minimal top-up: {min_topup} BIP"
 
     tx = send_coin_tx(
         private_key, 'BIP', to_send - fee, BIP2PHONE_PAYMENT_ADDRESS, nonce,
