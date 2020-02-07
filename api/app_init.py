@@ -3,6 +3,7 @@ from flask import Flask
 from api.core import bp_api
 from api.root import bp_root
 from api.sharing import bp_sharing
+from helpers.misc import setup_logging
 
 blueprints = [
     bp_api,
@@ -12,6 +13,7 @@ blueprints = [
 
 
 def app_init():
+    setup_logging()
     app = Flask(__name__)
     for bp in blueprints:
         app.register_blueprint(bp)

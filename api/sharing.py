@@ -8,12 +8,10 @@ from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
 from providers.minter import ensure_balance
-from providers.sendpulse import prepare_campaign
+from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
-
-# https://docs.google.com/spreadsheets/d/16daTxWC-EyTQ0L1LZSoQP09MTu0_LOnzDwOuVJSp5Qo/edit#gid=1668559759
 
 @bp_sharing.route('/email-import', methods=['POST'])
 def email_import():
@@ -33,25 +31,28 @@ def email_import():
     if not recipients:
         return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
 
-    campaign_wallet = generate_and_save_wallet(None, None, None)
-    campaign = PushCampaign.create(wallet_link_id=campaign_wallet.link_id)
-
     total_cost = sum(info['amount'] for info in recipients.values())
     total_fee = 0.01 * len(recipients)
     campaign_cost = total_cost + total_fee
+
+    campaign_wallet = generate_and_save_wallet(None, None, None)
+    campaign = PushCampaign.create(
+        wallet_link_id=campaign_wallet.link_id,
+        status='open',
+        cost_pip=str(to_pip(campaign_cost)))
 
     for info in recipients.values():
         wallet = generate_and_save_wallet(None, None, None)
         info['token'] = wallet.link_id
     campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
     campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']
-    campaign.cost_pip = str(to_pip(campaign_cost))
     campaign.save()
 
     return jsonify({
         'campaign_id': campaign.id,
         'address': campaign_wallet.address,
         'deeplink': create_deeplink(campaign_wallet.address, campaign_cost),
+        'total_bip': campaign_cost,
         'recipients': [{
             'email': email,
             'name': info['name'],
@@ -77,7 +78,10 @@ def campaign_stats(campaign_id):
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
-    stats = campaign_stats(campaign.sendpulse_campaign_id)
+    stats = get_campaign_stats(campaign.sendpulse_campaign_id)
+    if stats['finished']:
+        campaign.status = 'completed'
+        campaign.save()
     return stats
 
 

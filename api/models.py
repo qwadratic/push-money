@@ -28,11 +28,10 @@ class PushWallet(BaseModel):
 
 
 class PushCampaign(BaseModel):
-
     sendpulse_addressbook_id = IntegerField(null=True)
+    sendpulse_campaign_id = IntegerField(null=True)
     wallet_link_id = CharField()
     cost_pip = CharField()
-
     status = CharField()
     # status:
     # - created - создана

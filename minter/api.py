@@ -31,6 +31,11 @@ class CustomMinterAPI(MinterAPI):
             raise MinterAPIException(r.get('error') or r)
         return r['result']
 
+    def get_addresses(self, addresses):
+        if not addresses:
+            return []
+        return self._request('addresses', params={'addresses': str(addresses).replace("'", '"')})
+
     def send_tx(self, tx, wait=False):
         r = super().send_transaction(tx.signed_tx)
         if wait:
