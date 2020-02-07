@@ -72,6 +72,7 @@ def campaign_check(campaign_id):
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     if not ensure_balance(wallet.address, campaign.cost_pip):
         return jsonify({'result': False})
+
     return jsonify({'result': True})
 
 
@@ -99,7 +100,7 @@ def campaign_close(campaign_id):
             'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
     confirm = bool(int(request.args.get('confirm', 0)))
-    address = request.args.get('confirm')
+    address = request.args.get('address')
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     amount_left = get_balance(wallet.address, bip=True) - 0.01
