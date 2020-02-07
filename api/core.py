@@ -99,7 +99,7 @@ def make_spend(link_id):
 
     if 'option' not in payload:
         return jsonify({'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
-    allowed_options = ['mobile', 'transfer-minter']
+    allowed_options = ['mobile', 'transfer-minter', 'y-food']
     if payload['option'] not in allowed_options:
         return jsonify({
             'error': f'Allowed options are: {",".join(option for option in allowed_options)}'
