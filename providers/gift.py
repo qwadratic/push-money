@@ -25,8 +25,8 @@ def gift_order_create(product):
 
 
 def gift_webhook_controller(request, order_id):
-    print(request.to_json())
-    code = request.to_json()['code']
+    print(request.get_json())
+    code = request.get_json()['code']
     WebhookEvent.create(provider='gift', event_id=order_id, event_data={'code': code})
 
 
