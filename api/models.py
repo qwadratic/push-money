@@ -2,11 +2,14 @@ import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
     BooleanField
+from playhouse.postgres_ext import pgJSONField
+from playhouse.sqlite_ext import sqliteJSONField
 
 from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
 
 database = SqliteDatabase(SQLITE_DBNAME) if LOCAL \
     else PostgresqlDatabase(DB_NAME, user=DB_USER)
+JSONField = sqliteJSONField if LOCAL else pgJSONField
 
 
 class BaseModel(Model):
@@ -46,6 +49,12 @@ class PushCampaign(BaseModel):
     # - closed - "лишние" деньги возвращены отправителю
 
 
+class WebhookEvent(BaseModel):
+    provider = CharField()
+    event_id = CharField()
+    event_data = JSONField()
+
+
 def create_tables():
     with database:
-        database.create_tables([PushWallet, PushCampaign])
+        database.create_tables([PushWallet, PushCampaign, WebhookEvent])
