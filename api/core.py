@@ -30,7 +30,7 @@ def push_create():
         'link_id': wallet.link_id
     }
     if amount:
-        response['deeplink'] = create_deeplink(wallet.address, amount)
+        response['deeplink'] = create_deeplink(wallet.address, float(amount) + 0.01)
     return jsonify(response)
 
 
@@ -92,21 +92,23 @@ def make_spend(link_id):
 
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
+        return jsonify({'success': False, 'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     if not wallet.auth(password):
-        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+        return jsonify({'success': False, 'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
 
     if 'option' not in payload:
-        return jsonify({'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
+        return jsonify({'success': False, 'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
     allowed_options = ['mobile', 'transfer-minter', 'y-food']
     if payload['option'] not in allowed_options:
         return jsonify({
+            'success': False,
             'error': f'Allowed options are: {",".join(option for option in allowed_options)}'
         }), HTTP_400_BAD_REQUEST
 
     result = spend_balance(wallet, payload['option'], **payload.get('params', {}))
     if isinstance(result, str):
-        return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+        return jsonify({'success': False, 'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
-    return jsonify({'success': result, 'data': result})
+    result = {} if isinstance(result, bool) else result
+    return jsonify({'success': True, **result})

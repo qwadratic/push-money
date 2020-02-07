@@ -40,10 +40,13 @@ def gift_buy(wallet, product):
     if isinstance(result, str):
         return result
 
-    while True:
+    max_tries = 10
+    tries = 0
+    while tries <= max_tries:
         sleep(0.2)
         event = WebhookEvent.get_or_none(event_id=response['order_id'])
         if not event:
+            tries += 1
             continue
         code = event.event_data['code']
         event.delete()
