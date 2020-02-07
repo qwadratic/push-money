@@ -6,7 +6,7 @@ from minter.utils import to_bip
 from providers.mscan import MscanAPI
 
 
-def send_coins(wallet: PushWallet, to=None, amount=None):
+def send_coins(wallet: PushWallet, to=None, amount=None, max=False, wait=True):
     amount = float(amount)
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
@@ -21,11 +21,16 @@ def send_coins(wallet: PushWallet, to=None, amount=None):
         return False
 
     tx = send_coin_tx(private_key, 'BIP', amount, to, nonce)
-    MscanAPI.send_tx(tx, wait=True)
+    MscanAPI.send_tx(tx, wait=wait)
     return True
 
 
-def ensure_balance(address, required_pip):
+def get_balance(address, coin='BIP', bip=True):
     balance = MscanAPI.get_balance(address)['balance']
-    balance_pip = balance['BIP']
+    balance_pip = balance[coin]
+    return float(to_bip(balance_pip)) if bip else balance_pip
+
+
+def ensure_balance(address, required_pip):
+    balance_pip = get_balance(address, 'BIP', bip=False)
     return int(balance_pip) >= int(required_pip)

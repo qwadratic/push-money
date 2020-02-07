@@ -1,9 +1,13 @@
 from flask import Blueprint, jsonify, request, url_for
+from mintersdk.sdk.wallet import MinterWallet
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
-from api.models import PushWallet
+from api.models import PushWallet, PushCampaign
 from minter.helpers import create_deeplink
+from minter.tx import send_coin_tx
+from minter.utils import to_bip
+from providers.minter import send_coins
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -55,7 +59,18 @@ def push_balance(link_id):
     if not wallet.auth(password):
         return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
 
-    balance = get_address_balance(wallet.address)
+    # зарефакторить
+    virtual_balance = None if wallet.virtual_balance == '0' else wallet.virtual_balance
+    if virtual_balance is not None and not wallet.seen:
+        cmp = PushCampaign.get(id=wallet.campaign_id)
+        cmp_wallet = PushWallet.get(link_id=cmp.wallet_link_id)
+        send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
+
+        wallet.seen = True
+        wallet.virtual_balance = '0'
+        wallet.save()
+
+    balance = get_address_balance(wallet.address, virtual=virtual_balance)
     response = {
         'address': wallet.address,
         **balance

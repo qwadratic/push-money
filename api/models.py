@@ -1,6 +1,7 @@
 import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField
+from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
+    BooleanField
 
 from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
 
@@ -14,6 +15,10 @@ class BaseModel(Model):
 
 
 class PushWallet(BaseModel):
+    campaign_id = IntegerField(null=True)
+    virtual_balance = CharField(default='0')
+    seen = BooleanField(default=False)
+
     link_id = CharField()
     address = CharField()
     mnemonic = TextField()

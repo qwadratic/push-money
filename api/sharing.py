@@ -7,7 +7,7 @@ from api.models import PushCampaign, PushWallet
 from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
-from providers.minter import ensure_balance
+from providers.minter import ensure_balance, get_balance, send_coins
 from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
@@ -42,7 +42,9 @@ def email_import():
         cost_pip=str(to_pip(campaign_cost)))
 
     for info in recipients.values():
-        wallet = generate_and_save_wallet(None, None, None)
+        wallet = generate_and_save_wallet(
+            None, None, None,
+            campaign_id=campaign.id, virtual_balance=str(to_pip(info['amount'])))
         info['token'] = wallet.link_id
     campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
     campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']
@@ -96,12 +98,22 @@ def campaign_close(campaign_id):
         return jsonify({
             'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
-    campaign.status = 'closed'
-    campaign.save()
+    confirm = bool(int(request.args.get('confirm', 0)))
+    address = request.args.get('confirm')
 
-    # возврат денег
-    amount_left = 0
-    return jsonify({'amount_left': amount_left})
+    wallet = PushWallet.get(link_id=campaign.wallet_link_id)
+    amount_left = get_balance(wallet.address, bip=True) - 0.01
+
+    if confirm and not address:
+        return jsonify({'error': f"No address specified"}), HTTP_400_BAD_REQUEST
+
+    if confirm:
+        campaign.status = 'closed'
+        campaign.save()
+        if amount_left > 0:
+            send_coins(wallet, address, amount_left, wait=True)
+
+    return jsonify({'amount_left': amount_left if amount_left >= 0 else 0})
 
 
 # вебхук статистики:

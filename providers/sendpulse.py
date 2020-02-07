@@ -93,6 +93,7 @@ def get_campaign_stats(campaign_id):
         stat_codes.get(stat['code']): stat['count']
         for stat in stats if stat_codes.get(stat['code'])
     }
+    stats.update({name: 0 for name in stat_codes.values() if name not in stats})
     stats['n_emails'] = response['all_email_qty']
     stats['send_date'] = response['send_date']
     stats['finished'] = response['status'] in [3, 5, 25, 27]
