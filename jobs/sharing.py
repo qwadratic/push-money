@@ -35,6 +35,7 @@ def job_create_sendpulse_campaign(cmp_id):
         cmp.status = 'progress'
 
     book_id = cmp.sendpulse_addressbook_id
-    campaign_id = campaign_create(book_id)
+    campaign_id = campaign_create(book_id, test=[
+        'ivak_@mail.ru', 'callmyduck@gmail.com'])
     cmp.sendpulse_campaign_id = campaign_id
     cmp.save()

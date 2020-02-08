@@ -33,7 +33,8 @@ def gift_order_create(product):
     r.raise_for_status()
     data = r.json()
     if not data.get('address'):
-        return 'Gift Provider Error: Product not found'
+        err_msg = data.get('error', data)
+        return f'Gift Error: {err_msg}'
     return {
         'price_bip': data['summ'],
         'address': data['address'],

@@ -11,7 +11,8 @@ MAX_CAMPAIGN_SIZE = 10
 
 class CustomSendPulseAPI(PySendPulse):
     def add_campaign(
-            self, from_email, from_name, subject, body_or_tmpl_id, addressbook_id, campaign_name='', attachments=None):
+            self, from_email, from_name, subject, body_or_tmpl_id,
+            addressbook_id, campaign_name='', attachments=None, test=None):
         if isinstance(body_or_tmpl_id, str):
             return super().add_campaign(
                 from_email, from_name, subject, body_or_tmpl_id, addressbook_id, campaign_name='', attachments=None)
@@ -31,7 +32,8 @@ class CustomSendPulseAPI(PySendPulse):
             'template_id': template_id,
             'list_id': addressbook_id,
             'name': campaign_name,
-            'attachments': json.dumps(attachments)
+            'attachments': json.dumps(attachments),
+            'test_only': test
         }))
 
 
@@ -63,9 +65,10 @@ def prepare_campaign(name, recipients):
     }
 
 
-def campaign_create(book_id):
+def campaign_create(book_id, test=None):
     result = SendpulseAPI.add_campaign(
-        'noreply@push.money', 'YYY Team', '{{name}}, your BIPs are waiting', 194338, book_id)
+        'noreply@push.money', 'YYY Team',
+        '{{name}}, your BIPs are waiting', 194338, book_id, test=test)
     return result['id']
 
 
