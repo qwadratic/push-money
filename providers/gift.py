@@ -4,7 +4,8 @@ from time import sleep
 import requests
 from shortuuid import uuid
 
-from api.models import WebhookEvent
+from api.models import WebhookEvent, OrderHistory
+from minter.utils import to_pip
 from providers.minter import send_coins
 
 GIFT_WEBHOOK_URL = 'https://push.money/webhooks/gift/{}'
@@ -72,6 +73,13 @@ def gift_buy(wallet, product, confirm=True):
 
     if not confirm:
         return {'price_bip': price_bip}
+
+    OrderHistory.create(
+        provider='gift',
+        product_id=product,
+        price_pip=str(to_pip(price_bip)),
+        address_from=wallet.address,
+        address_to=response['address'])
     result = send_coins(wallet, to=response['address'], amount=price_bip, wait=True)
     if isinstance(result, str):
         return result
