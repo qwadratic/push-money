@@ -25,7 +25,8 @@ class CustomSendPulseAPI(PySendPulse):
             return self._PySendPulse__handle_error('Seems you not pass addressbook ID')
         if not attachments:
             attachments = {}
-        return self._PySendPulse__handle_result(self._PySendPulse__send_request('campaigns', 'POST', {
+        method = 'PATCH' if test else 'POST'
+        return self._PySendPulse__handle_result(self._PySendPulse__send_request('campaigns', method, {
             'sender_name': from_name,
             'sender_email': from_email,
             'subject': subject,

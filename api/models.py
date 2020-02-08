@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
@@ -49,6 +51,19 @@ class PushCampaign(BaseModel):
     # - closed - "лишние" деньги возвращены отправителю
 
 
+class OrderHistory(BaseModel):
+    timestamp = DateTimeField(default=datetime.utcnow)
+
+    provider = CharField()
+    product_id = CharField()
+
+    price_pip = CharField()
+    address_from = CharField()
+    address_to = CharField()
+
+    contact = CharField(null=True)
+
+
 class WebhookEvent(BaseModel):
     provider = CharField()
     event_id = CharField()
@@ -70,4 +85,5 @@ class EmailEvent(BaseModel):
 
 def create_tables():
     with database:
-        database.create_tables([PushWallet, PushCampaign, WebhookEvent, EmailEvent])
+        database.create_tables([
+            PushWallet, PushCampaign, WebhookEvent, EmailEvent, OrderHistory])

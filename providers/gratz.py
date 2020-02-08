@@ -2,7 +2,9 @@ import logging
 
 import requests
 
+from api.models import OrderHistory
 from config import GRATZ_API_KEY
+from minter.utils import to_pip
 from providers.minter import send_coins
 
 GRATZ_API_BASE_URL = 'https://gratz-bot.click.in.ua/api'
@@ -81,7 +83,7 @@ def gratz_order_confirm(address, order_id):
     return data
 
 
-def gratz_buy(wallet, product, confirm=True):
+def gratz_buy(wallet, product, confirm=True, contact=None):
     logging.info(f'Buy gratz product id {product}')
     response = gratz_order_create(product)
     if isinstance(response, str):
@@ -95,6 +97,13 @@ def gratz_buy(wallet, product, confirm=True):
     if isinstance(result, str):
         return result
 
+    OrderHistory.create(
+        provider='gratz',
+        product_id=product,
+        price_pip=str(to_pip(price_bip)),
+        address_from=wallet.address,
+        address_to=response['address'],
+        contact=contact)
     result = gratz_order_confirm(response['order_id'])
     logging.info(f'  order confirmation response {result}')
 
