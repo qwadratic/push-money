@@ -34,3 +34,10 @@ def get_balance(address, coin='BIP', bip=True):
 def ensure_balance(address, required_pip):
     balance_pip = get_balance(address, 'BIP', bip=False)
     return int(balance_pip) >= int(required_pip)
+
+
+def get_first_transaction(address):
+    tx = MscanAPI.get_transactions(f"tags.tx.to='{address}'", limit=1)
+    if not tx:
+        return None
+    return tx[0]['tags']['tx.from']

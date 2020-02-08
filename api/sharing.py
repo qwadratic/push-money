@@ -7,7 +7,7 @@ from api.models import PushCampaign, PushWallet
 from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
-from providers.minter import ensure_balance, get_balance, send_coins
+from providers.minter import ensure_balance, get_balance, send_coins, get_first_transaction
 from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
@@ -103,17 +103,20 @@ def campaign_close(campaign_id):
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     amount_left = get_balance(wallet.address, bip=True) - 0.01
+    return_address = get_first_transaction(wallet.address)
 
     if confirm:
         campaign.status = 'closed'
         campaign.save()
         if amount_left > 0:
-            address = 'Mx1d2111ef33c0735ae6d97a8a7948a43cca3a4bd1'
-            result = send_coins(wallet, address, amount_left, wait=True)
+            result = send_coins(wallet, return_address, amount_left, wait=True)
             if result is not True:
                 return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
-    return jsonify({'amount_left': amount_left if amount_left >= 0 else 0})
+    return jsonify({
+        'amount_left': amount_left if amount_left >= 0 else 0,
+        'return_address': return_address
+    })
 
 
 # вебхук статистики:
