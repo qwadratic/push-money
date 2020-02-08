@@ -12,9 +12,34 @@ from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
+@bp_sharing.route('/validate-source', methods=['POST'])
+def validate_google_sheet():
+    payload = request.get_json() or {}
+    spreadsheet_url = payload.get('source')
+    if not spreadsheet_url:
+        return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
+
+    spreadsheet_or_error = get_spreadsheet(spreadsheet_url)
+
+    if isinstance(spreadsheet_or_error, dict):
+        return jsonify(spreadsheet_or_error), HTTP_400_BAD_REQUEST
+    elif not isinstance(spreadsheet_or_error, Spreadsheet):
+        return jsonify({'error': 'Internal API error'}), HTTP_500_INTERNAL_SERVER_ERROR
+
+    recipients = parse_recipients(spreadsheet_or_error)
+    if not recipients:
+        return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
+
+    total_cost = sum(info['amount'] for info in recipients.values())
+    total_fee = 0.01 * len(recipients)
+    return jsonify({
+        'total_bip': total_cost + total_fee,
+        'total_emails': len(recipients)
+    })
+
 
 @bp_sharing.route('/create', methods=['POST'])
-def email_import():
+def campaign_create():
     payload = request.get_json() or {}
     sender = payload.get('sender') or None
     spreadsheet_url = payload.get('source')
@@ -60,13 +85,13 @@ def email_import():
         'campaign_id': campaign.id,
         'address': campaign_wallet.address,
         'deeplink': create_deeplink(campaign_wallet.address, campaign_cost),
-        'total_bip': campaign_cost,
-        'recipients': [{
-            'email': email,
-            'name': info['name'],
-            'amount': info['amount'],
-            'link_id': info['token']
-        } for email, info in recipients.items()]
+        'total_bip': campaign_cost
+        # 'recipients': [{
+        #     'email': email,
+        #     'name': info['name'],
+        #     'amount': info['amount'],
+        #     'link_id': info['token']
+        # } for email, info in recipients.items()]
     })
 
 
