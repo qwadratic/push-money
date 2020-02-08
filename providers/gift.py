@@ -80,6 +80,7 @@ def gift_buy(wallet, product, confirm=True):
         price_pip=str(to_pip(price_bip)),
         address_from=wallet.address,
         address_to=response['address'])
+
     result = send_coins(wallet, to=response['address'], amount=price_bip, wait=True)
     if isinstance(result, str):
         return result

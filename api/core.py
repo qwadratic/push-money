@@ -22,7 +22,8 @@ def push_create():
     password = payload.get('password')
     amount = payload.get('amount')
 
-    wallet = generate_and_save_wallet(sender, recipient, password)
+    wallet = generate_and_save_wallet(
+        sender=sender, recipient=recipient, password=password)
     response = {
         'address': wallet.address,
         'link_id': wallet.link_id
@@ -39,6 +40,7 @@ def push_info(link_id):
         return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     return jsonify({
+        'target': wallet.target,
         'sender': wallet.sender,
         'recipient': wallet.recipient,
         'is_protected': wallet.password_hash is not None

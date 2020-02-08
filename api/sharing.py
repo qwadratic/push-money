@@ -13,10 +13,14 @@ from providers.sendpulse import prepare_campaign, get_campaign_stats
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
 
-@bp_sharing.route('/email-import', methods=['POST'])
+@bp_sharing.route('/create', methods=['POST'])
 def email_import():
     payload = request.get_json() or {}
-    spreadsheet_url = payload.get('google_sheet_url')
+    sender = payload.get('sender') or None
+    spreadsheet_url = payload.get('source')
+    target = payload.get('target') or None
+    password = payload.get('password') or None
+
     if not spreadsheet_url:
         return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
 
@@ -35,16 +39,18 @@ def email_import():
     total_fee = 0.01 * len(recipients)
     campaign_cost = total_cost + total_fee
 
-    campaign_wallet = generate_and_save_wallet(None, None, None)
+    campaign_wallet = generate_and_save_wallet()
     campaign = PushCampaign.create(
         wallet_link_id=campaign_wallet.link_id,
         status='open',
         cost_pip=str(to_pip(campaign_cost)))
 
     for info in recipients.values():
+        balance = str(to_pip(info['amount']))
         wallet = generate_and_save_wallet(
-            None, None, None,
-            campaign_id=campaign.id, virtual_balance=str(to_pip(info['amount'])))
+            sender=sender, recipient=info['name'], password=password,
+            campaign_id=campaign.id, virtual_balance=balance,
+            target=target)
         info['token'] = wallet.link_id
     campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
     campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']

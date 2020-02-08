@@ -23,19 +23,17 @@ def uuid():
         return link_id
 
 
-def generate_and_save_wallet(sender, recipient, password, campaign_id=None, virtual_balance='0'):
+def generate_and_save_wallet(**kwargs):
+    password = kwargs.pop('password', None)
+    password_hash = pbkdf2_sha256.hash(password) if password is not None else None
+
     link_id = uuid()
     wallet = MinterWallet.create()
-    w = PushWallet.create(
-        campaign_id=campaign_id,
-        virtual_balance=virtual_balance,
+    return PushWallet.create(
         link_id=link_id,
         address=wallet['address'],
         mnemonic=wallet['mnemonic'],
-        sender=sender,
-        recipient=recipient,
-        password_hash=pbkdf2_sha256.hash(password) if password is not None else None)
-    return w
+        password_hash=password_hash, **kwargs)
 
 
 def get_address_balance(address, virtual=None):
@@ -72,7 +70,8 @@ def get_address_balance(address, virtual=None):
 def push_resend(wallet, new_password=None, sender=None, recipient=None, amount=None):
     if not amount:
         return 'Amount should be >0'
-    new_wallet = generate_and_save_wallet(sender, recipient, new_password)
+    new_wallet = generate_and_save_wallet(
+        sender=sender, recipient=recipient, new_password=new_password)
     result = send_coins(wallet, new_wallet.address, amount, wait=True)
     if isinstance(result, str):
         return result
