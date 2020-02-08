@@ -12,13 +12,20 @@ GIFT_API_BASE_URL = 'http://minterfood.ru/miniapi/create_pay.php'
 
 
 def gift_product_list():
+    good = []
+    ya_food = ['y1000', 'y2000', 'y3000']
+    for product in ya_food:
+        if isinstance(gift_order_create(product), dict):
+            good.append(product)
     return {
         'food': {
             'Яндекс.Еда': [
-                {'option': 'gift-y1000', 'value': 1000, 'currency': 'RUB'},
-                {'option': 'gift-y2000', 'value': 2000, 'currency': 'RUB'},
-                {'option': 'gift-y3000', 'value': 3000, 'currency': 'RUB'}
-            ]
+                {
+                    'option': f'gift-{p}',
+                    'value': int(p[1:]),
+                    'currency': 'RUB',
+                    'available': p in good
+                } for p in ya_food]
         }
     }, {'option': 'gift-t1', 'value': 1, 'currency': 'BIP'}
 
