@@ -8,7 +8,8 @@ from minter.helpers import calc_bip_values
 from minter.utils import to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
-from providers.gift import gift_buy
+from providers.gift import gift_buy, gift_product_list
+from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
@@ -69,51 +70,34 @@ def spend_balance(wallet: PushWallet, option, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_coins,
-        'y-food': gift_buy,
     }
-    return spend_option_fns[option](wallet, **kwargs)
+    fn = spend_option_fns.get(option)
+
+    # genius
+    if 'gift' in option:
+        fn = gift_buy
+        kwargs['product'] = option.split('-')[1]
+    if 'gratz' in option:
+        fn = gratz_buy
+        kwargs['product'] = option.split('-')[1]
+
+    if not fn:
+        return 'Spend option is not supported yet'
+    return fn(wallet, **kwargs)
 
 
 def get_spend_categories():
-    # Пока что Mock
-    #
-    # Заметка по transfer/withdrawal
-    # Конечное видение - разделить вывод и пересылку на две категории, но механика одна:
-    #         выбор опции (карта|минтер|биток|qiwi и т. д.)
-    #         ввод реквизитов
-    #         магия
-    # В случае withdraw - выбранные реквизиты запоминаются и закрепляются за юзером
-    # В следующий раз при выборе withdraw эти реквизиты предлагаются автоматически
-    # В случае transfer - деньги просто переводятся
-    #   на этот случай на фронте есть доп. возможность - скопировать текущую ссылку на push
-    #   (?) мб будет история и можно выбрать получателя из истории
-    #
-    # Пока что будем отдавать только transfer, чтобы никого не запутать
+    # все еще mock, рано создавать абстрактную модель
+    standalone_options = ['transfer-minter', 'resend', 'mobile']
 
-    top_categories = ['transfer', 'mobile', 'taxi', 'charity', 'lottery']
-    other_categories = [
-        'bills', 'services', 'food',
-        'transport', 'offers', 'games',
-        'fuel', 'gifts', 'entertainment'
-    ]
+    gratz_products, gratz_test_product = gratz_product_list()
+    gift_products, gift_test_product = gift_product_list()
 
-    enabled_categories = ['transfer', 'mobile']
-    enabled_options = ['transfer-minter']
+    # так делать норм, пока категории не пересекаются
+    product_tree = {**gratz_products, **gift_products}
 
-    category_options = {
-        'transfer': ['transfer-minter', 'transfer-card'],
+    return {
+        'others': standalone_options,
+        'certificates': product_tree,
+        'test': [gratz_test_product, gift_test_product]
     }
-    return [
-        {
-            'category': category_name,
-            'enabled': category_name in enabled_categories,
-            'top': category_name in top_categories,
-            'spend_options': [
-                {
-                    'option': option_name,
-                    'enabled': option_name in enabled_options
-                }
-                for option_name in category_options.get(category_name, [])
-            ]
-        } for category_name in top_categories + other_categories
-    ]
