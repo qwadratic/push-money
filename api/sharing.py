@@ -3,7 +3,7 @@ from gspread import Spreadsheet
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND
 from api.logic.core import generate_and_save_wallet
-from api.models import PushCampaign, PushWallet
+from api.models import PushCampaign, PushWallet, EmailEvent
 from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
@@ -85,6 +85,13 @@ def campaign_stats(campaign_id):
     if stats['finished']:
         campaign.status = 'completed'
         campaign.save()
+
+    # EmailEvent.select(EmailEvent) \
+    #     .where(
+    #         (EmailEvent.campaign_id == campaign.sendpulse_campaign_id |
+    #          EmailEvent.addressbook_id == campaign.sendpulse_addressbook_id) &
+    #         EmailEvent.event.in_(['spam', 'open', 'redirect'])) \
+    #     .order_by(EmailEvent.timestamp.asc())
     return stats
 
 

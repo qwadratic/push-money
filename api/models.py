@@ -2,7 +2,7 @@ import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
     BooleanField
-from playhouse.postgres_ext import JSONField as pgJSONField
+from playhouse.postgres_ext import JSONField as pgJSONField, DateTimeField
 from playhouse.sqlite_ext import JSONField as sqliteJSONField
 
 from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
@@ -55,6 +55,19 @@ class WebhookEvent(BaseModel):
     event_data = JSONField()
 
 
+class EmailEvent(BaseModel):
+    timestamp = DateTimeField()
+    # spam, open, redirect
+    # unsubscription, new_email, delete, task_status_update
+    event = CharField()
+    email = CharField(null=True)
+
+    addressbook_id = IntegerField(null=True)
+    campaign_id = IntegerField(null=True)  # task_id
+
+    event_data = JSONField(null=True)
+
+
 def create_tables():
     with database:
-        database.create_tables([PushWallet, PushCampaign, WebhookEvent])
+        database.create_tables([PushWallet, PushCampaign, WebhookEvent, EmailEvent])
