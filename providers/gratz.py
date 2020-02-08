@@ -95,7 +95,7 @@ def gratz_buy(wallet, product, confirm=True):
     if isinstance(result, str):
         return result
 
-    result = gratz_order_confirm(wallet.address, response['order_id'])
+    result = gratz_order_confirm(response['order_id'])
     logging.info(f'  order confirmation response {result}')
 
     if not result.get('success'):
