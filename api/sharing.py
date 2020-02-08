@@ -143,9 +143,9 @@ def campaign_close(campaign_id):
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
 
     # временно
-    if campaign.status != 'completed':
-        return jsonify({
-            'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
+    # if campaign.status != 'completed':
+    #     return jsonify({
+    #         'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
     confirm = bool(int(request.args.get('confirm', 0)))
 
