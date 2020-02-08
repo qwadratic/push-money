@@ -92,13 +92,24 @@ def make_spend(link_id):
     if not wallet:
         return jsonify({'success': False, 'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
-    if not wallet.auth(password):
-        return jsonify({'success': False, 'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
-
     if 'option' not in payload:
         return jsonify({'success': False, 'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
 
-    result = spend_balance(wallet, payload['option'], **payload.get('params', {}))
+    new_password = None
+    option = payload['option']
+    if password and option == 'resend':
+        new_password = password
+        password = None
+
+    if not wallet.auth(password):
+        return jsonify({'success': False, 'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+
+    confirm = bool(int(payload.get('confirm', 1)))
+    params = payload.get('params', {})
+    if option == 'resend':
+        params['new_password'] = new_password
+
+    result = spend_balance(wallet, option, confirm=confirm, **params)
     if isinstance(result, str):
         return jsonify({'success': False, 'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 

