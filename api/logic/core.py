@@ -79,7 +79,7 @@ def push_resend(wallet, new_password=None, sender=None, recipient=None, amount=N
     return {'new_link_id': new_wallet.link_id}
 
 
-def spend_balance(wallet: PushWallet, option, **kwargs):
+def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_coins,
@@ -97,7 +97,7 @@ def spend_balance(wallet: PushWallet, option, **kwargs):
 
     if not fn:
         return 'Spend option is not supported yet'
-    return fn(wallet, **kwargs)
+    return fn(wallet, confirm=confirm, **kwargs)
 
 
 def get_spend_categories():
