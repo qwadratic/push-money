@@ -86,8 +86,10 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
         'resend': push_resend
     }
     fn = spend_option_fns.get(option)
+    if option not in ['transfer-minter', 'resend']:
+        kwargs['confirm'] = confirm
 
-    # genius
+    # im genius
     if 'gift' in option:
         fn = gift_buy
         kwargs['product'] = option.split('-')[1]
@@ -97,7 +99,7 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
 
     if not fn:
         return 'Spend option is not supported yet'
-    return fn(wallet, confirm=confirm, **kwargs)
+    return fn(wallet, **kwargs)
 
 
 def get_spend_categories():
