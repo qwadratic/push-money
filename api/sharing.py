@@ -12,6 +12,7 @@ from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
+
 @bp_sharing.route('/validate-source', methods=['POST'])
 def validate_google_sheet():
     payload = request.get_json() or {}
@@ -77,8 +78,8 @@ def campaign_create():
             campaign_id=campaign.id, virtual_balance=balance,
             target=target)
         info['token'] = wallet.link_id
-    campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
-    campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']
+    # campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
+    # campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']
     campaign.save()
 
     return jsonify({
@@ -109,13 +110,22 @@ def campaign_check(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/stats')
 def campaign_stats(campaign_id):
-    campaign = PushCampaign.get_or_none(id=campaign_id)
-    if not campaign:
-        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
-    stats = get_campaign_stats(campaign.sendpulse_campaign_id)
-    if stats['finished']:
-        campaign.status = 'completed'
-        campaign.save()
+    return {
+        'n_emails': 0,
+        'send_date': None,
+        'finished': False,
+        'sent': 0,
+        'delivered': 0,
+        'opened': 0,
+        'clicked': 0
+    }
+    # campaign = PushCampaign.get_or_none(id=campaign_id)
+    # if not campaign:
+    #     return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+    # stats = get_campaign_stats(campaign.sendpulse_campaign_id)
+    # if stats['finished']:
+    #     campaign.status = 'completed'
+    #     campaign.save()
 
     # EmailEvent.select(EmailEvent) \
     #     .where(
@@ -123,7 +133,7 @@ def campaign_stats(campaign_id):
     #          EmailEvent.addressbook_id == campaign.sendpulse_addressbook_id) &
     #         EmailEvent.event.in_(['spam', 'open', 'redirect'])) \
     #     .order_by(EmailEvent.timestamp.asc())
-    return stats
+    # return stats
 
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
