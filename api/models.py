@@ -31,6 +31,8 @@ class PushWallet(BaseModel):
     recipient = TextField(null=True)
     password_hash = TextField(null=True)
 
+    default_spending = CharField(null=True)
+
     def auth(self, password):
         if self.password_hash is None:
             return True

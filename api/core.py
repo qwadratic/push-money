@@ -104,7 +104,7 @@ def make_spend(link_id):
     if not wallet.auth(password):
         return jsonify({'success': False, 'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
 
-    confirm = bool(int(payload.get('confirm', 1)))
+    confirm = bool(int(request.args.get('confirm', 1)))
     params = payload.get('params', {})
     if option == 'resend':
         params['new_password'] = new_password
