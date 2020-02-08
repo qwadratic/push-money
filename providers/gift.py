@@ -56,12 +56,15 @@ def gift_order_confirm(order_id):
     return 'Gift Provider Error: No payment confirmation'
 
 
-def gift_buy(wallet, product):
+def gift_buy(wallet, product, confirm=True):
     response = gift_order_create(product)
     if isinstance(response, str):
         return response
+    price_bip = response['price_bip']
 
-    result = send_coins(wallet, to=response['address'], amount=response['price_bip'], wait=True)
+    if not confirm:
+        return {'price_bip': price_bip}
+    result = send_coins(wallet, to=response['address'], amount=price_bip, wait=True)
     if isinstance(result, str):
         return result
 

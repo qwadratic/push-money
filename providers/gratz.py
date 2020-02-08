@@ -81,14 +81,17 @@ def gratz_order_confirm(address, order_id):
     return data
 
 
-def gratz_buy(wallet, product):
+def gratz_buy(wallet, product, confirm=True):
     logging.info(f'Buy gratz product id {product}')
     response = gratz_order_create(product)
     if isinstance(response, str):
         return response
     logging.info(f'  order create response {response}')
 
-    result = send_coins(wallet, to=response['address'], amount=response['price_bip'], wait=True)
+    price_bip = response['price_bip']
+    if not confirm:
+        return {'price_bip': price_bip}
+    result = send_coins(wallet, to=response['address'], amount=price_bip, wait=True)
     if isinstance(result, str):
         return result
 
