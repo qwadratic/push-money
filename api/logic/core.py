@@ -58,7 +58,7 @@ def get_address_balance(address, virtual=None):
             }
             for coin, bip_value in balances_bip.items() if bip_value > 0
         },
-        'bip_value_total': float(bip_value_total),
+        'bip_value_total': float(bip_value_total) - 0.01,
         'usd_value_total': usd_value_total,
         'fiat_rates': {
             symbol: rate for symbol, rate in usd_rates.items()

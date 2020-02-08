@@ -33,14 +33,16 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
             result[coin] = to_bip(balance)
             continue
 
-        est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, base_coin)
-        will_get_pip, comm_pip = int(est_sell_response['will_get']), int(est_sell_response['commission'])
-        if subtract_fee and int(balance) <= comm_pip:
-            # ignore "dust" balances
-            result[coin] = Decimal(0)
-            continue
-        will_get_pip = will_get_pip - to_pip(0.1) if subtract_fee else will_get_pip
-        result[coin] = to_bip(will_get_pip)
+        # !!! TMP disable custom coin support
+
+        # est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, base_coin)
+        # will_get_pip, comm_pip = int(est_sell_response['will_get']), int(est_sell_response['commission'])
+        # if subtract_fee and int(balance) <= comm_pip:
+        #     # ignore "dust" balances
+        #     result[coin] = Decimal(0)
+        #     continue
+        # will_get_pip = will_get_pip - to_pip(0.1) if subtract_fee else will_get_pip
+        # result[coin] = to_bip(will_get_pip)
 
     return result
 

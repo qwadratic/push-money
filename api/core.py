@@ -1,11 +1,9 @@
 from flask import Blueprint, jsonify, request, url_for
-from mintersdk.sdk.wallet import MinterWallet
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
 from api.models import PushWallet, PushCampaign
 from minter.helpers import create_deeplink
-from minter.tx import send_coin_tx
 from minter.utils import to_bip
 from providers.minter import send_coins
 
