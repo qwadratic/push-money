@@ -111,8 +111,8 @@ def campaign_check(campaign_id):
 @bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
     campaign = PushCampaign.get_or_none(id=campaign_id)
-    password = request.args.get('password') or None
-    if not campaign or (password is not None and campaign.password != password):
+    password = request.args.get('password')
+    if not campaign or (campaign.password is not None and campaign.password != password):
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
 
     extended = bool(int(request.args.get('extended', "0")))
