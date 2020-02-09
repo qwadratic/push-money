@@ -19,3 +19,4 @@ SENDPULSE_API_ID = os.environ.get('SENDPULSE_API_ID')
 SENDPULSE_API_SECRET = os.environ.get('SENDPULSE_API_SECRET')
 
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
+MAIL_PASS = os.environ.get('MAIL_PASS')

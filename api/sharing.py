@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from gspread import Spreadsheet
+from peewee import fn
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND
 from api.logic.core import generate_and_save_wallet
@@ -108,30 +109,24 @@ def campaign_check(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/stats')
 def campaign_stats(campaign_id):
-    return {
-        'n_emails': 0,
-        'send_date': None,
-        'finished': False,
-        'sent': 0,
-        'delivered': 0,
-        'opened': 0,
-        'clicked': 0
-    }
-    # campaign = PushCampaign.get_or_none(id=campaign_id)
-    # if not campaign:
-    #     return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
-    # stats = get_campaign_stats(campaign.sendpulse_campaign_id)
-    # if stats['finished']:
-    #     campaign.status = 'completed'
-    #     campaign.save()
+    campaign = PushCampaign.get_or_none(id=campaign_id)
+    if not campaign:
+        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
 
-    # EmailEvent.select(EmailEvent) \
-    #     .where(
-    #         (EmailEvent.campaign_id == campaign.sendpulse_campaign_id |
-    #          EmailEvent.addressbook_id == campaign.sendpulse_addressbook_id) &
-    #         EmailEvent.event.in_(['spam', 'open', 'redirect'])) \
-    #     .order_by(EmailEvent.timestamp.asc())
-    # return stats
+    stat = campaign.recipients.select(
+        fn.COUNT(Recipient.created_at).alias('emails'),
+        fn.COUNT(Recipient.sent_at).alias('sent'),
+        fn.COUNT(Recipient.opened_at).alias('open'),
+        fn.COUNT(Recipient.linked_at).alias('clicked'))
+    if stat:
+        stat = stat[0]
+    return {
+        'emails': stat.emails,
+        'sent': stat.sent,
+        'open': stat.open,
+        'clicked': stat.clicked,
+        'finished': campaign.status in ['completed', 'closed']
+    }
 
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])

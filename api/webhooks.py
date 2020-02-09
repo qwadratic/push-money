@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, request
 
 from providers.gift import gift_webhook_controller
@@ -13,6 +15,5 @@ def gift_order_result(order_id):
 
 @bp_webhooks.route('/pixel/<mail_stat_id>', methods=['GET'])
 def pixel(mail_stat_id):
-
-    # ...
+    logging.info("PIXEL WORKS", mail_stat_id)
     return open('templates/pixel.gif', 'rb').read()
