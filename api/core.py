@@ -42,7 +42,6 @@ def push_info(link_id):
         return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
 
     return jsonify({
-        'target': wallet.target,
         'sender': wallet.sender,
         'recipient': wallet.recipient,
         'is_protected': wallet.password_hash is not None
