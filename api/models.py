@@ -43,6 +43,7 @@ class PushCampaign(BaseModel):
     wallet_link_id = CharField()
     cost_pip = CharField()
     status = CharField()
+    password = TextField(null=True)
     # status:
     # - open - создана
     # - paid - оплачена
@@ -89,7 +90,7 @@ class Recipient(BaseModel):
     def target_route(self):
         y_food_url = '/food,grocery/%D0%AF%D0%BD%D0%B4%D0%B5%D0%BA%D1%81.%D0%95%D0%B4%D0%B0/certificate/'
         b2ph_url = '/mobile'
-        return y_food_url if self.target == 'y-food' else b2ph_url if self.target == 'bip2ph' else None
+        return y_food_url if self.target == 'y-food' else b2ph_url if self.target == 'bip2ph' else ''
 
 
 def create_tables():

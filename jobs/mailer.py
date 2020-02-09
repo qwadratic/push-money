@@ -20,9 +20,7 @@ def _make_message(person, company):
     msg['From'] = sender
     msg['To'] = person.email
     msg['Subject'] = subj_template.format(name=person.name, company=company)
-    token = person.wallet_link_id
-    if person.target:
-        token += person.target_route
+    token = person.wallet_link_id + person.target_route
     message = msg_template \
         .replace('{{name}}', person.name) \
         .replace('{{amount}}', str(to_bip(person.amount_pip))) \

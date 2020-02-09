@@ -45,7 +45,8 @@ def campaign_create():
     sender = payload.get('sender') or None
     spreadsheet_url = payload.get('source')
     target = payload.get('target') or None
-    password = payload.get('password') or None
+    wallet_pass = payload.get('wallet_pass') or None
+    campaign_pass = payload.get('campaign_pass') or None
 
     if not spreadsheet_url:
         return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
@@ -70,12 +71,13 @@ def campaign_create():
         wallet_link_id=campaign_wallet.link_id,
         status='open',
         cost_pip=str(to_pip(campaign_cost)),
-        company=sender)
+        company=sender,
+        password=campaign_pass)
 
     for info in recipients.values():
         balance = str(to_pip(info['amount']))
         wallet = generate_and_save_wallet(
-            sender=sender, recipient=info['name'], password=password,
+            sender=sender, recipient=info['name'], password=wallet_pass,
             campaign_id=campaign.id, virtual_balance=balance)
         info['token'] = wallet.link_id
 
@@ -109,10 +111,11 @@ def campaign_check(campaign_id):
 @bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
     campaign = PushCampaign.get_or_none(id=campaign_id)
-    if not campaign:
+    password = request.args.get('password') or None
+    if not campaign or (password is not None and campaign.password != password):
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
 
-    extended = bool(request.args.get('extended', 0))
+    extended = bool(int(request.args.get('extended', "0")))
     if extended:
         sent_list = campaign.recipients \
             .select().where(Recipient.sent_at.is_null(False)) \
@@ -124,7 +127,8 @@ def campaign_stats(campaign_id):
                 'amount_bip': float(to_bip(r.amount_pip)),
                 'sent_at': r.sent_at,
                 'opened_at': r.opened_at,
-                'clicked_at': r.linked_at
+                'clicked_at': r.linked_at,
+                'target_route': r.target_route
             } for r in sent_list]
         })
 
@@ -154,7 +158,7 @@ def campaign_close(campaign_id):
     #     return jsonify({
     #         'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
-    confirm = bool(int(request.args.get('confirm', 0)))
+    confirm = bool(int(request.args.get('confirm', "0")))
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     amount_left = get_balance(wallet.address, bip=True) - 0.01
@@ -175,7 +179,3 @@ def campaign_close(campaign_id):
         'amount_left': amount_left if amount_left >= 0 else 0,
         'return_address': return_address
     })
-
-
-# вебхук статистики:
-#   - сохраняет детальную статистику по кампаниям
