@@ -45,9 +45,6 @@ def get_address_balance(address, virtual=None):
         balances_bip = calc_bip_values(balances)
 
     bip_value_total = sum(balances_bip.values())
-    bip_value_total -= Decimal(0.01)
-    if bip_value_total < 0:
-        bip_value_total = 0
     usd_value_total = bip_to_usdt(bip_value_total)
     usd_rates = fiat_to_usd_rates()
     return {
@@ -57,7 +54,7 @@ def get_address_balance(address, virtual=None):
                 'bip_value': float(bip_value),
                 'usd_value': bip_to_usdt(bip_value)
             }
-            for coin, bip_value in balances_bip.items() if bip_value > 0
+            for coin, bip_value in balances_bip.items()
         },
         'bip_value_total': float(bip_value_total),
         'usd_value_total': usd_value_total,

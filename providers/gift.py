@@ -16,8 +16,11 @@ def gift_product_list():
     good = []
     ya_food = ['y1000', 'y2000', 'y3000']
     for product in ya_food:
-        if isinstance(gift_order_create(product), dict):
+        response = gift_order_create(product)
+        if isinstance(response, dict):
             good.append(product)
+        else:
+            print(response)
     return {
         'food': {
             'Яндекс.Еда': [
