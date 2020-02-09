@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from pprint import pformat
 
 from flask import Blueprint, request, send_file
 
@@ -18,6 +19,7 @@ def gift_order_result(order_id):
 @bp_webhooks.route('/pixel/<mail_stat_id>', methods=['GET'])
 def pixel(mail_stat_id):
     logging.info(f"PIXEL WORKS {mail_stat_id}")
+    logging.info(pformat(request.__dict__))
     recipient = Recipient.get(id=mail_stat_id)
     recipient.opened_at = datetime.utcnow()
     recipient.save()
