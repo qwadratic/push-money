@@ -21,6 +21,7 @@ def pixel(mail_stat_id):
     logging.info(f"PIXEL WORKS {mail_stat_id}")
     logging.info(pformat(request.__dict__))
     recipient = Recipient.get(id=mail_stat_id)
-    recipient.opened_at = datetime.utcnow()
-    recipient.save()
+    if recipient.opened_at is None:
+        recipient.opened_at = datetime.utcnow()
+        recipient.save()
     return send_file(open('api/templates/pixel.gif', 'rb'), mimetype='image/gif')
