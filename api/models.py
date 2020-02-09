@@ -32,8 +32,6 @@ class PushWallet(BaseModel):
     recipient = TextField(null=True)
     password_hash = TextField(null=True)
 
-    target = CharField(null=True)
-
     def auth(self, password):
         if self.password_hash is None:
             return True
@@ -84,6 +82,14 @@ class Recipient(BaseModel):
     email = CharField()
     name = TextField()
     amount_pip = CharField()
+
+    target = CharField(null=True)
+
+    @property
+    def target_route(self):
+        y_food_url = '/food,grocery/%D0%AF%D0%BD%D0%B4%D0%B5%D0%BA%D1%81.%D0%95%D0%B4%D0%B0/certificate/'
+        b2ph_url = '/mobile'
+        return y_food_url if self.target == 'y-food' else b2ph_url if self.target == 'bip2ph' else None
 
 
 def create_tables():

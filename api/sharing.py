@@ -76,14 +76,13 @@ def campaign_create():
         balance = str(to_pip(info['amount']))
         wallet = generate_and_save_wallet(
             sender=sender, recipient=info['name'], password=password,
-            campaign_id=campaign.id, virtual_balance=balance,
-            target=target)
+            campaign_id=campaign.id, virtual_balance=balance)
         info['token'] = wallet.link_id
 
     Recipient.bulk_create([Recipient(
         email=email, campaign_id=campaign.id,
         name=info['name'], amount_pip=str(to_pip(info['amount'])),
-        wallet_link_id=info['token']
+        wallet_link_id=info['token'], target=target
     ) for email, info in recipients.items()])
 
     return jsonify({
