@@ -37,7 +37,7 @@ def ensure_balance(address, required_pip):
 
 
 def get_first_transaction(address):
-    tx = MscanAPI.get_transactions(f"tags.tx.to='{address}'", limit=1)
+    tx = MscanAPI.get_transactions(f"tags.tx.to='{address[2:]}'", limit=1)
     if not tx:
         return None
     return tx[0]['tags']['tx.from']
