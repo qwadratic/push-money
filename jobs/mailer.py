@@ -8,7 +8,7 @@ from api.models import PushCampaign, PushWallet, Recipient
 from jobs.scheduler import scheduler
 from minter.utils import to_bip
 
-msg_template = open('jobs/mail-template.html').read()
+msg_template = open('jobs/mail-pixel.html').read()
 subj_template = '[GIFT] Hi, {name}, {company} sent you a gift!'
 host = 'smtp-mail.outlook.com'
 sender = "noreply@push.money"
