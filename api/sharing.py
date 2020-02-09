@@ -6,7 +6,7 @@ from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTT
 from api.logic.core import generate_and_save_wallet
 from api.models import PushCampaign, PushWallet, Recipient
 from minter.helpers import create_deeplink
-from minter.utils import to_pip
+from minter.utils import to_pip, to_bip
 from providers.google_sheets import get_spreadsheet, parse_recipients
 from providers.minter import ensure_balance, get_balance, send_coins, get_first_transaction
 
@@ -106,11 +106,27 @@ def campaign_check(campaign_id):
     return jsonify({'result': True})
 
 
-@bp_sharing.route('/<int:campaign_id>/stats')
+@bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+
+    extended = bool(request.args.get('extended', 0))
+    if extended:
+        sent_list = campaign.recipients \
+            .select().where(Recipient.sent_at.is_null(False)) \
+            .order_by(Recipient.sent_at.asc())
+        return jsonify({
+            'finished': campaign.status in ['completed', 'closed'],
+            'recipients': [{
+                'email': r.email, 'name': r.name,
+                'amount_bip': float(to_bip(r.amount_pip)),
+                'sent_at': r.sent_at,
+                'opened_at': r.opened_at,
+                'clicked_at': r.linked_at
+            } for r in sent_list]
+        })
 
     stat = campaign.recipients.select(
         fn.COUNT(Recipient.created_at).alias('emails'),
@@ -119,13 +135,12 @@ def campaign_stats(campaign_id):
         fn.COUNT(Recipient.linked_at).alias('clicked'))
     if stat:
         stat = stat[0]
-    return {
-        'emails': stat.emails,
+    return jsonify({
         'sent': stat.sent,
         'open': stat.open,
         'clicked': stat.clicked,
         'finished': campaign.status in ['completed', 'closed']
-    }
+    })
 
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
@@ -150,6 +165,9 @@ def campaign_close(campaign_id):
         campaign.save()
         if amount_left > 0:
             result = send_coins(wallet, return_address, amount_left, wait=True)
+            # тут скорее всего есть баг - нужно еще виртуальные балансы обнулять
+            # иначе с рассылки придет челик, проверит баланс, применит виртуальный
+            # и продукт встретит его пятисоткой потому что на балансе кампании 0
             if result is not True:
                 return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 

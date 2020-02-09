@@ -31,5 +31,12 @@ stop:
 	echo Stopping app
 	-kill `grep -hs ^ gunicorn.pid` 2>/dev/null
 
+restart:
+	@make stop
+	@make run prod
+
+shell:
+	. .venv/bin/activate && python
+
 %:
 	@:
