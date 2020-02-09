@@ -11,7 +11,7 @@ def gift_order_result(order_id):
     return ''
 
 
-@bp_webhooks.route('/track/<mail_stat_id>/open', methods=['GET'])
+@bp_webhooks.route('/pixel/<mail_stat_id>', methods=['GET'])
 def pixel(mail_stat_id):
 
     # ...
