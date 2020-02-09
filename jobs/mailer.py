@@ -5,6 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from api.models import PushCampaign, PushWallet, Recipient
+from config import MAIL_PASS
 from jobs.scheduler import scheduler
 from minter.utils import to_bip
 
@@ -12,7 +13,6 @@ msg_template = open('jobs/mail-pixel.html').read()
 subj_template = '[GIFT] Hi, {name}, {company} sent you a gift!'
 host = 'smtp-mail.outlook.com'
 sender = "noreply@push.money"
-password = "bychevoz13"
 
 
 def _make_message(email, name, amount, token, company, recipient_id):
@@ -25,7 +25,7 @@ def _make_message(email, name, amount, token, company, recipient_id):
         .replace('{{amount}}', str(amount)) \
         .replace('{{token}}', token) \
         .replace('{{company}}', company) \
-        .replace('{{recipient_id}}', recipient_id)
+        .replace('{{recipient_id}}', str(recipient_id))
     msg.attach(MIMEText(message, 'html'))
     return msg
 
@@ -35,7 +35,7 @@ def send_mail(campaign):
 
     with smtplib.SMTP(host, 587) as server:
         server.starttls()
-        server.login(sender, password)
+        server.login(sender, MAIL_PASS)
 
         for person in campaign.recipients:
             msg = _make_message(
