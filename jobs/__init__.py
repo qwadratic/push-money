@@ -1,1 +1,1 @@
-from jobs.sharing import *
+from jobs.mailer import *

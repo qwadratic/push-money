@@ -3,12 +3,11 @@ from gspread import Spreadsheet
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND
 from api.logic.core import generate_and_save_wallet
-from api.models import PushCampaign, PushWallet, EmailEvent
+from api.models import PushCampaign, PushWallet, Recipient
 from minter.helpers import create_deeplink
 from minter.utils import to_pip
 from providers.google_sheets import get_spreadsheet, parse_recipients
 from providers.minter import ensure_balance, get_balance, send_coins, get_first_transaction
-from providers.sendpulse import prepare_campaign, get_campaign_stats
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
@@ -69,7 +68,8 @@ def campaign_create():
     campaign = PushCampaign.create(
         wallet_link_id=campaign_wallet.link_id,
         status='open',
-        cost_pip=str(to_pip(campaign_cost)))
+        cost_pip=str(to_pip(campaign_cost)),
+        company=sender)
 
     for info in recipients.values():
         balance = str(to_pip(info['amount']))
@@ -78,21 +78,18 @@ def campaign_create():
             campaign_id=campaign.id, virtual_balance=balance,
             target=target)
         info['token'] = wallet.link_id
-    # campaign_info = prepare_campaign(f'dev_{campaign.wallet_link_id}', recipients)
-    # campaign.sendpulse_addressbook_id = campaign_info['addressbook_id']
-    campaign.save()
+
+    Recipient.bulk_create([Recipient(
+        email=email, campaign_id=campaign.id,
+        name=info['name'], amount_pip=str(to_pip(info['amount'])),
+        wallet_link_id=info['token']
+    ) for email, info in recipients.items()])
 
     return jsonify({
         'campaign_id': campaign.id,
         'address': campaign_wallet.address,
         'deeplink': create_deeplink(campaign_wallet.address, campaign_cost),
         'total_bip': campaign_cost
-        # 'recipients': [{
-        #     'email': email,
-        #     'name': info['name'],
-        #     'amount': info['amount'],
-        #     'link_id': info['token']
-        # } for email, info in recipients.items()]
     })
 
 
@@ -104,7 +101,8 @@ def campaign_check(campaign_id):
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     if not ensure_balance(wallet.address, campaign.cost_pip):
         return jsonify({'result': False})
-
+    campaign.status = 'paid'
+    campaign.save()
     return jsonify({'result': True})
 
 

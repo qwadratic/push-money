@@ -51,7 +51,7 @@ def gift_order_create(product):
 
 
 def gift_order_confirm(order_id):
-    max_tries = 10
+    max_tries = 20
     tries = 0
     while tries <= max_tries:
         sleep(0.2)

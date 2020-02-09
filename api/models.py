@@ -41,13 +41,12 @@ class PushWallet(BaseModel):
 
 
 class PushCampaign(BaseModel):
-    sendpulse_addressbook_id = IntegerField(null=True)
-    sendpulse_campaign_id = IntegerField(null=True)
+    company = TextField(null=True)
     wallet_link_id = CharField()
     cost_pip = CharField()
     status = CharField()
     # status:
-    # - created - создана
+    # - open - создана
     # - paid - оплачена
     # - progress - рассылка идет
     # - completed - рассылка окончена
@@ -68,25 +67,26 @@ class OrderHistory(BaseModel):
 
 
 class WebhookEvent(BaseModel):
+    timestamp = DateTimeField()
     provider = CharField()
     event_id = CharField()
     event_data = JSONField()
 
 
-class EmailEvent(BaseModel):
-    timestamp = DateTimeField()
-    # spam, open, redirect
-    # unsubscription, new_email, delete, task_status_update
-    event = CharField()
-    email = CharField(null=True)
+class Recipient(BaseModel):
+    created_at = DateTimeField(default=datetime.utcnow)
+    sent_at = DateTimeField(null=True)
+    opened_at = DateTimeField(null=True)
+    linked_at = DateTimeField(null=True)
 
-    addressbook_id = IntegerField(null=True)
-    campaign_id = IntegerField(null=True)  # task_id
-
-    event_data = JSONField(null=True)
+    campaign_id = ForeignKeyField(PushCampaign, backref='recipients')
+    wallet_link_id = CharField()
+    email = CharField()
+    name = TextField()
+    amount_pip = CharField()
 
 
 def create_tables():
     with database:
         database.create_tables([
-            PushWallet, PushCampaign, WebhookEvent, EmailEvent, OrderHistory])
+            PushWallet, PushCampaign, WebhookEvent, Recipient, OrderHistory])
