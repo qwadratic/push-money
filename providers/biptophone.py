@@ -36,9 +36,9 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     tx = send_coin_tx(
         private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
-    fee = float(to_bip(tx.get_fee()))
-    min_topup = float(phone_reqs['min_bip_value']) + fee
-    effective_topup = to_send - fee
+    fee = to_bip(tx.get_fee())
+    min_topup = phone_reqs['min_bip_value'] + fee
+    effective_topup = Decimal(to_send) - fee
     if available_bip < to_send:
         return 'Not enough balance'
     if effective_topup < min_topup:
