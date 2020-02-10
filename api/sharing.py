@@ -128,7 +128,8 @@ def campaign_stats(campaign_id):
                 'sent_at': r.sent_at,
                 'opened_at': r.opened_at,
                 'clicked_at': r.linked_at,
-                'push_id': r.wallet_link_id
+                'push_id': r.wallet_link_id,
+                'target': r.target
             } for r in sent_list]
         })
 
