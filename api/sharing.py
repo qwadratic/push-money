@@ -32,7 +32,7 @@ def validate_google_sheet():
         return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
 
     total_cost = sum(info['amount'] for info in recipients.values())
-    total_fee = 0.01 * len(recipients)
+    total_fee = 0.02 * len(recipients)
     return jsonify({
         'total_bip': total_cost + total_fee,
         'total_emails': len(recipients)
