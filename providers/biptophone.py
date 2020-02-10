@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 import requests
 from mintersdk.sdk.wallet import MinterWallet
@@ -13,6 +13,9 @@ from minter.utils import to_bip
 # requests to my proxy, because my server doesn't see API host :)
 BIP2PHONE_API_URL = 'https://static.255.135.203.116.clients.your-server.de/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
+
+getcontext().prec = 6
+getcontext().rounding = ROUND_HALF_DOWN
 
 
 def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
