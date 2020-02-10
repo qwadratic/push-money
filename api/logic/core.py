@@ -5,7 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
 from minter.helpers import calc_bip_values
-from minter.utils import to_bip
+from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
 from providers.gift import gift_buy, gift_product_list
@@ -66,14 +66,20 @@ def get_address_balance(address, virtual=None):
     }
 
 
-def push_resend(wallet, new_password=None, sender=None, recipient=None, amount=None):
+def push_resend(
+        wallet,
+        new_password=None, sender=None, recipient=None, amount=None,
+        virtual=None):
     if not amount:
         return 'Amount should be >0'
+    virtual_balance = str(to_pip(amount)) if virtual else None
     new_wallet = generate_and_save_wallet(
-        sender=sender, recipient=recipient, new_password=new_password)
-    result = send_coins(wallet, new_wallet.address, amount, wait=True)
-    if isinstance(result, str):
-        return result
+        sender=sender, recipient=recipient, new_password=new_password,
+        virtual_balance=virtual_balance)
+    if not virtual:
+        result = send_coins(wallet, new_wallet.address, amount, wait=True)
+        if isinstance(result, str):
+            return result
     return {'new_link_id': new_wallet.link_id}
 
 
