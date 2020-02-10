@@ -44,7 +44,7 @@ def get_address_balance(address, virtual=None):
         balances = MscanAPI.get_balance(address)['balance']
         balances_bip = calc_bip_values(balances)
 
-    bip_value_total = sum(balances_bip.values()) - 0.01
+    bip_value_total = sum(balances_bip.values()) - Decimal(0.01)
     if bip_value_total < 0:
         bip_value_total = 0
     usd_value_total = bip_to_usdt(bip_value_total)
