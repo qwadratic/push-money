@@ -26,7 +26,7 @@ class PushWallet(BaseModel):
     mnemonic = TextField()
 
     campaign_id = IntegerField(null=True)
-    virtual_balance = CharField(default='0')
+    virtual_balance = CharField(null=True, default='0')
     seen = BooleanField(default=False)
 
     sender = TextField(null=True)
