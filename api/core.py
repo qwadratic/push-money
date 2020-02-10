@@ -63,17 +63,27 @@ def push_balance(link_id):
     # зарефакторить
     virtual_balance = None if wallet.virtual_balance == '0' else wallet.virtual_balance
     if virtual_balance is not None and not wallet.seen:
-        cmp = PushCampaign.get(id=wallet.campaign_id)
-        cmp_wallet = PushWallet.get(link_id=cmp.wallet_link_id)
-        result = send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
-        if result is not True:
-            return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
-        wallet.seen = True
-        wallet.virtual_balance = '0'
-        recipient = Recipient.get(wallet_link_id=wallet.link_id)
-        recipient.linked_at = datetime.utcnow()
-        recipient.save()
-        wallet.save()
+        if wallet.sent_from:
+            from_w = PushWallet.get(link_id=wallet.sent_from)
+            result = send_coins(from_w, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
+            if result is not True:
+                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+            wallet.seen = True
+            wallet.virtual_balance = '0'
+            wallet.save()
+        else:
+            cmp = PushCampaign.get_or_none(id=wallet.campaign_id)
+            cmp_wallet = PushWallet.get(link_id=cmp.wallet_link_id)
+            result = send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
+            if result is not True:
+                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+            wallet.seen = True
+            wallet.virtual_balance = '0'
+            recipient = Recipient.get(wallet_link_id=wallet.link_id)
+            recipient.linked_at = datetime.utcnow()
+            recipient.save()
+            wallet.save()
+
 
     balance = get_address_balance(wallet.address, virtual=virtual_balance)
     response = {

@@ -21,6 +21,7 @@ class BaseModel(Model):
 
 class PushWallet(BaseModel):
     link_id = CharField()
+    sent_from = CharField(null=True)
     address = CharField()
     mnemonic = TextField()
 

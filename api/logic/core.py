@@ -75,7 +75,7 @@ def push_resend(
     virtual_balance = str(to_pip(amount)) if virtual else None
     new_wallet = generate_and_save_wallet(
         sender=sender, recipient=recipient, new_password=new_password,
-        virtual_balance=virtual_balance)
+        virtual_balance=virtual_balance, sent_from=wallet.link_id)
     if not virtual:
         result = send_coins(wallet, new_wallet.address, amount, wait=True)
         if isinstance(result, str):
