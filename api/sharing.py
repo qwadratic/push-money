@@ -63,7 +63,7 @@ def campaign_create():
         return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
 
     total_cost = sum(info['amount'] for info in recipients.values())
-    total_fee = 0.01 * len(recipients)
+    total_fee = 0.02 * len(recipients)
     campaign_cost = total_cost + total_fee
 
     campaign_wallet = generate_and_save_wallet()
@@ -75,7 +75,7 @@ def campaign_create():
         password=campaign_pass)
 
     for info in recipients.values():
-        balance = str(to_pip(info['amount']))
+        balance = str(to_pip(info['amount'] + 0.01))
         wallet = generate_and_save_wallet(
             sender=sender, recipient=info['name'], password=wallet_pass,
             campaign_id=campaign.id, virtual_balance=balance)
