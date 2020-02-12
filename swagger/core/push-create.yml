@@ -1,47 +1,43 @@
 Create push wallet
 ---
 tags:
-  - users
-definitions:
-  - schema:
-      id: Group
-      properties:
-        name:
-          type: string
-          description: the group's name
+  - push
+summary: "Create push wallet"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
 parameters:
   - in: body
-    name: body
+    name: params
+    description: optionally specify sender, recipient, amount and password
     schema:
-      id: User
-      required:
-        - email
-        - name
+      type: object
       properties:
-        email:
+        sender:
           type: string
-          description: email for user
-        name:
+        recipient:
           type: string
-          description: name for user
-        address:
-          description: address for user
-          schema:
-            id: Address
-            properties:
-              street:
-                type: string
-              state:
-                type: string
-              country:
-                type: string
-              postalcode:
-                type: string
-        groups:
-          type: array
-          description: list of groups
-          items:
-            $ref: "#/definitions/Group"
+        amount:
+          type: number
+        password:
+          type: string
+
 responses:
-  201:
-    description: User created
+  200:
+    description: push wallet created
+    schema:
+      type: object
+      required:
+        - address
+        - link_id
+      properties:
+        address:
+          type: string
+          description: The Minter address of the push wallet
+        link_id:
+          type: string
+          description: short token to identify this push wallet
+        deeplink:
+          type: string
+          description: if amount specified, deeplink for sending a transaction to top-up the wallet
