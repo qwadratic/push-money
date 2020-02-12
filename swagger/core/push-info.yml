@@ -12,9 +12,7 @@ parameters:
     name: link_id
     required: true
     description: link_id of push wallet
-    schema:
-      type: string
-      required: true
+    type: string
 responses:
   200:
     description: push wallet info
