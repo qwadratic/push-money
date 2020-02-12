@@ -1,14 +1,13 @@
-from flask import Flask
+from flask import Flask, jsonify
+from flask_swagger import swagger
 
 from api.core import bp_api
-from api.root import bp_root
 from api.sharing import bp_sharing
 from api.webhooks import bp_webhooks
 from helpers.misc import setup_logging
 
 blueprints = [
     bp_api,
-    bp_root,
     bp_sharing,
     bp_webhooks
 ]
@@ -19,4 +18,12 @@ def app_init():
     app = Flask(__name__)
     for bp in blueprints:
         app.register_blueprint(bp)
+
+    @app.route('/')
+    def spec():
+        swag = swagger(app, from_file_keyword='swagger')
+        swag['info']['version'] = "1.0"
+        swag['info']['title'] = "My API"
+        return jsonify(swag)
+
     return app

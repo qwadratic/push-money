@@ -14,11 +14,14 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 @bp_api.route('/', methods=['GET'])
 def health():
-    return f'Api ok. <a href={url_for("root.readme")}>Guide</a>'
+    return f'Api ok. <a href="https://push.money">Swagger</a>'
 
 
 @bp_api.route('/push/create', methods=['POST'])
 def push_create():
+    """
+    swagger: swagger/core/push-create.yml
+    """
     payload = request.get_json() or {}
     sender, recipient = payload.get('sender'), payload.get('recipient')
     password = payload.get('password')
