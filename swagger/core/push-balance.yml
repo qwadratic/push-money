@@ -36,13 +36,13 @@ responses:
   404:
     description: push wallet not found
     schema:
-    type: object
-    required:
-      - error
-    properties:
-      error:
-        type: string
-        description: error message
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: error message
   401:
     description: incorrect or not specified password
     schema:
