@@ -23,7 +23,9 @@ def app_init():
     def spec():
         swag = swagger(app, from_file_keyword='swagger')
         swag['info']['version'] = "1.0"
-        swag['info']['title'] = "My API"
+        swag['info']['title'] = "Push Money API"
+        swag['info']['host'] = "push.money"
+        swag['info']['basePath'] = '/api'
         return jsonify(swag)
 
     return app
