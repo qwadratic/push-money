@@ -24,7 +24,7 @@ run:
 	elif [ "$(filter-out $@,$(MAKECMDGOALS))" == "prod" ] ; then \
 		echo "Running app with gunicorn on 127.0.0.1:8000 (logs: gunicorn.log)"; \
 		. .venv/bin/activate && \
-		gunicorn --bind 127.0.0.1:8000 wsgi:app --daemon --access-logfile ./gunicorn.log --pid gunicorn.pid; \
+		gunicorn --bind 127.0.0.1:8000 --workers=4 wsgi:app --daemon --access-logfile ./gunicorn.log --pid gunicorn.pid; \
 	fi;
 
 stop:
