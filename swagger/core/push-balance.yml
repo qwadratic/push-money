@@ -1,0 +1,65 @@
+Get push wallet balance
+---
+tags:
+  - push
+summary: "Get push wallet balance"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: link_id
+    required: true
+    description: link_id of push wallet
+    type: string
+  - in: body
+    name: params
+    description: optionally specify password if push is protected
+    schema:
+      type: object
+      properties:
+        password:
+          type: string
+responses:
+  200:
+    description: push wallet balance
+    schema:
+      type: object
+      required:
+        - address
+        - balance
+      properties:
+        address:
+          type: string
+          description: The Minter address of the push wallet
+  404:
+    description: push wallet not found
+      schema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: error message
+  401:
+    description: incorrect or not specified password
+    schema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: error message
+  500:
+    description: Internal server error (maybe this is multipush, and there is an issue with coin sending from campaign wallet)
+    schema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: error message

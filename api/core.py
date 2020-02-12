@@ -56,6 +56,9 @@ def push_info(link_id):
 
 @bp_api.route('/push/<link_id>/balance', methods=['GET', 'POST'])
 def push_balance(link_id):
+    """
+    swagger: swagger/core/push-balance.yml
+    """
     payload = request.get_json() or {}
     password = payload.get('password')
 
@@ -89,7 +92,6 @@ def push_balance(link_id):
             recipient.linked_at = datetime.utcnow()
             recipient.save()
             wallet.save()
-
 
     balance = get_address_balance(wallet.address, virtual=virtual_balance)
     response = {
