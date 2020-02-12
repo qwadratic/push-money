@@ -21,18 +21,17 @@ class BaseModel(Model):
 
 class PushWallet(BaseModel):
     link_id = CharField()
+    sent_from = CharField(null=True)
     address = CharField()
     mnemonic = TextField()
 
     campaign_id = IntegerField(null=True)
-    virtual_balance = CharField(default='0')
+    virtual_balance = CharField(null=True, default='0')
     seen = BooleanField(default=False)
 
     sender = TextField(null=True)
     recipient = TextField(null=True)
     password_hash = TextField(null=True)
-
-    target = CharField(null=True)
 
     def auth(self, password):
         if self.password_hash is None:
@@ -45,6 +44,7 @@ class PushCampaign(BaseModel):
     wallet_link_id = CharField()
     cost_pip = CharField()
     status = CharField()
+    password = TextField(null=True)
     # status:
     # - open - создана
     # - paid - оплачена
@@ -84,6 +84,14 @@ class Recipient(BaseModel):
     email = CharField()
     name = TextField()
     amount_pip = CharField()
+
+    target = CharField(null=True)
+
+    @property
+    def target_route(self):
+        y_food_url = '/food,grocery/%D0%AF%D0%BD%D0%B4%D0%B5%D0%BA%D1%81.%D0%95%D0%B4%D0%B0/certificate/'
+        b2ph_url = '/mobile'
+        return y_food_url if self.target == 'y-food' else b2ph_url if self.target == 'bip2ph' else ''
 
 
 def create_tables():

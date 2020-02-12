@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 import requests
 from mintersdk.sdk.wallet import MinterWallet
@@ -13,6 +13,9 @@ from minter.utils import to_bip
 # requests to my proxy, because my server doesn't see API host :)
 BIP2PHONE_API_URL = 'https://static.255.135.203.116.clients.your-server.de/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
+
+getcontext().prec = 6
+getcontext().rounding = ROUND_HALF_DOWN
 
 
 def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
@@ -36,9 +39,9 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     tx = send_coin_tx(
         private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'])
-    fee = float(to_bip(tx.get_fee()))
-    min_topup = float(phone_reqs['min_bip_value']) + fee
-    effective_topup = to_send - fee
+    fee = to_bip(tx.get_fee())
+    min_topup = phone_reqs['min_bip_value'] + fee
+    effective_topup = Decimal(to_send) - fee
     if available_bip < to_send:
         return 'Not enough balance'
     if effective_topup < min_topup:

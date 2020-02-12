@@ -15,17 +15,18 @@ host = 'smtp-mail.outlook.com'
 sender = "noreply@push.money"
 
 
-def _make_message(email, name, amount, token, company, recipient_id):
+def _make_message(person, company):
     msg = MIMEMultipart()
     msg['From'] = sender
-    msg['To'] = email
-    msg['Subject'] = subj_template.format(name=name, company=company)
+    msg['To'] = person.email
+    msg['Subject'] = subj_template.format(name=person.name, company=company)
+    token = person.wallet_link_id + person.target_route
     message = msg_template \
-        .replace('{{name}}', name) \
-        .replace('{{amount}}', str(amount)) \
+        .replace('{{name}}', person.name) \
+        .replace('{{amount}}', str(to_bip(person.amount_pip))) \
         .replace('{{token}}', token) \
         .replace('{{company}}', company) \
-        .replace('{{recipient_id}}', str(recipient_id))
+        .replace('{{recipient_id}}', str(person.id))
     msg.attach(MIMEText(message, 'html'))
     return msg
 
@@ -38,9 +39,7 @@ def send_mail(campaign):
         server.login(sender, MAIL_PASS)
 
         for person in campaign.recipients:
-            msg = _make_message(
-                person.email, person.name, to_bip(person.amount_pip),
-                person.wallet_link_id, company, person.id)
+            msg = _make_message(person, company)
             server.send_message(msg)
             person.sent_at = datetime.utcnow()
             person.save()

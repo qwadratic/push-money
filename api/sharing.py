@@ -6,7 +6,7 @@ from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTT
 from api.logic.core import generate_and_save_wallet
 from api.models import PushCampaign, PushWallet, Recipient
 from minter.helpers import create_deeplink
-from minter.utils import to_pip
+from minter.utils import to_pip, to_bip
 from providers.google_sheets import get_spreadsheet, parse_recipients
 from providers.minter import ensure_balance, get_balance, send_coins, get_first_transaction
 
@@ -32,7 +32,7 @@ def validate_google_sheet():
         return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
 
     total_cost = sum(info['amount'] for info in recipients.values())
-    total_fee = 0.01 * len(recipients)
+    total_fee = 0.02 * len(recipients)
     return jsonify({
         'total_bip': total_cost + total_fee,
         'total_emails': len(recipients)
@@ -45,7 +45,8 @@ def campaign_create():
     sender = payload.get('sender') or None
     spreadsheet_url = payload.get('source')
     target = payload.get('target') or None
-    password = payload.get('password') or None
+    wallet_pass = payload.get('wallet_pass') or None
+    campaign_pass = payload.get('campaign_pass') or None
 
     if not spreadsheet_url:
         return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
@@ -62,7 +63,7 @@ def campaign_create():
         return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
 
     total_cost = sum(info['amount'] for info in recipients.values())
-    total_fee = 0.01 * len(recipients)
+    total_fee = 0.02 * len(recipients)
     campaign_cost = total_cost + total_fee
 
     campaign_wallet = generate_and_save_wallet()
@@ -70,20 +71,20 @@ def campaign_create():
         wallet_link_id=campaign_wallet.link_id,
         status='open',
         cost_pip=str(to_pip(campaign_cost)),
-        company=sender)
+        company=sender,
+        password=campaign_pass)
 
     for info in recipients.values():
-        balance = str(to_pip(info['amount']))
+        balance = str(to_pip(info['amount'] + 0.01))
         wallet = generate_and_save_wallet(
-            sender=sender, recipient=info['name'], password=password,
-            campaign_id=campaign.id, virtual_balance=balance,
-            target=target)
+            sender=sender, recipient=info['name'], password=wallet_pass,
+            campaign_id=campaign.id, virtual_balance=balance)
         info['token'] = wallet.link_id
 
     Recipient.bulk_create([Recipient(
         email=email, campaign_id=campaign.id,
         name=info['name'], amount_pip=str(to_pip(info['amount'])),
-        wallet_link_id=info['token']
+        wallet_link_id=info['token'], target=target
     ) for email, info in recipients.items()])
 
     return jsonify({
@@ -107,11 +108,30 @@ def campaign_check(campaign_id):
     return jsonify({'result': True})
 
 
-@bp_sharing.route('/<int:campaign_id>/stats')
+@bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
     campaign = PushCampaign.get_or_none(id=campaign_id)
-    if not campaign:
+    password = request.args.get('password')
+    if not campaign or (campaign.password is not None and campaign.password != password):
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+
+    extended = bool(int(request.args.get('extended', "0")))
+    if extended:
+        sent_list = campaign.recipients \
+            .select().where(Recipient.sent_at.is_null(False)) \
+            .order_by(Recipient.sent_at.asc())
+        return jsonify({
+            'finished': campaign.status in ['completed', 'closed'],
+            'recipients': [{
+                'email': r.email, 'name': r.name,
+                'amount_bip': float(to_bip(r.amount_pip)),
+                'sent_at': r.sent_at,
+                'opened_at': r.opened_at,
+                'clicked_at': r.linked_at,
+                'push_id': r.wallet_link_id,
+                'target': r.target
+            } for r in sent_list]
+        })
 
     stat = campaign.recipients.select(
         fn.COUNT(Recipient.created_at).alias('emails'),
@@ -120,13 +140,12 @@ def campaign_stats(campaign_id):
         fn.COUNT(Recipient.linked_at).alias('clicked'))
     if stat:
         stat = stat[0]
-    return {
-        'emails': stat.emails,
+    return jsonify({
         'sent': stat.sent,
         'open': stat.open,
         'clicked': stat.clicked,
         'finished': campaign.status in ['completed', 'closed']
-    }
+    })
 
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
@@ -140,7 +159,7 @@ def campaign_close(campaign_id):
     #     return jsonify({
     #         'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
 
-    confirm = bool(int(request.args.get('confirm', 0)))
+    confirm = bool(int(request.args.get('confirm', "0")))
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
     amount_left = get_balance(wallet.address, bip=True) - 0.01
@@ -151,6 +170,9 @@ def campaign_close(campaign_id):
         campaign.save()
         if amount_left > 0:
             result = send_coins(wallet, return_address, amount_left, wait=True)
+            # тут скорее всего есть баг - нужно еще виртуальные балансы обнулять
+            # иначе с рассылки придет челик, проверит баланс, применит виртуальный
+            # и продукт встретит его пятисоткой потому что на балансе кампании 0
             if result is not True:
                 return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -158,7 +180,3 @@ def campaign_close(campaign_id):
         'amount_left': amount_left if amount_left >= 0 else 0,
         'return_address': return_address
     })
-
-
-# вебхук статистики:
-#   - сохраняет детальную статистику по кампаниям
