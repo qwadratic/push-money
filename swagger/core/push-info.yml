@@ -10,6 +10,7 @@ produces:
 parameters:
   - in: path
     name: link_id
+    required: true
     description: link_id of push wallet
     schema:
       type: string
@@ -35,3 +36,13 @@ responses:
         is_protected:
           type: boolean
           description: true, if password is set
+  404:
+    description: push wallet not found
+    schema:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: error message
