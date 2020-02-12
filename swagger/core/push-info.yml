@@ -1,0 +1,37 @@
+General info about push wallet
+---
+tags:
+  - push
+summary: "Get push wallet general info"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: link_id
+    description: link_id of push wallet
+    schema:
+      type: string
+      required: true
+responses:
+  200:
+    description: push wallet info
+    schema:
+      type: object
+      required:
+        - sender
+        - recipient
+        - is_protected
+      properties:
+        sender:
+          type: string
+          nullable: true
+          description: sender name
+        recipient:
+          type: string
+          nullable: true
+          description: recipient name
+        is_protected:
+          type: boolean
+          description: true, if password is set

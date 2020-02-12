@@ -40,6 +40,9 @@ def push_create():
 
 @bp_api.route('/push/<link_id>/info', methods=['GET'])
 def push_info(link_id):
+    """
+    swagger: swagger/core/push-info.yml
+    """
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
         return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND

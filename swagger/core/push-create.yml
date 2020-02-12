@@ -22,7 +22,6 @@ parameters:
           type: number
         password:
           type: string
-
 responses:
   200:
     description: push wallet created
