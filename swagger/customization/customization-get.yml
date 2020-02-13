@@ -18,6 +18,9 @@ responses:
     schema:
       type: object
       properties:
+        id:
+          type: number
+          description: customization setting id
         logo_image_url:
           type: string
           description: url of uploaded logo image to show in header of push wallet

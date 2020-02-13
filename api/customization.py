@@ -35,7 +35,7 @@ def get_customization_setting(setting_id):
     if not customization_obj:
         return jsonify({'error': 'Customization setting not found'}), HTTP_404_NOT_FOUND
 
-    response = {}
+    response = {'id': setting_id}
     if customization_obj.logo_image_id:
         logo_img = UserImage.get_or_none(id=customization_obj.logo_image_id)
         if not logo_img:
