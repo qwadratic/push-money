@@ -1,7 +1,7 @@
 Get customization setting info
 ---
 tags:
-  - customization
+  - 3. Customization - API for customized push wallet creation
 summary: "Get customization setting info"
 produces:
   - "application/json"

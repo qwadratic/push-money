@@ -1,7 +1,7 @@
 Upload an image
 ---
 tags:
-  - customization
+  - 3. Customization - API for customized push wallet creation
 summary: "Upload an image"
 consumes:
   - "multipart/form-data"

@@ -1,7 +1,7 @@
 Get available spending options
 ---
 tags:
-  - 1. push core functionality and spending
+  - 1. Core - API for push wallet core functionality and spending
 summary: "Get available spending options"
 produces:
   - "application/json"

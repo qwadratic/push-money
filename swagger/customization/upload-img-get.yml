@@ -1,7 +1,7 @@
 Get image uploaded before
 ---
 tags:
-  - customization
+  - 3. Customization - API for customized push wallet creation
 summary: "Get image uploaded before"
 produces:
   - "image/bmp"

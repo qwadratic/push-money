@@ -1,7 +1,7 @@
 General info about push wallet
 ---
 tags:
-  - 1. push core functionality and spending
+  - 1. Core - API for push wallet core functionality and spending
 summary: "Get push wallet general info"
 consumes:
   - "application/json"
