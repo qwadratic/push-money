@@ -34,6 +34,11 @@ def app_init():
         swag = swagger(app, from_file_keyword='swagger')
         swag['info']['version'] = "1.0"
         swag['info']['title'] = "Push Money API"
+        swag['tags'] = [
+            "1. Core - API for push wallet core functionality and spending",
+            "2. Sharing - API for multipush creation and distribution",
+            "3. Customization - API for customized push wallet creation"
+        ]
         swag['host'] = "push.money"
         swag['basePath'] = "/dev"
         return jsonify(swag)
