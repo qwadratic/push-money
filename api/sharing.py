@@ -121,7 +121,7 @@ def campaign_stats(campaign_id):
             .select().where(Recipient.sent_at.is_null(False)) \
             .order_by(Recipient.sent_at.asc())
         return jsonify({
-            'finished': campaign.status in ['completed', 'closed'],
+            'finished': campaign.status,
             'recipients': [{
                 'email': r.email, 'name': r.name,
                 'amount_bip': float(to_bip(r.amount_pip)),
