@@ -26,7 +26,7 @@ def app_init():
 
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
     app.config['UPLOADED_IMAGES_DEST'] = 'user_images'
-    app.config['UPLOADED_IMAGES_URL'] = '/api/upload/'
+    app.config['UPLOADED_IMAGES_URL'] = '/dev/api/upload/'
     configure_uploads(app, images)
 
     @app.route('/swagger.json')
