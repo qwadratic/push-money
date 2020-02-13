@@ -1,8 +1,8 @@
-Get available spending options
+Make spend action from push wallet
 ---
 tags:
   - push
-summary: "Get available spending options"
+summary: "Make spend action from push wallet"
 consumes:
   - "application/json"
 produces:
