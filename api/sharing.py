@@ -181,6 +181,6 @@ def campaign_close(campaign_id):
                 return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
 
     return jsonify({
-        'amount_left': amount_left if amount_left >= 0 else 0,
+        'amount_left': float(amount_left) if amount_left >= 0 else 0,
         'return_address': return_address
     })
