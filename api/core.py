@@ -109,6 +109,9 @@ def push_balance(link_id):
 
 @bp_api.route('/spend/list', methods=['GET'])
 def spend_options():
+    """
+    swagger: swagger/core/spend-list.yml
+    """
     categories = get_spend_categories()
     return jsonify(categories)
 
