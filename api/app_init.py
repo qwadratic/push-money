@@ -35,6 +35,7 @@ def app_init():
         swag['info']['version'] = "1.0"
         swag['info']['title'] = "Push Money API"
         swag['host'] = "push.money"
+        swag['basePath'] = "/dev"
         return jsonify(swag)
 
     @app.route('/swagger')

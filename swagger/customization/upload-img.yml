@@ -1,0 +1,30 @@
+Upload an image
+---
+tags:
+  - customization
+summary: "Upload an image"
+consumes:
+  - "multipart/form-data"
+produces:
+  - "application/json"
+parameters:
+  - in: formData
+    name: img
+    required: true
+    description: any image of type bmp|jpg|jpeg|jpe|png|svg
+    type: file
+responses:
+  200:
+    description: file info
+    schema:
+      type: object
+      required:
+        - id
+        - url
+      properties:
+        id:
+          type: number
+          description: id of this image in system (this id should be referenced in /custom/create-setting params)
+        url:
+          type: string
+          description: url to get this image

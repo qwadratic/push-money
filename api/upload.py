@@ -10,6 +10,9 @@ images = UploadSet('IMAGES', IMAGES)
 
 @bp_upload.route('/', methods=['POST'])
 def upload_img():
+    """
+    swagger: swagger/customization/upload-img.yml
+    """
     if 'img' not in request.files:
         return jsonify({'error': 'No image provided'}), HTTP_400_BAD_REQUEST
 
@@ -20,5 +23,8 @@ def upload_img():
 
 @bp_upload.route('/<path:filename>')
 def get_uploaded_img(filename):
+    """
+    swagger: swagger/customization/upload-img-get.yml
+    """
     config = current_app.upload_set_config.get('IMAGES')
     return send_from_directory('../' + config.destination, filename)

@@ -1,0 +1,22 @@
+Get image uploaded before
+---
+tags:
+  - customization
+summary: "Get image uploaded before"
+produces:
+  - "image/bmp"
+  - "image/gif"
+  - "image/jpeg"
+  - "image/png"
+  - "image/svg+xml"
+parameters:
+  - in: path
+    name: filename
+    required: true
+    description: filename of previously uploaded image
+    type: string
+responses:
+  200:
+    description: image file
+    schema:
+      type: file
