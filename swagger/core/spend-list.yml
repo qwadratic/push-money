@@ -8,45 +8,45 @@ produces:
 responses:
   200:
     description: Available spending categories, shops and products
-      schema:
-        type: object
-        properties:
-          others:
-            type: array
-            items:
-              type: string
-            description: Uncategorized spending options - transfer-minter, resend, mobile
-          certificates:
+    schema:
+      type: object
+      properties:
+        others:
+          type: array
+          items:
+            type: string
+          description: Uncategorized spending options - transfer-minter, resend, mobile
+        certificates:
+          schema:
+            type: object
+            properties:
+              category_name:
+                schema:
+                  type: object
+                  properties:
+                    shop_name:
+                      type: array
+                      items:
+                        schema:
+                          type: object
+                          properties:
+                            option:
+                              type: string
+                            value:
+                              type: number
+                            currency:
+                              type: string
+                            available:
+                              type: boolean
+
+          description: Product tree by categories and shops
+        test:
+          type: array
+          items:
             schema:
               type: object
               properties:
-                category_name:
-                  schema:
-                    type: object
-                    properties:
-                      shop_name:
-                        type: array
-                        items:
-                          schema:
-                            type: object
-                            properties:
-                              option:
-                                type: string
-                              value:
-                                type: number
-                              currency:
-                                type: string
-                              available:
-                                type: boolean
-
-            description: Product tree by categories and shops
-          test:
-            type: array
-            items:
-              schema:
-                type: object
-                properties:
-                  option:
-                    type: string
-                    value: number
-                    currency: string
+                option:
+                  type: string
+                  value: number
+                  currency: string
