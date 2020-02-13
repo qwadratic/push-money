@@ -1,7 +1,7 @@
 Check campaign payment status
 ---
 tags:
-  - 2. Sharing - API for multipush creation and distribution
+  - sharing
 summary: "Check campaign payment status"
 produces:
   - "application/json"

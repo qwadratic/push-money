@@ -1,7 +1,7 @@
 Create push wallet
 ---
 tags:
-  - 1. Core - API for push wallet core functionality and spending
+  - core
 summary: "Create push wallet"
 consumes:
   - "application/json"

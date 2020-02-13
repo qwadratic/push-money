@@ -1,7 +1,7 @@
 Make spend action from push wallet
 ---
 tags:
-  - 1. Core - API for push wallet core functionality and spending
+  - core
 summary: "Make spend action from push wallet"
 consumes:
   - "application/json"

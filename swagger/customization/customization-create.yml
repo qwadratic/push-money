@@ -1,7 +1,7 @@
 Create customization setting
 ---
 tags:
-  - 3. Customization - API for customized push wallet creation
+  - customization
 summary: "Create customization setting"
 consumes:
   - "application/json"

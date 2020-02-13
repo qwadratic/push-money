@@ -1,7 +1,7 @@
 Validate multipush google spreadsheet
 ---
 tags:
-  - 2. Sharing - API for multipush creation and distribution
+  - sharing
 summary: "Validate multipush google spreadsheet"
 consumes:
   - "application/json"

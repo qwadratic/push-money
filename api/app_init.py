@@ -35,9 +35,18 @@ def app_init():
         swag['info']['version'] = "1.0"
         swag['info']['title'] = "Push Money API"
         swag['tags'] = [
-            "1. Core - API for push wallet core functionality and spending",
-            "2. Sharing - API for multipush creation and distribution",
-            "3. Customization - API for customized push wallet creation"
+            {
+                "name": "core",
+                "description": "API for push wallet core functionality and spending"
+            },
+            {
+                "name": "sharing",
+                "description": "API for multipush creation and distribution"
+            },
+            {
+                "name": "customization",
+                "description": "API for customized push wallet creation"
+            },
         ]
         swag['host'] = "push.money"
         swag['basePath'] = "/dev"

@@ -1,7 +1,7 @@
 Create sharing multipush campaign
 ---
 tags:
-  - 2. Sharing - API for multipush creation and distribution
+  - sharing
 summary: "Create sharing multipush campaign"
 consumes:
   - "application/json"
