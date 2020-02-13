@@ -123,7 +123,7 @@ def campaign_check(campaign_id):
 @bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
     """
-    swagger: swagger/sharing/campaign-stats
+    swagger: swagger/sharing/campaign-stats.yml
     """
     campaign = PushCampaign.get_or_none(id=campaign_id)
     password = request.args.get('password')
