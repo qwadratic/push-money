@@ -36,6 +36,9 @@ parameters:
         email_image_id:
           type: number
           description: id of uploaded image to show in header of email (as returned by /upload endpoint)
+        email_text:
+          type: string
+          description: email body text
 responses:
   200:
     description: Succesfully created customization setting

@@ -42,3 +42,6 @@ responses:
         email_image_url:
           type: string
           description: url of uploaded image to show in header of email
+        email_text:
+          type: string
+          description: email body text
