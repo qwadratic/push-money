@@ -106,6 +106,9 @@ def campaign_create():
 
 @bp_sharing.route('/<int:campaign_id>/check-payment')
 def campaign_check(campaign_id):
+    """
+    swagger: swagger/sharing/campaign-check.yml
+    """
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND

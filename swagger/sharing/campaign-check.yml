@@ -1,0 +1,23 @@
+Check campaign payment status
+---
+tags:
+  - sharing
+summary: "Check campaign payment status"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: campaign_id
+    required: true
+    type: number
+    description: Campaign id as returned by /sharing/create
+
+responses:
+  200:
+    description: Campaign payment status
+    schema:
+      type: object
+      properties:
+        result:
+          type: boolean
+          description: true, if campaign is paid
