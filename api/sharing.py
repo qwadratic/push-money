@@ -1,3 +1,6 @@
+import decimal
+from decimal import Decimal
+
 from flask import Blueprint, request, jsonify
 from gspread import Spreadsheet
 from peewee import fn
@@ -150,6 +153,7 @@ def campaign_stats(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
 def campaign_close(campaign_id):
+    decimal.getcontext()['rounding'] = decimal.ROUND_DOWN
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
@@ -162,7 +166,7 @@ def campaign_close(campaign_id):
     confirm = bool(int(request.args.get('confirm', "0")))
 
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
-    amount_left = get_balance(wallet.address, bip=True) - 0.01
+    amount_left = round(Decimal(get_balance(wallet.address, bip=True) - 0.01), 4)
     return_address = get_first_transaction(wallet.address)
 
     if confirm:
