@@ -1,15 +1,18 @@
 from flask import Flask, jsonify, render_template
 from flask_swagger import swagger
+from flask_uploads import configure_uploads
 
 from api.core import bp_api
 from api.sharing import bp_sharing
+from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
 from helpers.misc import setup_logging
 
 blueprints = [
     bp_api,
     bp_sharing,
-    bp_webhooks
+    bp_webhooks,
+    bp_upload
 ]
 
 
@@ -18,6 +21,11 @@ def app_init():
     app = Flask(__name__)
     for bp in blueprints:
         app.register_blueprint(bp)
+
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
+    app.config['UPLOADED_IMAGES_DEST'] = 'user_images'
+    app.config['UPLOADED_IMAGES_URL'] = '/api/upload/'
+    configure_uploads(app, images)
 
     @app.route('/swagger.json')
     def spec():

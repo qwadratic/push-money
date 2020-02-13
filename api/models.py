@@ -94,7 +94,12 @@ class Recipient(BaseModel):
         return y_food_url if self.target == 'y-food' else b2ph_url if self.target == 'bip2ph' else ''
 
 
+class UserImage(BaseModel):
+    filename = TextField()
+    created_at = DateTimeField(default=datetime.utcnow)
+
+
 def create_tables():
     with database:
         database.create_tables([
-            PushWallet, PushCampaign, WebhookEvent, Recipient, OrderHistory])
+            PushWallet, PushCampaign, WebhookEvent, Recipient, OrderHistory, UserImage])
