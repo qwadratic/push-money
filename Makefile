@@ -25,6 +25,10 @@ run:
 		echo "Running app with gunicorn on 127.0.0.1:8000 (logs: gunicorn.log)"; \
 		. .venv/bin/activate && \
 		gunicorn --bind 127.0.0.1:8000 --workers=4 wsgi:app --daemon --access-logfile ./gunicorn.log --pid gunicorn.pid; \
+	elif [ "$(filter-out $@,$(MAKECMDGOALS))" == "devprod" ] ; then \
+		echo "Running app with gunicorn on 127.0.0.1:8001 (logs: gunicorn.log)"; \
+		. .venv/bin/activate && \
+		gunicorn --bind 127.0.0.1:8001 --workers=4 wsgi:app --daemon --access-logfile ./gunicorn.log --pid gunicorn.pid; \
 	fi;
 
 stop:
