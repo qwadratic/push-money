@@ -34,9 +34,10 @@ responses:
         is_protected:
           type: boolean
           description: true, if password is set
-        is_customized:
-          type: boolean
-          description: true, if customized. Rendering app should get custom settings for this wallet (see customization spec)
+        customization_id:
+          type: number
+          nullable: true
+          description: id of customization setting. Rendering app should get custom settings for this wallet (see customization spec)
   404:
     description: push wallet not found
     schema:

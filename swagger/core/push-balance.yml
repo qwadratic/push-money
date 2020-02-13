@@ -33,6 +33,17 @@ responses:
         address:
           type: string
           description: The Minter address of the push wallet
+        balance:
+          type: object
+          description: Balance of push wallet (only BIP is supported for now)
+        bip_value_total:
+          type: number
+        usd_value_total:
+          type: number
+        fiat_rates:
+          type: object
+          description: Mapping from currency to its rate in usd
+
   404:
     description: push wallet not found
     schema:

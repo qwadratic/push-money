@@ -56,7 +56,7 @@ def push_info(link_id):
         'sender': wallet.sender,
         'recipient': wallet.recipient,
         'is_protected': wallet.password_hash is not None,
-        'is_customized': wallet.customization_setting_id is not None,
+        'customization_id': wallet.customization_setting_id,
     })
 
 
