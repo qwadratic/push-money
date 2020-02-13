@@ -9,7 +9,7 @@ parameters:
   - in: path
     name: setting_id
     required: true
-    description: if of customization setting as returned by /custom/create-setting
+    description: id of customization setting as returned by /custom/create-setting
     type: number
 
 responses:

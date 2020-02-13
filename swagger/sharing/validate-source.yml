@@ -1,0 +1,34 @@
+Validate multipush google spreadsheet
+---
+tags:
+  - sharing
+summary: "Validate multipush google spreadsheet"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: body
+    name: payload
+    required: true
+    schema:
+      type: object
+      required:
+        - source
+      properties:
+        source:
+          type: string
+          description: shared google spreadsheet url
+
+responses:
+  200:
+    description: Summary of parsed recipients data
+    schema:
+      type: object
+      properties:
+        total_bip:
+          type: number
+          description: total bip to distribute (fees included)
+        total_emails:
+          type: number
+          description: number of emails to send

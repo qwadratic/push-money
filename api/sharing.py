@@ -18,6 +18,9 @@ bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
 
 @bp_sharing.route('/validate-source', methods=['POST'])
 def validate_google_sheet():
+    """
+    swagger: swagger/sharing/validate-source
+    """
     payload = request.get_json() or {}
     spreadsheet_url = payload.get('source')
     if not spreadsheet_url:
