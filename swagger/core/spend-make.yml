@@ -20,10 +20,7 @@ parameters:
     description: if used when spending is shop item, will just make order but not pay
   - in: body
     name: params
-    externalDocs:
-      description: "Find out more here"
-      url: "https://github.com/eternalflow/push-money/blob/dev/swagger/core/spend-make.yml#L22"
-    description:
+    description: option-specific params
     schema:
       type: object
       properties:
