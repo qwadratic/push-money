@@ -1,7 +1,7 @@
 Get push wallet balance
 ---
 tags:
-  - push
+  - 1. push core functionality and spending
 summary: "Get push wallet balance"
 consumes:
   - "application/json"

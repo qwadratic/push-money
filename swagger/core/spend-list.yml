@@ -1,7 +1,7 @@
 Get available spending options
 ---
 tags:
-  - push
+  - 1. push core functionality and spending
 summary: "Get available spending options"
 produces:
   - "application/json"
