@@ -22,6 +22,8 @@ parameters:
           type: number
         password:
           type: string
+        customization_setting_id:
+          type: number
 responses:
   200:
     description: push wallet created
