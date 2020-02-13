@@ -122,6 +122,9 @@ def campaign_check(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/stats', methods=['GET'])
 def campaign_stats(campaign_id):
+    """
+    swagger: swagger/sharing/campaign-stats
+    """
     campaign = PushCampaign.get_or_none(id=campaign_id)
     password = request.args.get('password')
     if not campaign or (campaign.password is not None and campaign.password != password):
@@ -133,7 +136,7 @@ def campaign_stats(campaign_id):
             .select().where(Recipient.sent_at.is_null(False)) \
             .order_by(Recipient.sent_at.asc())
         return jsonify({
-            'finished': campaign.status,
+            'status': campaign.status,
             'recipients': [{
                 'email': r.email, 'name': r.name,
                 'amount_bip': float(to_bip(r.amount_pip)),

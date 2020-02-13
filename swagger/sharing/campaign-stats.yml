@@ -1,0 +1,55 @@
+Get email campaign stats
+---
+tags:
+  - sharing
+summary: "Get email campaign stats"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: campaign_id
+    required: true
+    type: number
+    description: campaign id as returned by /sharing/create
+  - in: query
+    name: extended
+    default: "0"
+    type: string
+    description: 1 - show extended stats, 0 - show summary
+  - in: query
+    name: password
+    type: string
+    description: password to stats (temporarily in query and PBKDF2 not implemented yet)
+
+responses:
+  200:
+    description: Campaign extended stats
+    schema:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Campaign status
+          enum: ["open", "progress", "completed", "closed"]
+        recipients:
+          type: array
+          description: email recipients info
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              amount_bip:
+                type: number
+              push_id:
+                type: string
+              target:
+                type: string
+              sent_at:
+                type: string
+              opened_at:
+                type: string
+              clicked_at:
+                type: string
