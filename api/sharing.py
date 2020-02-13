@@ -144,7 +144,7 @@ def campaign_stats(campaign_id):
         'sent': stat.sent,
         'open': stat.open,
         'clicked': stat.clicked,
-        'finished': campaign.status in ['completed', 'closed']
+        'status': campaign.status
     })
 
 
