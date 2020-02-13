@@ -1,0 +1,49 @@
+Create customization setting
+---
+tags:
+  - customization
+summary: "Create customization setting"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: body
+    name: customization_settings
+    required: true
+    description: object with customization settings. all fields are optional
+    schema:
+      type: object
+      properties:
+        logo_image_id:
+          type: number
+          description: id of uploaded logo image to show in header of push wallet (as returned by /upload endpoint)
+        head_text:
+          type: string
+          description: text for push wallet header
+        background_name:
+          type: string
+          description: name of chosen background
+        animation_name:
+          type: string
+          description: name of chosen animation
+        animation_text:
+          type: string
+          description: text after animation
+        target_shop:
+          type: string
+          description: shop name (bip2ph or y-food) to highlight
+        email_image_id:
+          type: number
+          description: id of uploaded image to show in header of email (as returned by /upload endpoint)
+responses:
+  200:
+    description: Succesfully created customization setting
+    schema:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: number
+          description: customization setting id

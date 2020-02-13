@@ -9,6 +9,9 @@ bp_customization = Blueprint('customization', __name__, url_prefix='/api/custom'
 
 @bp_customization.route('/create-setting', methods=['POST'])
 def create_customization_setting():
+    """
+    swagger: swagger/customization/customization-create.yml
+    """
     payload = request.get_json() or {}
 
     setting_fields = [
@@ -25,6 +28,9 @@ def create_customization_setting():
 
 @bp_customization.route('/get-setting/<int:setting_id>', methods=['GET'])
 def get_customization_setting(setting_id):
+    """
+    swagger: swagger/customization/customization-get.yml
+    """
     customization_obj = CustomizationSetting.get_or_none(id=setting_id)
     if not customization_obj:
         return jsonify({'error': 'Customization setting not found'}), HTTP_404_NOT_FOUND

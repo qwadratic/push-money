@@ -1,0 +1,41 @@
+Get customization setting info
+---
+tags:
+  - customization
+summary: "Get customization setting info"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: setting_id
+    required: true
+    description: if of customization setting as returned by /custom/create-setting
+    type: number
+
+responses:
+  200:
+    description: Customization setting info
+    schema:
+      type: object
+      properties:
+        logo_image_url:
+          type: string
+          description: url of uploaded logo image to show in header of push wallet
+        head_text:
+          type: string
+          description: text for push wallet header
+        background_name:
+          type: string
+          description: name of chosen background
+        animation_name:
+          type: string
+          description: name of chosen animation
+        animation_text:
+          type: string
+          description: text after animation
+        target_shop:
+          type: string
+          description: shop name (bip2ph or y-food) to highlight
+        email_image_url:
+          type: string
+          description: url of uploaded image to show in header of email
