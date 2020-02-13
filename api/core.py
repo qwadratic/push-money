@@ -118,6 +118,9 @@ def spend_options():
 
 @bp_api.route('/spend/<link_id>', methods=['POST'])
 def make_spend(link_id):
+    """
+    swagger: swagger/core/spend-make.yml
+    """
     payload = request.get_json() or {}
     password = payload.get('password')
 

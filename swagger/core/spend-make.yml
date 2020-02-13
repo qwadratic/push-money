@@ -1,0 +1,67 @@
+Get available spending options
+---
+tags:
+  - push
+summary: "Get available spending options"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: link_id
+    required: true
+    description: link_id of push wallet
+    type: string
+  - in: query
+    name: confirm
+    default: 0
+    type: number
+    description: if used when spending is shop item, will just make order but not pay
+  - in: body
+    name: params
+    description:
+    schema:
+      type: object
+      properties:
+        password:
+          type: string
+          description: optionally specify password if push is protected
+        option:
+          type: string
+          description: spending option. Should be one of 'others' or shop items as returned by /spend/list
+        params:
+          type: object
+          properties:
+            new_password:
+              type: string
+              description: for 'resend' option - optionally specify password of the created push
+            phone:
+              type: string
+              description: for 'mobile' option - mobile to top-up
+            amount:
+              type: number
+              description: for 'mobile' and 'transfer-minter' options - amount to be transfered
+            to:
+              type: string
+              description: for 'transfer-minter' option - Minter address to withdraw funds
+responses:
+  200:
+    description: Successful spending
+    schema:
+      type: object
+      properties:
+        success:
+          type: boolean
+        code:
+          type: string
+          description: Gift code if spending option was gift provider product
+  500:
+    description: Unsuccessful spending (possibly provider error). See error message for details
+    schema:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
