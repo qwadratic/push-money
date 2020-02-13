@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app, send_from_directory
 from flask_uploads import UploadSet, IMAGES
 
-from api.consts import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from api.consts import HTTP_400_BAD_REQUEST
 from api.models import UserImage
 
 bp_upload = Blueprint('upload', __name__, url_prefix='/api/upload')

@@ -40,3 +40,6 @@ responses:
         deeplink:
           type: string
           description: if amount specified, deeplink for sending a transaction to top-up the wallet
+        customization_setting_id:
+          type: number
+          description: previuosly created customization setting id (see customization endpoints spec)

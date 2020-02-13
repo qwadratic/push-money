@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request, url_for
 
 from api.consts import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
-from api.models import PushWallet, PushCampaign, Recipient
+from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
 from minter.helpers import create_deeplink
 from minter.utils import to_bip
 from providers.minter import send_coins
@@ -14,7 +14,7 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 @bp_api.route('/', methods=['GET'])
 def health():
-    return f'Api ok. <a href="https://push.money">Swagger</a>'
+    return f'Api ok. <a href="{url_for("swag")}">Swagger</a>'
 
 
 @bp_api.route('/push/create', methods=['POST'])
@@ -26,9 +26,14 @@ def push_create():
     sender, recipient = payload.get('sender'), payload.get('recipient')
     password = payload.get('password')
     amount = payload.get('amount')
+    customization_setting_id = payload.get('customization_setting_id')
+    setting = CustomizationSetting.get_or_none(id=customization_setting_id)
+    if not setting:
+        jsonify({'error': 'Customization setting does not exist'}), HTTP_400_BAD_REQUEST
 
     wallet = generate_and_save_wallet(
-        sender=sender, recipient=recipient, password=password)
+        sender=sender, recipient=recipient, password=password,
+        customization_setting_id=customization_setting_id)
     response = {
         'address': wallet.address,
         'link_id': wallet.link_id
@@ -50,7 +55,8 @@ def push_info(link_id):
     return jsonify({
         'sender': wallet.sender,
         'recipient': wallet.recipient,
-        'is_protected': wallet.password_hash is not None
+        'is_protected': wallet.password_hash is not None,
+        'is_customized': wallet.customization_setting_id is not None,
     })
 
 

@@ -33,6 +33,8 @@ class PushWallet(BaseModel):
     recipient = TextField(null=True)
     password_hash = TextField(null=True)
 
+    customization_setting_id = IntegerField(null=True)
+
     def auth(self, password):
         if self.password_hash is None:
             return True
@@ -99,7 +101,20 @@ class UserImage(BaseModel):
     created_at = DateTimeField(default=datetime.utcnow)
 
 
+class CustomizationSetting(BaseModel):
+    logo_image_id = IntegerField(null=True)
+    head_text = TextField(null=True)
+    background_name = CharField(null=True)
+    animation_name = CharField(null=True)
+    animation_text = TextField(null=True)
+    target_shop = CharField(null=True)
+
+    email_image_id = IntegerField(null=True)
+    email_text = TextField(null=True)
+
+
 def create_tables():
     with database:
         database.create_tables([
-            PushWallet, PushCampaign, WebhookEvent, Recipient, OrderHistory, UserImage])
+            PushWallet, PushCampaign, WebhookEvent, Recipient,
+            OrderHistory, UserImage, CustomizationSetting])

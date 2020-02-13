@@ -18,5 +18,6 @@ python-dateutil==2.8.1
 
 flask-swagger==0.2.14
 Flask-Uploads==0.2.1
+werkzeug==0.16.1
 
 -e git://github.com/sendpulse/sendpulse-rest-api-python.git@8d86210d7335de135be156584bfa66c794dc4053#egg=pysendpulse

@@ -3,6 +3,7 @@ from flask_swagger import swagger
 from flask_uploads import configure_uploads
 
 from api.core import bp_api
+from api.customization import bp_customization
 from api.sharing import bp_sharing
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
@@ -12,7 +13,8 @@ blueprints = [
     bp_api,
     bp_sharing,
     bp_webhooks,
-    bp_upload
+    bp_upload,
+    bp_customization
 ]
 
 
