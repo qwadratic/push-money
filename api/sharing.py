@@ -165,15 +165,16 @@ def campaign_stats(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
 def campaign_close(campaign_id):
+    """
+    swagger: swagger/sharing/campaign-close.yml
+    """
     decimal.getcontext().rounding = decimal.ROUND_DOWN
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
 
-    # временно
-    # if campaign.status != 'completed':
-    #     return jsonify({
-    #         'error': f"Can stop only 'completed' campaign. Current status: {campaign.status}"}), HTTP_400_BAD_REQUEST
+    # есть баг с тем что можно закрыть кампанию без пароля, зная ее id
+    # нет проверки на статус кампании
 
     confirm = bool(int(request.args.get('confirm', "0")))
 

@@ -1,0 +1,31 @@
+Close campaign and return remaining funds
+---
+tags:
+  - sharing
+summary: "Close campaign and return remaining funds"
+produces:
+  - "application/json"
+parameters:
+  - in: path
+    name: campaign_id
+    required: true
+    type: number
+    description: campaign id as returned by /sharing/create
+  - in: query
+    name: confirm
+    default: "0"
+    type: string
+    description: 1 - return funds, 0 - get estimated result
+
+responses:
+  200:
+    description: Result of closing campaign
+    schema:
+      type: object
+      properties:
+        amount_left:
+          type: number
+          description: BIP amount to return
+        return_address:
+          type: string
+          description: Minter address to return BIPs to
