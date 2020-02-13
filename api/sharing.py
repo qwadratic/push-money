@@ -153,7 +153,7 @@ def campaign_stats(campaign_id):
 
 @bp_sharing.route('/<int:campaign_id>/close', methods=['POST'])
 def campaign_close(campaign_id):
-    decimal.getcontext()['rounding'] = decimal.ROUND_DOWN
+    decimal.getcontext().rounding = decimal.ROUND_DOWN
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
         return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
