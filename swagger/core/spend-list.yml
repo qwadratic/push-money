@@ -17,6 +17,7 @@ responses:
             type: string
           description: Uncategorized spending options - transfer-minter, resend, mobile
         certificates:
+          type: object
           schema:
             type: object
             properties:
