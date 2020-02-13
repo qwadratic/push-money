@@ -47,6 +47,9 @@ def validate_google_sheet():
 
 @bp_sharing.route('/create', methods=['POST'])
 def campaign_create():
+    """
+    swagger: swagger/sharing/campaign-create.yml
+    """
     payload = request.get_json() or {}
     sender = payload.get('sender') or None
     spreadsheet_url = payload.get('source')

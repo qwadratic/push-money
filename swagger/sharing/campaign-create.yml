@@ -1,0 +1,53 @@
+Create sharing multipush campaign
+---
+tags:
+  - sharing
+summary: "Create sharing multipush campaign"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: body
+    name: payload
+    required: true
+    schema:
+      type: object
+      required:
+        - source
+      properties:
+        source:
+          type: string
+          description: shared google spreadsheet url
+        sender:
+          type: string
+          description: sender name for each created push wallet
+        target:
+          type: string
+          description: product page for each recipient to redirect to
+          enum: ["bip2ph", "y-food"]
+        wallet_pass:
+          type: string
+          description: wallet password for each recipient
+        campaign_pass:
+          type: string
+          description: campaign stats password
+
+responses:
+  200:
+    description: Campaign payment info
+    schema:
+      type: object
+      properties:
+        total_bip:
+          type: number
+          description: campaign cost
+        campaign_id:
+          type: number
+          description: campaign id
+        address:
+          type: string
+          description: Minter wallet address to fund the campaign
+        deeplink:
+          type: string
+          description: deeplink to make campaign payment
