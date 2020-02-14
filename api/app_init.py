@@ -7,6 +7,7 @@ from api.customization import bp_customization
 from api.sharing import bp_sharing
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
+from config import DEV
 from helpers.misc import setup_logging
 
 blueprints = [
@@ -24,9 +25,10 @@ def app_init():
     for bp in blueprints:
         app.register_blueprint(bp)
 
+    app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
     app.config['UPLOADED_IMAGES_DEST'] = 'user_images'
-    app.config['UPLOADED_IMAGES_URL'] = '/dev/api/upload/'
+    app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
     configure_uploads(app, images)
 
     @app.route('/swagger.json')

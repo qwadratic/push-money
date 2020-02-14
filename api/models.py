@@ -2,16 +2,12 @@ from datetime import datetime
 
 import peeweedbevolve
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
-    BooleanField
-from playhouse.postgres_ext import JSONField as pgJSONField, DateTimeField
-from playhouse.sqlite_ext import JSONField as sqliteJSONField
+from peewee import CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, BooleanField
+from playhouse.postgres_ext import JSONField, DateTimeField
 
-from config import SQLITE_DBNAME, LOCAL, DB_USER, DB_NAME
+from config import DB_USER, DB_NAME
 
-database = SqliteDatabase(SQLITE_DBNAME) if LOCAL \
-    else PostgresqlDatabase(DB_NAME, user=DB_USER)
-JSONField = sqliteJSONField if LOCAL else pgJSONField
+database = PostgresqlDatabase(DB_NAME, user=DB_USER)
 
 
 class BaseModel(Model):
