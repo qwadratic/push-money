@@ -66,6 +66,7 @@ class OrderHistory(BaseModel):
     address_to = CharField()
 
     contact = CharField(null=True)
+    notified = BooleanField(default=False)
 
 
 class WebhookEvent(BaseModel):
