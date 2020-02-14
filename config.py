@@ -20,3 +20,6 @@ SENDPULSE_API_SECRET = os.environ.get('SENDPULSE_API_SECRET')
 
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
 MAIL_PASS = os.environ.get('MAIL_PASS')
+ADMIN_PASS = os.environ.get('ADMIN_PASS')
+SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
+APP_SECRET_KEY = os.environ.get('APP_SECRET_KEY')

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import peeweedbevolve
+from flask_security import RoleMixin, UserMixin
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import SqliteDatabase, CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, \
     BooleanField
@@ -113,8 +114,30 @@ class CustomizationSetting(BaseModel):
     email_text = TextField(null=True)
 
 
+class Role(BaseModel, RoleMixin):
+    name = CharField(unique=True)
+    description = TextField(null=True)
+
+
+class User(BaseModel, UserMixin):
+    email = TextField()
+    password = TextField()
+    active = BooleanField(default=True)
+    confirmed_at = DateTimeField(null=True)
+
+
+class UserRole(BaseModel):
+    # Because peewee does not come with built-in many-to-many
+    # relationships, we need this intermediary class to link
+    # user to roles.
+    user = ForeignKeyField(User, related_name='roles')
+    role = ForeignKeyField(Role, related_name='users')
+    name = property(lambda self: self.role.name)
+    description = property(lambda self: self.role.description)
+
+
 def create_tables():
     with database:
         database.create_tables([
             PushWallet, PushCampaign, WebhookEvent, Recipient,
-            OrderHistory, UserImage, CustomizationSetting])
+            OrderHistory, UserImage, CustomizationSetting, Role, User, UserRole])
