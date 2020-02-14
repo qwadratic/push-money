@@ -72,4 +72,6 @@ It is now used for https://yyy.cash and https://t.me/yyycashbot
 
 ### API
 
-To be described...
+API docs are hosted at https://push.money/swagger
+
+By the way, you can test every endpoint from your browser using "Try it out" button.
