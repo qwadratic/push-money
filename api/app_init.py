@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template
 from flask_swagger import swagger
-from flask_uploads import configure_uploads
+from flask_uploads import configure_uploads, patch_request_class
 
 from api.core import bp_api
 from api.customization import bp_customization
@@ -26,10 +26,10 @@ def app_init():
         app.register_blueprint(bp)
 
     app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
-    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 10 MB
     app.config['UPLOADED_IMAGES_DEST'] = 'content/user_images'
     app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
     configure_uploads(app, images)
+    patch_request_class(app)
 
     @app.route('/swagger.json')
     def spec():
