@@ -35,16 +35,16 @@ parameters:
           description: id of uploaded image to show in header of email (as returned by /upload endpoint)
         email_head_text:
           type: string
-          description: email head text (supported variables {{amount}} {{name}} {{company}})
+          description: email head text (supported variables {amount} {name} {company})
         email_body_text:
           type: string
-          description: email body text (supported variables {{amount}} {{name}} {{company}})
+          description: email body text (supported variables {amount} {name} {company})
         email_button_text:
           type: string
-          description: email button text (supported variables {{amount}} {{name}} {{company}})
+          description: email button text (supported variables {amount} {name} {company})
         email_subject_text:
           type: string
-          description: email subject text (supported variables {{amount}} {{name}} {{company}})
+          description: email subject text (supported variables {amount} {name} {company})
         target_shop:
           type: string
           description: shop name (bip2ph or y-food) to highlight

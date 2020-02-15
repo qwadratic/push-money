@@ -91,7 +91,7 @@ def campaign_check(campaign_id):
     return jsonify({'result': is_paid})
 
 
-@bp_sharing.route('/<int:campaign_id>/stats', methods=['GET', 'POST'])
+@bp_sharing.route('/<int:campaign_id>/stats', methods=['POST'])
 def campaign_stats(campaign_id):
     """
     swagger: swagger/sharing/campaign-stats.yml

@@ -33,7 +33,8 @@ def create_campaign(
         status='open',
         cost_pip=str(to_pip(cost)),
         company=sender,
-        password_hash=campaign_pass_hash)
+        password_hash=campaign_pass_hash,
+        customization_setting_id=customization_id)
 
     for info in recipients.values():
         balance = str(to_pip(info['amount'] + 0.01))
@@ -46,8 +47,7 @@ def create_campaign(
     Recipient.bulk_create([Recipient(
         email=email, campaign_id=campaign.id,
         name=info['name'], amount_pip=str(to_pip(info['amount'])),
-        wallet_link_id=info['token'], target_shop=target,
-        customization_setting_id=customization_id
+        wallet_link_id=info['token'], target_shop=target
     ) for email, info in recipients.items()], batch_size=100)
     return campaign, campaign_wallet
 
