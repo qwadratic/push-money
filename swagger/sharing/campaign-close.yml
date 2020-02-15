@@ -17,9 +17,13 @@ parameters:
     type: string
     description: 1 - return funds, 0 - get estimated result
   - in: body
-      name: password
-      type: string
-      description: campaign password
+    name: payload
+    schema:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Campaign password
 
 responses:
   200:

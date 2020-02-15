@@ -17,9 +17,13 @@ parameters:
     type: string
     description: 1 - show extended stats, 0 - show summary
   - in: body
-    name: password
-    type: string
-    description: password to stats
+    name: payload
+    schema:
+      type: object
+      properties:
+        password:
+          type: string
+          description: password to stats
 
 responses:
   200:
