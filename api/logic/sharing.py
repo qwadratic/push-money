@@ -46,7 +46,7 @@ def create_campaign(
     Recipient.bulk_create([Recipient(
         email=email, campaign_id=campaign.id,
         name=info['name'], amount_pip=str(to_pip(info['amount'])),
-        wallet_link_id=info['token'], target=target,
+        wallet_link_id=info['token'], target_shop=target,
         customization_setting_id=customization_id
     ) for email, info in recipients.items()], batch_size=100)
     return campaign, campaign_wallet
@@ -76,7 +76,7 @@ def get_campaign_stats(campaign, extended=False):
                 'opened_at': r.opened_at,
                 'clicked_at': r.linked_at,
                 'push_id': r.wallet_link_id,
-                'target': r.target
+                'target': r.target_shop
             } for r in sent_list]
         }
     result = campaign.recipients.select(
