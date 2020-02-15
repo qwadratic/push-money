@@ -26,7 +26,7 @@ def app_init():
         app.register_blueprint(bp)
 
     app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
-    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
+    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 10 MB
     app.config['UPLOADED_IMAGES_DEST'] = 'content/user_images'
     app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
     configure_uploads(app, images)
