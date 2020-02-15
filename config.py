@@ -18,4 +18,11 @@ SENDPULSE_API_ID = os.environ.get('SENDPULSE_API_ID')
 SENDPULSE_API_SECRET = os.environ.get('SENDPULSE_API_SECRET')
 
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
-MAIL_PASS = os.environ.get('MAIL_PASS')
+
+SMTP_HOST = 'smtp-mail.outlook.com'
+SMTP_PORT = 587
+EMAIL_SENDER = "noreply@push.money"
+EMAIL_PASS = os.environ.get('EMAIL_PASS')
+
+GRATZ_OWNER_EMAIL = 'amperluxe@gmail.com'
+DEV_EMAIL = 'ivan.d.kotelnikov@gmail.com'

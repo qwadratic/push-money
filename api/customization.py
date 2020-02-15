@@ -15,13 +15,14 @@ def create_customization_setting():
     payload = request.get_json() or {}
 
     setting_fields = [
-        'logo_image_id', 'head_text', 'background_name', 'animation_name',
-        'animation_text', 'target_shop', 'email_image_id', 'email_text'
+        'head_text', 'background_name', 'animation_name', 'animation_text',
+        'email_head_text', 'email_body_text', 'email_button_text', 'email_subject_text',
+        'logo_image_id', 'email_image_id',
+        'target_shop', 'only_target'
     ]
     settings = {
         f: payload.get(f) for f in setting_fields
     }
-
     customization_obj = CustomizationSetting.create(**settings)
     return jsonify({'id': customization_obj.id})
 
@@ -45,12 +46,13 @@ def get_customization_setting(setting_id):
     if customization_obj.email_image_id:
         email_img = UserImage.get_or_none(id=customization_obj.email_image_id)
         if not email_img:
-            return jsonify({'error': 'Logo image not found'}), HTTP_404_NOT_FOUND
+            return jsonify({'error': 'Email image not found'}), HTTP_404_NOT_FOUND
         response['email_image_url'] = images.url(email_img.filename)
 
     setting_fields = [
-        'head_text', 'background_name', 'animation_name',
-        'animation_text', 'target_shop', 'email_text'
+        'head_text', 'background_name', 'animation_name', 'animation_text',
+        'email_head_text', 'email_body_text', 'email_button_text', 'email_subject_text',
+        'target_shop', 'only_target'
     ]
     response.update({f: getattr(customization_obj, f, None) for f in setting_fields})
     return jsonify(response)

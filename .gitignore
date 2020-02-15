@@ -137,6 +137,6 @@ pushmoney.sqlite.bak
 /http-scratches/
 gclient-keys.json
 polygon.py
-/user_images/
+content/user_images/
 debug.log*
 *.DS_Store

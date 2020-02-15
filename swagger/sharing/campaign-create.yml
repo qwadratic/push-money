@@ -32,6 +32,9 @@ parameters:
         campaign_pass:
           type: string
           description: campaign stats password
+        customization_setting_id:
+          type: number
+          description: previuosly created customization setting id (see customization endpoints spec)
 
 responses:
   200:

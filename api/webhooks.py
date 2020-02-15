@@ -24,4 +24,4 @@ def pixel(mail_stat_id):
     if recipient.opened_at is None:
         recipient.opened_at = datetime.utcnow()
         recipient.save()
-    return send_file(open('api/templates/pixel.gif', 'rb'), mimetype='image/gif')
+    return send_file(open('content/pixel.gif', 'rb'), mimetype='image/gif')

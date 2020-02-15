@@ -36,12 +36,24 @@ responses:
         animation_text:
           type: string
           description: text after animation
+        email_image_url:
+          type: string
+          description: url of uploaded image to show in email body
+        email_head_text:
+          type: string
+          description: email head text (supported variables {{amount}} {{name}} {{company}})
+        email_body_text:
+          type: string
+          description: email body text (supported variables {{amount}} {{name}} {{company}})
+        email_button_text:
+          type: string
+          description: email button text (supported variables {{amount}} {{name}} {{company}})
+        email_subject_text:
+          type: string
+          description: email subject text (supported variables {{amount}} {{name}} {{company}})
         target_shop:
           type: string
           description: shop name (bip2ph or y-food) to highlight
-        email_image_url:
-          type: string
-          description: url of uploaded image to show in header of email
-        email_text:
-          type: string
-          description: email body text
+        only_target:
+          type: boolean
+          description: true, if other shops except 'target_shop' are restricted (not implemented yet)

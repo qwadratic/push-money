@@ -23,6 +23,9 @@ responses:
         - recipient
         - is_protected
       properties:
+        seen:
+          type: boolean
+          description: true, if wallet was opened before (opened means successfull /push/balance request)
         sender:
           type: string
           nullable: true

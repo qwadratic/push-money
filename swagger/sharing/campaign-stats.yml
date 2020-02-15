@@ -16,10 +16,10 @@ parameters:
     default: "0"
     type: string
     description: 1 - show extended stats, 0 - show summary
-  - in: query
+  - in: body
     name: password
     type: string
-    description: password to stats (temporarily in query and PBKDF2 not implemented yet)
+    description: password to stats
 
 responses:
   200:
@@ -27,13 +27,26 @@ responses:
     schema:
       type: object
       properties:
+        customization_id:
+          type: number
+          nullable: true
+          description: id of customization setting. Rendering app can use this to show wallet/email preview
         status:
           type: string
           description: Campaign status
           enum: ["open", "progress", "completed", "closed"]
+        sent:
+          type: number
+          description: Number of emails sent (extended=0)
+        open:
+          type: number
+          description: Number of emails opened (extended=0)
+        clicked:
+          type: number
+          description: Number of emails clicked (extended=0)
         recipients:
           type: array
-          description: email recipients info
+          description: email recipients info (extended=1)
           items:
             type: object
             properties:

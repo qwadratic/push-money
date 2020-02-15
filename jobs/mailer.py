@@ -4,17 +4,20 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from api.models import PushCampaign, PushWallet, OrderHistory
-from config import MAIL_PASS
+from api.models import PushCampaign, PushWallet, OrderHistory, CustomizationSetting, UserImage
+from config import EMAIL_PASS, SMTP_HOST, EMAIL_SENDER, GRATZ_OWNER_EMAIL, DEV_EMAIL, SMTP_PORT
 from jobs.scheduler import scheduler
 from minter.utils import to_bip
 
-msg_template = open('jobs/mail-pixel.html').read()
-subj_template = '[GIFT] Hi, {name}, {company} sent you a gift!'
-host = 'smtp-mail.outlook.com'
-sender = "noreply@push.money"
-GRATZ_OWNER_EMAIL = 'amperluxe@gmail.com'
-DEV_EMAIL = 'ivan.d.kotelnikov@gmail.com'
+SHARING_MSG_TMPL = open('content/mail-pixel.html').read()
+SHARING_TMPL_DEFAULT_VARS = {
+    'email_image_url': 'https://s7316426.sendpul.se/files/emailservice/userfiles/bd1aa7bbad3801dda999d8e93d0b4c287316426/Frame_6_email_1.png',
+    'email_head_text': '{name}, Вы получили подарок от {company} — {amount} BIP!',
+    'email_body_text': 'Нажмите на кнопку, чтобы потратить их или вывести на свой Minter-кошелек.',
+    'email_button_text': 'Открыть кошелек',
+    'email_subject_text': '[YYY] Привет, {name}! Тебе подарок от {company}'
+}
+
 GRATZ_NOTIFICATION_TMPL = """\
 Subject: [YYY important] New order
 
@@ -24,35 +27,52 @@ API response: {api_response}
 """
 
 
-def _make_message(person, company):
+def build_custom_email(person, campaign):
+    name, company, amount, recipient_id = \
+        person.name, campaign.company, str(to_bip(person.amount_pip)), str(person.id)
+    customization = CustomizationSetting.get_or_none(id=campaign.customization_setting_id)
+
+    msg_variables_tmpl = SHARING_TMPL_DEFAULT_VARS.copy()
+    if customization:
+        changes = {
+            'email_image_url': UserImage.get_or_none(id=customization.email_image_id),
+            'email_head_text': customization.email_head_text,
+            'email_body_text': customization.email_body_text,
+            'email_button_text': customization.email_button_text,
+            'email_subject_text': customization.email_subject_text,
+        }
+        msg_variables_tmpl.update(**{k: v for k, v in changes.items() if v is not None})
+    msg_variables = {
+        k: v.format(name=name, company=company, amount=amount)
+        for k, v in msg_variables_tmpl.items()
+    }
+
     msg = MIMEMultipart()
-    msg['From'] = sender
+    msg['From'] = EMAIL_SENDER
     msg['To'] = person.email
-    msg['Subject'] = subj_template.format(name=person.name, company=company)
-    token = person.wallet_link_id + person.target_route
-    message = msg_template \
-        .replace('{{name}}', person.name) \
-        .replace('{{amount}}', str(to_bip(person.amount_pip))) \
-        .replace('{{token}}', token) \
-        .replace('{{company}}', company) \
-        .replace('{{recipient_id}}', str(person.id))
-    msg.attach(MIMEText(message, 'html'))
+    msg['Subject'] = msg_variables['email_subject_text']
+    html_body = SHARING_MSG_TMPL \
+        .replace('{{email_image_url}}', msg_variables['email_image_url']) \
+        .replace('{{email_head_text}}', msg_variables['email_head_text']) \
+        .replace('{{email_body_text}}', msg_variables['email_body_text']) \
+        .replace('{{email_button_text}}', msg_variables['email_button_text']) \
+        .replace('{{token}}', person.wallet_link_id + person.target_route) \
+        .replace('{{recipient_id}}', recipient_id)
+    msg.attach(MIMEText(html_body, 'html'))
     return msg
 
 
 def send_mail(campaign):
-    company = campaign.company or 'Unknown Company'
-
-    with smtplib.SMTP(host, 587) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
         server.starttls()
-        server.login(sender, MAIL_PASS)
+        server.login(EMAIL_SENDER, EMAIL_PASS)
 
         for person in campaign.recipients:
-            msg = _make_message(person, company)
+            msg = build_custom_email(person, campaign)
             server.send_message(msg)
             person.sent_at = datetime.utcnow()
             person.save()
-            logging.info(f'[Campaign {company}] sent email to {person.email}')
+            logging.info(f'[Campaign {campaign.company}] sent email to {person.email}')
 
         campaign.status = 'completed'
         campaign.save()
@@ -80,11 +100,11 @@ def send_gratz_notification(order_id, api_response, product_name):
         contact=order.contact,
         api_response=api_response)
 
-    with smtplib.SMTP(host, 587) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
         server.starttls()
-        server.login(sender, MAIL_PASS)
+        server.login(EMAIL_SENDER, EMAIL_PASS)
         for email in [GRATZ_OWNER_EMAIL, DEV_EMAIL]:
-            server.sendmail(sender, email, message)
+            server.sendmail(EMAIL_SENDER, email, message)
         order.notified = True
         order.save()
 

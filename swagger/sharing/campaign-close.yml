@@ -16,6 +16,10 @@ parameters:
     default: "0"
     type: string
     description: 1 - return funds, 0 - get estimated result
+  - in: body
+      name: password
+      type: string
+      description: campaign password
 
 responses:
   200:
@@ -28,4 +32,4 @@ responses:
           description: BIP amount to return
         return_address:
           type: string
-          description: Minter address to return BIPs to
+          description: Destination Minter address (first sending address to campaign wallet)

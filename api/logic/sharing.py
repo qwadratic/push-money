@@ -1,4 +1,5 @@
 from gspread import Spreadsheet
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import fn
 
 from api.logic.core import generate_and_save_wallet
@@ -22,27 +23,32 @@ def get_google_sheet_data(sheet_url):
     return recipients, campaign_cost
 
 
-def create_campaign(recipients, sender, cost, cmp_pass, wall_pass, target):
+def create_campaign(
+        recipients, sender, cost,
+        campaign_pass=None, wallet_pass=None, target=None, customization_id=None):
+    campaign_pass_hash = pbkdf2_sha256.hash(campaign_pass) if campaign_pass is not None else None
     campaign_wallet = generate_and_save_wallet()
     campaign = PushCampaign.create(
         wallet_link_id=campaign_wallet.link_id,
         status='open',
         cost_pip=str(to_pip(cost)),
         company=sender,
-        password=cmp_pass)
+        password_hash=campaign_pass_hash)
 
     for info in recipients.values():
         balance = str(to_pip(info['amount'] + 0.01))
         wallet = generate_and_save_wallet(
-            sender=sender, recipient=info['name'], password=wall_pass,
-            campaign_id=campaign.id, virtual_balance=balance)
+            sender=sender, recipient=info['name'], password=wallet_pass,
+            campaign_id=campaign.id, virtual_balance=balance,
+            customization_setting_id=customization_id)
         info['token'] = wallet.link_id
 
     Recipient.bulk_create([Recipient(
         email=email, campaign_id=campaign.id,
         name=info['name'], amount_pip=str(to_pip(info['amount'])),
-        wallet_link_id=info['token'], target=target
-    ) for email, info in recipients.items()])
+        wallet_link_id=info['token'], target=target,
+        customization_setting_id=customization_id
+    ) for email, info in recipients.items()], batch_size=100)
     return campaign, campaign_wallet
 
 
@@ -61,6 +67,7 @@ def get_campaign_stats(campaign, extended=False):
             .select().where(Recipient.sent_at.is_null(False)) \
             .order_by(Recipient.sent_at.asc())
         return {
+            'customization_id': campaign.customization_setting_id,
             'status': campaign.status,
             'recipients': [{
                 'email': r.email, 'name': r.name,
@@ -78,10 +85,17 @@ def get_campaign_stats(campaign, extended=False):
         fn.COUNT(Recipient.opened_at).alias('open'),
         fn.COUNT(Recipient.linked_at).alias('clicked'))
     summary = result[0] if result else None
-    result = {'status': campaign.status, 'sent': 0, 'open': 0, 'clicked': 0}
+    result = {
+        'customization_id': campaign.customization_setting_id,
+        'status': campaign.status,
+        'sent': 0,
+        'open': 0,
+        'clicked': 0
+    }
     if not summary:
         return result
     return {
+        'customization_id': campaign.customization_setting_id,
         'sent': summary.sent,
         'open': summary.open,
         'clicked': summary.clicked,
