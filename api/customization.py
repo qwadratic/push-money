@@ -18,11 +18,12 @@ def create_customization_setting():
         'head_text', 'background_name', 'animation_name', 'animation_text',
         'email_head_text', 'email_body_text', 'email_button_text', 'email_subject_text',
         'logo_image_id', 'email_image_id',
-        'target_shop', 'only_target'
+        'target_shop'
     ]
     settings = {
         f: payload.get(f) for f in setting_fields
     }
+    settings['only_target'] = payload.get('only_target', False)
     customization_obj = CustomizationSetting.create(**settings)
     return jsonify({'id': customization_obj.id})
 
