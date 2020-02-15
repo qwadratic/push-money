@@ -36,8 +36,10 @@ def build_custom_email(person, campaign):
     msg_variables_tmpl = SHARING_TMPL_DEFAULT_VARS.copy()
     if customization:
         img = UserImage.get_or_none(id=customization.email_image_id)
+        with scheduler.app.app_context():
+            custom_img_url = images.url(img.filename) if img else None
         changes = {
-            'email_image_url': images.url(img.filename) if img else None,
+            'email_image_url': custom_img_url,
             'email_head_text': customization.email_head_text,
             'email_body_text': customization.email_body_text,
             'email_button_text': customization.email_button_text,

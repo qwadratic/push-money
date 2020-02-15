@@ -3,6 +3,7 @@ from jobs.scheduler import scheduler
 
 
 app = app_init()
+scheduler.app = app
 scheduler.start()
 
 if __name__ == '__main__':
