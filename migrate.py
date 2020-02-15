@@ -29,14 +29,16 @@ def migrate_2():
     with_pass = PushCampaign \
         .select() \
         .where(PushCampaign.password_hash.is_null(False))
+    if not with_pass:
+        return
     to_update = ValuesList([
         (c.id, pbkdf2_sha256.hash(c.password_hash))
         for c in with_pass], columns=['id', 'password_hash'], alias='passhash')
-
     PushCampaign \
         .update({'password_hash': to_update.c.password_hash}) \
         .from_(to_update) \
-        .where(PushCampaign.id == to_update.c.id)
+        .where(PushCampaign.id == to_update.c.id) \
+        .execute()
 
 
 if __name__ == '__main__':
