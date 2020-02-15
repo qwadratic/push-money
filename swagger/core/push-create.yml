@@ -16,14 +16,18 @@ parameters:
       properties:
         sender:
           type: string
+          description: affects default greeting
         recipient:
           type: string
+          description: affects default greeting
         amount:
           type: number
+          description: specify amount to get deeplink in response
         password:
           type: string
         customization_setting_id:
           type: number
+          description: previuosly created customization setting id (see customization endpoints spec)
 responses:
   200:
     description: push wallet created
@@ -42,6 +46,3 @@ responses:
         deeplink:
           type: string
           description: if amount specified, deeplink for sending a transaction to top-up the wallet
-        customization_setting_id:
-          type: number
-          description: previuosly created customization setting id (see customization endpoints spec)
