@@ -58,7 +58,7 @@ push.money API
 
     You should setup nginx reverse proxy pointing to this URL to make your app visible on the Internet.
 
-    To stop UWSGI app, execute:
+    To stop WSGI app, execute:
 
         $ make stop
 
@@ -72,6 +72,6 @@ It is now used for https://yyy.cash and https://t.me/yyycashbot
 
 ### API
 
-API docs are hosted at https://push.money/swagger
+API docs are available at https://push.money/swagger
 
-By the way, you can test every endpoint from your browser using "Try it out" button.
+You can test every endpoint from your browser using "Try it out" button.
