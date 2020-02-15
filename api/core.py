@@ -61,7 +61,7 @@ def push_info(link_id):
     })
 
 
-@bp_api.route('/push/<link_id>/balance', methods=['GET', 'POST'])
+@bp_api.route('/push/<link_id>/balance', methods=['POST'])
 def push_balance(link_id):
     """
     swagger: swagger/core/push-balance.yml
