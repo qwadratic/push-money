@@ -15,10 +15,6 @@ def migrate_1():
             'password',
             PushCampaign.password_hash.column_name),
         migrator.rename_column(
-            CustomizationSetting._meta.table_name,
-            'email_text',
-            CustomizationSetting.email_body_text.column_name),
-        migrator.rename_column(
             Recipient._meta.table_name,
             'target',
             Recipient.target_shop.column_name))
