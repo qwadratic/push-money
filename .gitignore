@@ -140,3 +140,6 @@ polygon.py
 content/user_images/
 debug.log*
 *.DS_Store
+/push-money.sublime-project
+/push-money.sublime-workspace
+/letsencrypt/

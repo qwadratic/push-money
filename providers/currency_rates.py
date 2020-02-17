@@ -53,12 +53,12 @@ def bip_to_usdt(bip_value) -> float:
     cfg = get_cfg()
 
     usdt_rate = float(cfg['bip2usdt'])
-    usdt_fee = float(cfg['usdt_comission'])
-    min_no_fee = float(cfg['bip2usdt_min_sum4nofee'])
+    # usdt_fee = float(cfg['usdt_comission'])
+    # min_no_fee = float(cfg['bip2usdt_min_sum4nofee'])
 
-    fee = usdt_fee if bip_value < min_no_fee else 0
+    # fee = usdt_fee if bip_value < min_no_fee else 0
     usdt = float(bip_value) * usdt_rate
-    return 0 if usdt <= fee else usdt - fee if bip_value > 25 else usdt
+    return usdt
 
 
 def fiat_to_usd_rates() -> Dict[str, float]:
