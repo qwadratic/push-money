@@ -71,7 +71,7 @@ class OrderHistory(BaseModel):
 
 
 class WebhookEvent(BaseModel):
-    timestamp = DateTimeField()
+    timestamp = DateTimeField(default=datetime.utcnow)
     provider = CharField()
     event_id = CharField()
     event_data = JSONField()
