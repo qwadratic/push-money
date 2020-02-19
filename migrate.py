@@ -38,6 +38,6 @@ def migrate_2():
 
 
 if __name__ == '__main__':
-    migrate_1()
+    # migrate_1()
     database.evolve(ignore_tables=['basemodel', 'passwordprotectedmodel'])
-    migrate_2()
+    # migrate_2()
