@@ -9,7 +9,8 @@ from flask_admin import Admin, helpers as admin_helpers
 
 from api.core import bp_api
 from api.customization import bp_customization
-from api.models import PushWallet, User, Role, UserRole
+from api.models import PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, UserImage, \
+    CustomizationSetting
 from api.sharing import bp_sharing
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
@@ -117,7 +118,15 @@ def app_init():
     security = Security(app, user_datastore)
 
     admin = Admin(app, name='pushmoney', template_mode='bootstrap3')
+
+    admin.add_view(SecureModelView(User))
     admin.add_view(SecureModelView(PushWallet))
+    admin.add_view(SecureModelView(PushCampaign))
+    admin.add_view(SecureModelView(OrderHistory))
+    admin.add_view(SecureModelView(WebhookEvent))
+    admin.add_view(SecureModelView(Recipient))
+    admin.add_view(SecureModelView(UserImage))
+    admin.add_view(SecureModelView(CustomizationSetting))
 
     @security.context_processor
     def security_context_processor():
@@ -126,6 +135,9 @@ def app_init():
             admin_view=admin.index_view,
             h=admin_helpers,
             get_url=url_for)
+
+    if User.get_or_none(email='admin'):
+        return app
 
     with app.app_context():
         super_role, _ = Role.get_or_create(name='superuser')
