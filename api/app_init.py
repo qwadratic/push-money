@@ -6,15 +6,16 @@ from flask_security.utils import hash_password, get_identity_attributes
 from flask_swagger import swagger
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
+from peewee import fn
 
 from api.core import bp_api
 from api.customization import bp_customization
-from api.models import PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, UserImage, \
-    CustomizationSetting
+from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
+    UserImage, CustomizationSetting
 from api.sharing import bp_sharing
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
-from config import DEV, ADMIN_PASS, SECURITY_PASSWORD_SALT, APP_SECRET_KEY
+from config import DEV, ADMIN_PASS, SECURITY_PASSWORD_SALT, APP_SECRET_KEY, APP_DATABASE
 from helpers.misc import setup_logging
 
 blueprints = [
@@ -32,6 +33,9 @@ def app_init():
     for bp in blueprints:
         app.register_blueprint(bp)
 
+    app.config['FLASK_ADMIN_SWATCH'] = 'cyborg'
+
+    app.config['DATABASE'] = APP_DATABASE
     app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
     app.config['UPLOADED_IMAGES_DEST'] = 'content/user_images'
     app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
@@ -39,9 +43,14 @@ def app_init():
     app.config['SECRET_KEY'] = APP_SECRET_KEY
     app.config['SECURITY_PASSWORD_HASH'] = "pbkdf2_sha512"
     app.config['SECURITY_PASSWORD_SALT'] = SECURITY_PASSWORD_SALT
+    app.config['SECURITY_LOGIN_URL'] = '/login/'
+    app.config['SECURITY_LOGOUT_URL'] = '/logout/'
+    app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+    app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 
     configure_uploads(app, images)
     patch_request_class(app)
+    db.init_app(app)
 
     @app.route('/swagger.json')
     def spec():
@@ -90,35 +99,23 @@ def app_init():
 
     class UserDatastore(PeeweeUserDatastore):
         def get_user(self, identifier):
-            from peewee import fn as peeweeFn
-            try:
-                return self.user_model.get(self.user_model.id == identifier)
-            except self.user_model.DoesNotExist:
-                pass
+            if isinstance(identifier, int):
+                try:
+                    return self.user_model.get(self.user_model.id == identifier)
+                except self.user_model.DoesNotExist:
+                    pass
             for attr in get_identity_attributes():
                 column = getattr(self.user_model, attr)
                 try:
                     return self.user_model.get(
-                        peeweeFn.Lower(column) == peeweeFn.Lower(identifier))
+                        fn.Lower(column) == fn.Lower(identifier))
                 except self.user_model.DoesNotExist:
                     pass
 
-        def add_role_to_user(self, user, role):
-            user, role = self._prepare_role_modify_args(user.email, role.name)
-            result = self.UserRole.select().where(
-                self.UserRole.user == user.id,
-                self.UserRole.role == role.id,
-            )
-            if result.count():
-                return False
-            else:
-                self.put(self.UserRole.create(user=user.id, role=role.id))
-                return True
-    user_datastore = UserDatastore(None, User, Role, UserRole)
+    user_datastore = UserDatastore(db, User, Role, UserRole)
     security = Security(app, user_datastore)
 
     admin = Admin(app, name='pushmoney', template_mode='bootstrap3')
-
     admin.add_view(SecureModelView(User))
     admin.add_view(SecureModelView(PushWallet))
     admin.add_view(SecureModelView(PushCampaign))
@@ -136,10 +133,11 @@ def app_init():
             h=admin_helpers,
             get_url=url_for)
 
-    if User.get_or_none(email='admin'):
-        return app
-
-    with app.app_context():
+    @app.before_first_request
+    def create_admin():
+        if User.get_or_none(email='admin'):
+            db.close_db(None)
+            return
         super_role, _ = Role.get_or_create(name='superuser')
         user_role, _ = Role.get_or_create(name='user')
         user_datastore.create_user(
@@ -147,5 +145,5 @@ def app_init():
             email='admin',
             password=hash_password(ADMIN_PASS),
             roles=[user_role, super_role])
-
+        db.close_db(None)
     return app

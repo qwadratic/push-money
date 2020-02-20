@@ -10,6 +10,11 @@ TESTNET = bool(int(os.environ.get('TESTNET')))
 
 DB_NAME = os.environ.get('{}DB_NAME'.format('DEV_' if DEV else ''))
 DB_USER = os.environ.get('{}DB_USER'.format('DEV_' if DEV else ''))
+APP_DATABASE = {
+    'name': DB_NAME,
+    'engine': 'peewee.PostgresqlDatabase',
+    'user': DB_USER
+}
 
 GOOGLE_CLIENT_KEY_FILENAME = 'gclient-keys.json'
 MSCAN_APIKEY = os.environ.get('MSCAN_APIKEY')
