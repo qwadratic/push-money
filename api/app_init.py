@@ -13,6 +13,7 @@ from api.customization import bp_customization
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting
 from api.sharing import bp_sharing
+from api.surprise import bp_surprise
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
 from config import DEV, ADMIN_PASS, SECURITY_PASSWORD_SALT, APP_SECRET_KEY, APP_DATABASE
@@ -23,7 +24,8 @@ blueprints = [
     bp_sharing,
     bp_webhooks,
     bp_upload,
-    bp_customization
+    bp_customization,
+    bp_surprise
 ]
 
 
