@@ -5,6 +5,7 @@ from minter.utils import to_bip
 
 
 def send_coin_tx(pk, coin, value, to, nonce, gas_coin=BASE_COIN, payload=''):
+    to = to.strip()
     value = to_bip(value) if isinstance(value, str) else value
     tx = MinterSendCoinTx(coin, to, value, nonce=nonce, gas_coin=gas_coin, payload=payload)
     tx.sign(pk)
