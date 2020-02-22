@@ -28,6 +28,8 @@ push.money API
         TESTNET = 0
         MSCAN_APIKEY = ... # API key for https://mscan.dev
         BIP2PHONE_API_KEY = ... # API key for https://biptophone.ru/apiuser.php
+        GIFTERY_API_ID = ... # API client id for https://b2b.giftery.ru
+        GIFTERY_API_SECRET = ... # API client secret for https://b2b.giftery.ru
         
         GRATZ_API_KEY = # API key for gratz certificates provider
         MAIL_PASS = # password for noreply@push.money
