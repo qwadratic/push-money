@@ -1,21 +1,17 @@
 from datetime import datetime
 
 import peeweedbevolve
+from flask_security import RoleMixin, UserMixin
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from peewee import CharField, TextField, PostgresqlDatabase, Model, IntegerField, ForeignKeyField, BooleanField
+from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanField
+from playhouse.flask_utils import FlaskDB
 from playhouse.postgres_ext import JSONField, DateTimeField
 
-from config import DB_USER, DB_NAME
 
-database = PostgresqlDatabase(DB_NAME, user=DB_USER)
-
-
-class BaseModel(Model):
-    class Meta:
-        database = database
+db = FlaskDB()
 
 
-class PasswordProtectedModel(BaseModel):
+class PasswordProtectedModel(db.Model):
     password_hash = TextField(null=True)
 
     def auth(self, password):
@@ -56,7 +52,7 @@ class PushCampaign(PasswordProtectedModel):
     customization_setting_id = IntegerField(null=True)
 
 
-class OrderHistory(BaseModel):
+class OrderHistory(db.Model):
     timestamp = DateTimeField(default=datetime.utcnow)
 
     provider = CharField()
@@ -70,14 +66,14 @@ class OrderHistory(BaseModel):
     notified = BooleanField(default=False)
 
 
-class WebhookEvent(BaseModel):
+class WebhookEvent(db.Model):
     timestamp = DateTimeField(default=datetime.utcnow)
     provider = CharField()
     event_id = CharField()
     event_data = JSONField()
 
 
-class Recipient(BaseModel):
+class Recipient(db.Model):
     created_at = DateTimeField(default=datetime.utcnow)
     sent_at = DateTimeField(null=True)
     opened_at = DateTimeField(null=True)
@@ -98,12 +94,12 @@ class Recipient(BaseModel):
         return y_food_url if self.target_shop == 'y-food' else b2ph_url if self.target_shop == 'bip2ph' else ''
 
 
-class UserImage(BaseModel):
+class UserImage(db.Model):
     filename = TextField()
     created_at = DateTimeField(default=datetime.utcnow)
 
 
-class CustomizationSetting(BaseModel):
+class CustomizationSetting(db.Model):
     logo_image_id = IntegerField(null=True)
     head_text = TextField(null=True)
     background_name = CharField(null=True)
@@ -118,3 +114,25 @@ class CustomizationSetting(BaseModel):
 
     target_shop = CharField(null=True)
     only_target = BooleanField(default=False)
+
+
+class Role(db.Model, RoleMixin):
+    name = CharField(unique=True)
+    description = TextField(null=True)
+
+
+class User(db.Model, UserMixin):
+    email = TextField()
+    password = TextField()
+    active = BooleanField(default=True)
+    confirmed_at = DateTimeField(null=True)
+
+
+class UserRole(db.Model):
+    # Because peewee does not come with built-in many-to-many
+    # relationships, we need this intermediary class to link
+    # user to roles.
+    user = ForeignKeyField(User, related_name='roles')
+    role = ForeignKeyField(Role, related_name='users')
+    name = property(lambda self: self.role.name)
+    description = property(lambda self: self.role.description)
