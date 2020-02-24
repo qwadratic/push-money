@@ -13,6 +13,8 @@ from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
+from providers.timeloop import timeloop_top_up
+from providers.unu import unu_top_up
 
 
 def uuid():
@@ -87,10 +89,12 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_coins,
-        'resend': push_resend
+        'resend': push_resend,
+        'unu': unu_top_up,
+        'timeloop': timeloop_top_up
     }
     fn = spend_option_fns.get(option)
-    if option not in ['transfer-minter', 'resend']:
+    if option not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
         kwargs['confirm'] = confirm
 
     # im genius
@@ -108,7 +112,8 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
 
 def get_spend_categories():
     # все еще mock, рано создавать абстрактную модель
-    standalone_options = ['transfer-minter', 'resend', 'mobile']
+    standalone_options = [
+        'transfer-minter', 'resend', 'mobile', 'unu', 'timeloop']
 
     gratz_products, gratz_test_product = gratz_product_list()
     gift_products, gift_test_product = gift_product_list()
