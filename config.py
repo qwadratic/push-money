@@ -24,6 +24,8 @@ GIFTERY_API_SECRET = os.environ.get('GIFTERY_API_SECRET')
 
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
 
+BIP_WALLET = os.environ.get('BIP_WALLET')
+
 SMTP_HOST = 'smtp-mail.outlook.com'
 SMTP_PORT = 587
 EMAIL_SENDER = "noreply@push.money"

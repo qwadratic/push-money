@@ -4,7 +4,10 @@ import typing
 
 from urllib.parse import urlencode
 
-from config import GIFTERY_API_ID, GIFTERY_API_SECRET
+from api.models import PushWallet, OrderHistory
+from config import BIP_WALLET, GIFTERY_API_ID, GIFTERY_API_SECRET
+from providers.currency_rates import rub_to_bip
+from providers.minter import send_coins
 
 
 BASE_URL = 'https://ssl-api.giftery.ru/'
@@ -197,3 +200,38 @@ class GifteryAPIClient:
 
         resp_data = self._create_request('getStatus', data)
         return resp_data['data']
+
+
+def giftery_buy(wallet: PushWallet, product: int, face: int, confirm: bool = True):
+    price_bip = rub_to_bip(face)
+
+    if not confirm:
+        return {'price_bip': price_bip}
+
+    result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
+    if isinstance(result, str):
+        return result
+
+    client = GifteryAPIClient()
+
+    order_id = client.make_order({
+        'product_id': product,
+        'face': face,
+        'email_to': 'noreply@push.money',
+        'from': 'noreply@push.money',
+    })
+
+    certificate = client.get_certificate(order_id)
+
+    OrderHistory.create(
+        provider='giftery',
+        product_id=product,
+        price_pip=price_bip,
+        address_from=wallet.address,
+        address_to=BIP_WALLET
+    )
+
+    return {
+        'certificate': certificate,
+        'order_id': order_id
+    }
