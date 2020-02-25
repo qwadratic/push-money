@@ -8,7 +8,7 @@ bp_upload = Blueprint('upload', __name__, url_prefix='/api/upload')
 images = UploadSet('IMAGES', IMAGES)
 
 
-@bp_upload.route('/', methods=['POST'])
+@bp_upload.route('', methods=['POST'])
 def upload_img():
     """
     swagger: swagger/customization/upload-img.yml
