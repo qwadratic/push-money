@@ -28,7 +28,7 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
 
     result = {}
     for coin, balance in balances.items():
-        result.setdefault(coin, {})
+        # result.setdefault(coin, {})
         if coin == base_coin:
             result[coin] = to_bip(balance)
             continue
