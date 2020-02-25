@@ -9,10 +9,13 @@ from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
 from providers.gift import gift_buy, gift_product_list
+from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
+from providers.timeloop import timeloop_top_up
+from providers.unu import unu_top_up
 
 
 def uuid():
@@ -87,10 +90,12 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
         'transfer-minter': send_coins,
-        'resend': push_resend
+        'resend': push_resend,
+        'unu': unu_top_up,
+        'timeloop': timeloop_top_up
     }
     fn = spend_option_fns.get(option)
-    if option not in ['transfer-minter', 'resend']:
+    if option not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
         kwargs['confirm'] = confirm
 
     # im genius
@@ -100,6 +105,10 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     if 'gratz' in option:
         fn = gratz_buy
         kwargs['product'] = option.split('-')[1]
+    if 'giftery' in option:
+        fn = giftery_buy
+        kwargs['product'] = option.split('-')[1]
+        kwargs['face'] = option.split('-')[2]
 
     if not fn:
         return 'Spend option is not supported yet'
@@ -108,7 +117,8 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
 
 def get_spend_categories():
     # все еще mock, рано создавать абстрактную модель
-    standalone_options = ['transfer-minter', 'resend', 'mobile']
+    standalone_options = [
+        'transfer-minter', 'resend', 'mobile', 'unu', 'timeloop']
 
     gratz_products, gratz_test_product = gratz_product_list()
     gift_products, gift_test_product = gift_product_list()

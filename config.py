@@ -19,8 +19,12 @@ APP_DATABASE = {
 GOOGLE_CLIENT_KEY_FILENAME = 'gclient-keys.json'
 MSCAN_APIKEY = os.environ.get('MSCAN_APIKEY')
 BIP2PHONE_API_KEY = os.environ.get('BIP2PHONE_API_KEY')
-
+GIFTERY_API_ID = os.environ.get('GIFTERY_API_ID')
+GIFTERY_API_SECRET = os.environ.get('GIFTERY_API_SECRET')
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
+UNU_API_KEY = os.environ.get('UNU_API_KEY')
+
+BIP_WALLET = os.environ.get('BIP_WALLET')
 
 SMTP_HOST = 'smtp-mail.outlook.com'
 SMTP_PORT = 587
