@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, request, after_this_request, redirect, current_app, jsonify, url_for, g
+from flask import Blueprint, request, after_this_request, redirect, current_app, jsonify, url_for, g, render_template
 from flask_login import current_user
 from flask_security import login_user
 from flask_security.decorators import anonymous_user_required
@@ -11,6 +11,8 @@ from social_flask.utils import psa
 from werkzeug.local import LocalProxy
 
 from http import HTTPStatus
+
+from config import DEV
 
 bp_auth = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -45,8 +47,12 @@ def admin_login():
 @anonymous_user_required
 @psa()
 def login(backend, *args, **kwargs):
-    logging.info(f'Before login user {current_user}')
     if request.method == 'POST':
+        logging.info(f'Before login user {current_user}')
         return do_complete(g.backend, login=do_login, user=current_user, *args, **kwargs)
     logging.info(f'After login user {current_user}')
-    return jsonify({'error': 'No login form'}), HTTPStatus.BAD_REQUEST
+    if DEV:
+        return render_template('login.html')
+    else:
+        return jsonify({'error': 'No login form'}), HTTPStatus.BAD_REQUEST
+
