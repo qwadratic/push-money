@@ -1,9 +1,8 @@
 import decimal
 from decimal import Decimal
-
+from http import HTTPStatus
 from flask import Blueprint, request, jsonify
 
-from api.consts import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND, HTTP_401_UNAUTHORIZED
 from api.logic.sharing import get_google_sheet_data, create_campaign, check_campaign_paid, get_campaign_stats
 from api.models import PushCampaign, PushWallet
 from minter.helpers import create_deeplink
@@ -20,17 +19,17 @@ def validate_google_sheet():
     payload = request.get_json() or {}
     spreadsheet_url = payload.get('source')
     if not spreadsheet_url:
-        return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
+        return jsonify({'error': 'Sheet url not specified'}), HTTPStatus.BAD_REQUEST
 
     result = get_google_sheet_data(spreadsheet_url)
     if isinstance(result, dict):
-        return jsonify(result), HTTP_400_BAD_REQUEST
+        return jsonify(result), HTTPStatus.BAD_REQUEST
     if isinstance(result, str):
-        return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+        return jsonify({'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     recipients, campaign_cost = result
     if not recipients:
-        return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
+        return jsonify({'error': 'Recipient list is empty'}), HTTPStatus.BAD_REQUEST
 
     return jsonify({
         'total_bip': campaign_cost,
@@ -52,17 +51,17 @@ def campaign_create():
     customization_setting_id = payload.get('customization_setting_id') or None
 
     if not spreadsheet_url:
-        return jsonify({'error': 'Sheet url not specified'}), HTTP_400_BAD_REQUEST
+        return jsonify({'error': 'Sheet url not specified'}), HTTPStatus.BAD_REQUEST
 
     result = get_google_sheet_data(spreadsheet_url)
     if isinstance(result, dict):
-        return jsonify(result), HTTP_400_BAD_REQUEST
+        return jsonify(result), HTTPStatus.BAD_REQUEST
     if isinstance(result, str):
-        return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+        return jsonify({'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     recipients, campaign_cost = result
     if not recipients:
-        return jsonify({'error': 'Recipient list is empty'}), HTTP_400_BAD_REQUEST
+        return jsonify({'error': 'Recipient list is empty'}), HTTPStatus.BAD_REQUEST
 
     campaign, campaign_wallet = create_campaign(
         recipients, sender, campaign_cost,
@@ -86,7 +85,7 @@ def campaign_check(campaign_id):
     """
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
-        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Campaign not found'}), HTTPStatus.NOT_FOUND
     is_paid = check_campaign_paid(campaign)
     return jsonify({'result': is_paid})
 
@@ -102,9 +101,9 @@ def campaign_stats(campaign_id):
 
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
-        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Campaign not found'}), HTTPStatus.NOT_FOUND
     if not campaign.auth(password):
-        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
 
     stats = get_campaign_stats(campaign, extended=extended)
     return jsonify(stats)
@@ -121,9 +120,9 @@ def campaign_close(campaign_id):
 
     campaign = PushCampaign.get_or_none(id=campaign_id)
     if not campaign:
-        return jsonify({'error': 'Campaign not found'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Campaign not found'}), HTTPStatus.NOT_FOUND
     if not campaign.auth(password):
-        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
 
     decimal.getcontext().rounding = decimal.ROUND_DOWN
     wallet = PushWallet.get(link_id=campaign.wallet_link_id)
@@ -139,7 +138,7 @@ def campaign_close(campaign_id):
             # иначе с рассылки придет челик, проверит баланс, увидит виртуальный
             # и продукт встретит его пятисоткой потому что на балансе кампании 0
             if result is not True:
-                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+                return jsonify({'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     return jsonify({
         'amount_left': float(amount_left) if amount_left >= 0 else 0,

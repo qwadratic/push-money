@@ -122,16 +122,21 @@ class Role(db.Model, RoleMixin):
 
 
 class User(db.Model, UserMixin):
-    email = TextField()
-    password = TextField()
+    email = TextField(null=True)
+    password = TextField(null=True)
     active = BooleanField(default=True)
     confirmed_at = DateTimeField(null=True)
 
+    @property
+    def is_anonymous(self):
+        return self.has_role('anonymous')
+
+    @property
+    def is_authenticated(self):
+        return not self.is_anonymous
+
 
 class UserRole(db.Model):
-    # Because peewee does not come with built-in many-to-many
-    # relationships, we need this intermediary class to link
-    # user to roles.
     user = ForeignKeyField(User, related_name='roles')
     role = ForeignKeyField(Role, related_name='users')
     name = property(lambda self: self.role.name)

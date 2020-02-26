@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app, send_from_directory
 from flask_uploads import UploadSet, IMAGES
-
-from api.consts import HTTP_400_BAD_REQUEST
+from http import HTTPStatus
 from api.models import UserImage
 
 bp_upload = Blueprint('upload', __name__, url_prefix='/api/upload')
@@ -14,7 +13,7 @@ def upload_img():
     swagger: swagger/customization/upload-img.yml
     """
     if 'img' not in request.files:
-        return jsonify({'error': 'No image provided'}), HTTP_400_BAD_REQUEST
+        return jsonify({'error': 'No image provided'}), HTTPStatus.BAD_REQUEST
 
     filename = images.save(request.files['img'])
     image = UserImage.create(filename=filename, url=images.url(filename))

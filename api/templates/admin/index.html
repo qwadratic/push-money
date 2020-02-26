@@ -9,7 +9,7 @@
             {% if not current_user.is_authenticated %}
             <p>Please login with admin credentials
             <p>
-                <a class="btn btn-primary" href="{{ url_for('security.login') }}">login</a>
+                <a class="btn btn-primary" href="{{ url_for('auth.admin_login') }}">login</a>
             </p>
             {% endif %}
         </div>

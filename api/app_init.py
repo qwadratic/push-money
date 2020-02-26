@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, render_template, url_for, abort, redirect, request
 from flask_admin.contrib.peewee import ModelView
+from flask_admin.menu import MenuLink
 from flask_login import current_user
 from flask_security import PeeweeUserDatastore, Security
-from flask_security.utils import hash_password, get_identity_attributes
+from flask_security.utils import hash_password, get_identity_attributes, login_user
 from flask_swagger import swagger
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
 from peewee import fn
 
+from api.auth import bp_auth
 from api.core import bp_api
 from api.customization import bp_customization
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
@@ -20,6 +22,7 @@ from config import DEV, ADMIN_PASS, SECURITY_PASSWORD_SALT, APP_SECRET_KEY, APP_
 from helpers.misc import setup_logging
 
 blueprints = [
+    bp_auth,
     bp_api,
     bp_sharing,
     bp_webhooks,
@@ -45,10 +48,10 @@ def app_init():
     app.config['SECRET_KEY'] = APP_SECRET_KEY
     app.config['SECURITY_PASSWORD_HASH'] = "pbkdf2_sha512"
     app.config['SECURITY_PASSWORD_SALT'] = SECURITY_PASSWORD_SALT
-    app.config['SECURITY_LOGIN_URL'] = '/login/'
-    app.config['SECURITY_LOGOUT_URL'] = '/logout/'
-    app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
-    app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
+    app.config['SECURITY_LOGIN_URL'] = '/auth/login/'
+    app.config['SECURITY_LOGOUT_URL'] = '/auth/logout/'
+    # app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
+    # app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 
     configure_uploads(app, images)
     patch_request_class(app)
@@ -81,23 +84,7 @@ def app_init():
     def swag():
         return render_template('swagger.html')
 
-    class SecureModelView(ModelView):
-        def is_accessible(self):
-            return current_user.is_active and \
-                current_user.is_authenticated and \
-                current_user.has_role('superuser')
-
-        def _handle_view(self, name, **kwargs):
-            """
-            Override builtin _handle_view in order to redirect users when a view is not accessible.
-            """
-            if not self.is_accessible():
-                if current_user.is_authenticated:
-                    # permission denied
-                    abort(403)
-                else:
-                    # login
-                    return redirect(url_for('security.login', next=request.url))
+    # Flask-Security setup
 
     class UserDatastore(PeeweeUserDatastore):
         def get_user(self, identifier):
@@ -116,6 +103,34 @@ def app_init():
 
     user_datastore = UserDatastore(db, User, Role, UserRole)
     security = Security(app, user_datastore)
+    security.login_manager.login_view = 'auth.login'
+
+    @app.before_request
+    def anonymous_login():
+        if current_user.get_id() is not None:
+            return
+        anonymous_role, _ = Role.get_or_create(name='anonymous')
+        u = user_datastore.create_user(roles=[anonymous_role])
+        login_user(u)
+
+    # Flask-Admin setup
+
+    class SecureModelView(ModelView):
+        def is_accessible(self):
+            return current_user.is_active and \
+                   current_user.is_authenticated and \
+                   current_user.has_role('superuser')
+
+        def _handle_view(self, name, **kwargs):
+            if not self.is_accessible():
+                if current_user.is_authenticated:
+                    abort(403)
+                return redirect(url_for('auth.admin_login', next=request.url))
+
+    class AuthenticatedMenuLink(MenuLink):
+
+        def is_accessible(self):
+            return current_user.is_authenticated
 
     admin = Admin(app, name='pushmoney', template_mode='bootstrap3')
     admin.add_view(SecureModelView(User))
@@ -126,6 +141,7 @@ def app_init():
     admin.add_view(SecureModelView(Recipient))
     admin.add_view(SecureModelView(UserImage))
     admin.add_view(SecureModelView(CustomizationSetting))
+    admin.add_link(AuthenticatedMenuLink(name='Logout', endpoint='security.logout'))
 
     @security.context_processor
     def security_context_processor():

@@ -33,5 +33,6 @@ GRATZ_OWNER_EMAIL = 'amperluxe@gmail.com'
 DEV_EMAIL = 'ivan.d.kotelnikov@gmail.com'
 
 ADMIN_PASS = os.environ.get('ADMIN_PASS')
+SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
 SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
 APP_SECRET_KEY = os.environ.get('APP_SECRET_KEY')
