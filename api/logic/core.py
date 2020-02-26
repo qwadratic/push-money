@@ -9,6 +9,7 @@ from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet
 from providers.gift import gift_buy, gift_product_list
+from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
@@ -104,6 +105,10 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     if 'gratz' in option:
         fn = gratz_buy
         kwargs['product'] = option.split('-')[1]
+    if 'giftery' in option:
+        fn = giftery_buy
+        kwargs['product'] = option.split('-')[1]
+        kwargs['face'] = option.split('-')[2]
 
     if not fn:
         return 'Spend option is not supported yet'
