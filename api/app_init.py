@@ -25,7 +25,7 @@ def app_init():
     for bp in blueprints:
         app.register_blueprint(bp)
 
-    app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
+    app.config['BASE_URL'] = 'https://{}push.money'.format('dev.' if DEV else '')
     app.config['UPLOADED_IMAGES_DEST'] = 'content/user_images'
     app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
     configure_uploads(app, images)
@@ -50,8 +50,7 @@ def app_init():
                 "description": "API for customized push wallet creation"
             },
         ]
-        swag['host'] = "push.money"
-        swag['basePath'] = "/dev"
+        swag['host'] = "dev.push.money"
         return jsonify(swag)
 
     @app.route('/swagger')
