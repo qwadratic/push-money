@@ -1,12 +1,11 @@
 from logging import info
 
-from flask import Flask, jsonify, render_template, url_for, abort, redirect, request, g, logging
+from flask import Flask, url_for, abort, redirect, request, g, logging
 from flask_admin.contrib.peewee import ModelView
 from flask_admin.menu import MenuLink
 from flask_login import current_user
 from flask_security import PeeweeUserDatastore, Security
 from flask_security.utils import hash_password, get_identity_attributes, login_user
-from flask_swagger import swagger
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
 from peewee import fn
@@ -20,6 +19,7 @@ from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, Order
     UserImage, CustomizationSetting
 from api.sharing import bp_sharing
 from api.surprise import bp_surprise
+from api.swagger import bp_swagger
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
 from config import ADMIN_PASS, FlaskConfig
@@ -33,7 +33,8 @@ blueprints = [
     bp_webhooks,
     bp_upload,
     bp_customization,
-    bp_surprise
+    bp_surprise,
+    bp_swagger
 ]
 
 
@@ -47,33 +48,6 @@ def app_init():
     configure_uploads(app, images)
     patch_request_class(app)
     db.init_app(app)
-
-    @app.route('/swagger.json')
-    def spec():
-        swag = swagger(app, from_file_keyword='swagger')
-        swag['info']['version'] = "1.0"
-        swag['info']['title'] = "Push Money API"
-        swag['tags'] = [
-            {
-                "name": "core",
-                "description": "API for push wallet core functionality and spending"
-            },
-            {
-                "name": "sharing",
-                "description": "API for multipush creation and distribution"
-            },
-            {
-                "name": "customization",
-                "description": "API for customized push wallet creation"
-            },
-        ]
-        swag['host'] = "push.money"
-        swag['basePath'] = "/dev"
-        return jsonify(swag)
-
-    @app.route('/swagger')
-    def swag():
-        return render_template('swagger.html')
 
     # Flask-Security setup
 
@@ -170,6 +144,8 @@ def app_init():
             roles=[user_role, super_role])
         db.close_db(None)
 
-    endpoints = sorted([str(rule) for rule in app.url_map.iter_rules() if 'admin' not in str(rule)])
+    endpoints = sorted([
+        str(rule) for rule in app.url_map.iter_rules()
+        if 'admin' not in str(rule)])
     info('\n'.join(endpoints))
     return app
