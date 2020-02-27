@@ -48,7 +48,7 @@ class FlaskConfig:
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
     SECURITY_LOGIN_URL = '/auth/login/'
     SECURITY_LOGOUT_URL = '/auth/logout/'
-    SECURITY_POST_LOGIN_VIEW = '/auth/login/email'
+    # SECURITY_POST_LOGIN_VIEW = '/auth/login/email'
     # SECURITY_POST_LOGOUT_VIEW = '/admin/'
 
     SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
