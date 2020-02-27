@@ -97,14 +97,14 @@ def app_init():
     security = Security(app, user_datastore)
     security.login_manager.login_view = 'auth.login'
 
-    # @app.before_request
-    # def anonymous_login():
-    #     if current_user.get_id() is not None:
-    #         return
-    #     anonymous_role, _ = Role.get_or_create(name='anonymous')
-    #     u = user_datastore.create_user(roles=[anonymous_role])
-    #     login_user(u)
-    #     g.user = current_user
+    @app.before_request
+    def anonymous_login():
+        # if current_user.get_id() is not None:
+        #     return
+        # anonymous_role, _ = Role.get_or_create(name='anonymous')
+        # u = user_datastore.create_user(roles=[anonymous_role])
+        # login_user(u)
+        g.user = current_user
 
     @app.context_processor
     def inject_user():
