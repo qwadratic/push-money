@@ -2,19 +2,9 @@ import os
 
 import dotenv
 
-
 dotenv.load_dotenv()
 
-DEV = bool(int(os.environ.get('DEV')))
 TESTNET = bool(int(os.environ.get('TESTNET')))
-
-DB_NAME = os.environ.get('{}DB_NAME'.format('DEV_' if DEV else ''))
-DB_USER = os.environ.get('{}DB_USER'.format('DEV_' if DEV else ''))
-APP_DATABASE = {
-    'name': DB_NAME,
-    'engine': 'peewee.PostgresqlDatabase',
-    'user': DB_USER
-}
 
 GOOGLE_CLIENT_KEY_FILENAME = 'gclient-keys.json'
 MSCAN_APIKEY = os.environ.get('MSCAN_APIKEY')
@@ -35,6 +25,43 @@ GRATZ_OWNER_EMAIL = 'amperluxe@gmail.com'
 DEV_EMAIL = 'ivan.d.kotelnikov@gmail.com'
 
 ADMIN_PASS = os.environ.get('ADMIN_PASS')
-SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
-SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
-APP_SECRET_KEY = os.environ.get('APP_SECRET_KEY')
+
+DEV = bool(int(os.environ.get('DEV')))
+DB_NAME = os.environ.get('{}DB_NAME'.format('DEV_' if DEV else ''))
+DB_USER = os.environ.get('{}DB_USER'.format('DEV_' if DEV else ''))
+
+
+class FlaskConfig:
+    DATABASE = {
+        'name': DB_NAME,
+        'engine': 'peewee.PostgresqlDatabase',
+        'user': DB_USER
+    }
+    FLASK_ADMIN_SWATCH = 'cyborg'
+
+    BASE_URL = 'https://push.money{}'.format('/dev' if DEV else '')
+    UPLOADED_IMAGES_DEST = 'content/user_images'
+    UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
+
+    SECRET_KEY = os.environ.get('APP_SECRET_KEY')
+    SECURITY_PASSWORD_HASH = "pbkdf2_sha512"
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
+    SECURITY_LOGIN_URL = '/auth/login/'
+    SECURITY_LOGOUT_URL = '/auth/logout/'
+    SECURITY_POST_LOGIN_VIEW = '/auth/login/email'
+    # SECURITY_POST_LOGOUT_VIEW = '/admin/'
+
+    SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
+        'social_core.backends.google.GoogleOAuth2',
+        'social_core.backends.telegram.TelegramAuth',
+        'social_core.backends.email.EmailAuth'
+    )
+    SOCIAL_AUTH_USER_MODEL = 'api.models.User'
+    SOCIAL_AUTH_STORAGE = 'social_flask_peewee.models.FlaskStorage'
+    # SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'https://yyy.cash/'
+
+    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '952516609142-1q4nbohv5875u8lqflpg9ptate7gi01v.apps.googleusercontent.com'
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '061SaqtYvgOFN6qZSIRrX9T0'
+
+    SOCIAL_AUTH_EMAIL_FORM_URL = 'https://yyy.cash/'
+    SOCIAL_AUTH_EMAIL_FORM_HTML = 'login.html'

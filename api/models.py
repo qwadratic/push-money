@@ -122,8 +122,9 @@ class Role(db.Model, RoleMixin):
 
 
 class User(db.Model, UserMixin):
-    email = TextField(null=True)
-    password = TextField(null=True)
+    username = CharField(null=True)
+    email = CharField(null=True)
+    password = CharField(null=True)
     active = BooleanField(default=True)
     confirmed_at = DateTimeField(null=True)
 

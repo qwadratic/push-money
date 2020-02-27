@@ -1,10 +1,13 @@
 import logging
 
-from flask import Blueprint, request, after_this_request, redirect, current_app, jsonify, url_for
+from flask import Blueprint, request, after_this_request, redirect, current_app, jsonify, url_for, g
 from flask_login import current_user
 from flask_security import login_user
 from flask_security.decorators import anonymous_user_required
 from flask_security.utils import config_value
+from social_core.actions import do_complete
+from social_flask.routes import do_login
+from social_flask.utils import psa
 from werkzeug.local import LocalProxy
 
 from http import HTTPStatus
@@ -38,10 +41,12 @@ def admin_login():
         config_value('LOGIN_USER_TEMPLATE'), login_user_form=form, **_ctx('login'))
 
 
-@bp_auth.route('/login', methods=['GET', 'POST'], endpoint='login')
+@bp_auth.route('/login/<string:backend>', methods=['GET', 'POST'], endpoint='login')
 @anonymous_user_required
-def login():
-    logging.info(current_user)
-    if request.method == 'GET':
-        return jsonify({'error': 'No login form'}), HTTPStatus.BAD_REQUEST
-    return 'hello'
+@psa()
+def login(backend, *args, **kwargs):
+    logging.info(f'Before login user {current_user}')
+    if request.method == 'POST':
+        return do_complete(g.backend, login=do_login, user=current_user, *args, **kwargs)
+    logging.info(f'After login user {current_user}')
+    return jsonify({'error': 'No login form'}), HTTPStatus.BAD_REQUEST

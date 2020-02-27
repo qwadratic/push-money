@@ -14,6 +14,7 @@ BASE_URL = 'https://ssl-api.giftery.ru/'
 
 
 class GifteryAPIException(Exception):
+
     def __init__(self, msg: str):
         self.msg = msg
 
@@ -63,7 +64,6 @@ class GifteryAPIClient:
         }
 
         resp = requests.get(BASE_URL, params=urlencode(params))
-
         if not resp or resp.json()['status'] != 'ok':
             raise GifteryAPIException(resp.json()['error']['text'])
 

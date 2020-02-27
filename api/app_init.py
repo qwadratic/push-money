@@ -1,4 +1,6 @@
-from flask import Flask, jsonify, render_template, url_for, abort, redirect, request
+from logging import info
+
+from flask import Flask, jsonify, render_template, url_for, abort, redirect, request, g, logging
 from flask_admin.contrib.peewee import ModelView
 from flask_admin.menu import MenuLink
 from flask_login import current_user
@@ -8,6 +10,8 @@ from flask_swagger import swagger
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
 from peewee import fn
+from social_flask.routes import social_auth
+from social_flask_peewee.models import init_social
 
 from api.auth import bp_auth
 from api.core import bp_api
@@ -18,11 +22,12 @@ from api.sharing import bp_sharing
 from api.surprise import bp_surprise
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
-from config import DEV, ADMIN_PASS, SECURITY_PASSWORD_SALT, APP_SECRET_KEY, APP_DATABASE
+from config import ADMIN_PASS, FlaskConfig
 from helpers.misc import setup_logging
 
 blueprints = [
     bp_auth,
+    social_auth,
     bp_api,
     bp_sharing,
     bp_webhooks,
@@ -35,23 +40,9 @@ blueprints = [
 def app_init():
     setup_logging()
     app = Flask(__name__)
+    app.config.from_object(FlaskConfig)
     for bp in blueprints:
         app.register_blueprint(bp)
-
-    app.config['FLASK_ADMIN_SWATCH'] = 'cyborg'
-
-    app.config['DATABASE'] = APP_DATABASE
-    app.config['BASE_URL'] = 'https://push.money{}'.format('/dev' if DEV else '')
-    app.config['UPLOADED_IMAGES_DEST'] = 'content/user_images'
-    app.config['UPLOADED_IMAGES_URL'] = app.config['BASE_URL'] + '/api/upload/'
-
-    app.config['SECRET_KEY'] = APP_SECRET_KEY
-    app.config['SECURITY_PASSWORD_HASH'] = "pbkdf2_sha512"
-    app.config['SECURITY_PASSWORD_SALT'] = SECURITY_PASSWORD_SALT
-    app.config['SECURITY_LOGIN_URL'] = '/auth/login/'
-    app.config['SECURITY_LOGOUT_URL'] = '/auth/logout/'
-    # app.config['SECURITY_POST_LOGIN_VIEW'] = '/admin/'
-    # app.config['SECURITY_POST_LOGOUT_VIEW'] = '/admin/'
 
     configure_uploads(app, images)
     patch_request_class(app)
@@ -101,17 +92,31 @@ def app_init():
                 except self.user_model.DoesNotExist:
                     pass
 
+    init_social(app, db.database)
     user_datastore = UserDatastore(db, User, Role, UserRole)
     security = Security(app, user_datastore)
     security.login_manager.login_view = 'auth.login'
 
-    @app.before_request
-    def anonymous_login():
-        if current_user.get_id() is not None:
-            return
-        anonymous_role, _ = Role.get_or_create(name='anonymous')
-        u = user_datastore.create_user(roles=[anonymous_role])
-        login_user(u)
+    # @app.before_request
+    # def anonymous_login():
+    #     if current_user.get_id() is not None:
+    #         return
+    #     anonymous_role, _ = Role.get_or_create(name='anonymous')
+    #     u = user_datastore.create_user(roles=[anonymous_role])
+    #     login_user(u)
+    #     g.user = current_user
+
+    @app.context_processor
+    def inject_user():
+        try:
+            return {'user': g.user}
+        except AttributeError:
+            return {'user': None}
+
+    # @app.errorhandler(500)
+    # def error_handler(error):
+    #     if isinstance(error, SocialAuthBaseException):
+    #         return redirect('/socialerror')
 
     # Flask-Admin setup
 
@@ -164,4 +169,7 @@ def app_init():
             password=hash_password(ADMIN_PASS),
             roles=[user_role, super_role])
         db.close_db(None)
+
+    endpoints = sorted([str(rule) for rule in app.url_map.iter_rules() if 'admin' not in str(rule)])
+    info('\n'.join(endpoints))
     return app

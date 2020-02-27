@@ -41,7 +41,7 @@ def retry(exceptions: Union[Exception, Iterable[Exception]], logger: Callable = 
 def setup_logging():
     config = dict(
         force=True,
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
