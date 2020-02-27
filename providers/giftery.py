@@ -158,7 +158,7 @@ class GifteryAPIClient:
         >>> client.make_order({"product_id":13103,"face":500,"email_to":"ivan@giftery.ru","from":"Giftery"})
         919082
         """
-        raise_condition = {'product_id', 'face', 'email_to', 'from'} <= data.keys()
+        raise_condition = {'product_id', 'face', 'email_to', 'from'} <= set(data.keys())
         assert raise_condition, 'product_id, face, email_to, from are required fields!'
 
         resp_data = self._create_request('makeOrder', data)
