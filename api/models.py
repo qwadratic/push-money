@@ -1,12 +1,11 @@
 from datetime import datetime
 
 import peeweedbevolve
-from flask_security import RoleMixin, UserMixin
+from flask_security import RoleMixin, UserMixin, login_user
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanField
 from playhouse.flask_utils import FlaskDB
-from playhouse.postgres_ext import JSONField, DateTimeField
-
+from playhouse.postgres_ext import JSONField, DateTimeField, IPField
 
 db = FlaskDB()
 
@@ -127,6 +126,11 @@ class User(db.Model, UserMixin):
     password = CharField(null=True)
     active = BooleanField(default=True)
     confirmed_at = DateTimeField(null=True)
+    last_login_at = DateTimeField(null=True)
+    current_login_at = DateTimeField(null=True)
+    last_login_ip = IPField(null=True)
+    current_login_ip = IPField(null=True)
+    login_count = IntegerField(null=True)
 
     @property
     def is_anonymous(self):

@@ -14,10 +14,10 @@
 
 User {{ user }} <br>
 {% if user %}}
-{% for name, value in user.__dict__.items() %}
-<span>{{name}}</span>=<span>{{ value }}</span>
+{% for name, value in user.__dict__.__data__.items() %}
+<span>{{name}}</span>=<span>{{ value }}</span><br>
 {% endfor %}
 {% endif %}
-<p>{{ request.remote_addr }}</p>
+
 </body>
 </html>
