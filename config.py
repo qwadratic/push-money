@@ -45,6 +45,7 @@ class FlaskConfig:
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
 
     SECRET_KEY = os.environ.get('APP_SECRET_KEY')
+    SECURITY_DEFAULT_REMEMBER_ME = True
     SECURITY_PASSWORD_HASH = "pbkdf2_sha512"
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
     SECURITY_LOGIN_URL = '/auth/login/'
