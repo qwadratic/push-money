@@ -43,7 +43,8 @@ def admin_login():
         config_value('LOGIN_USER_TEMPLATE'), login_user_form=form, **_ctx('login'))
 
 
-@bp_auth.route('/login/<string:backend>', methods=['GET', 'POST'], endpoint='login')
+@bp_auth.route('/login', methods=['GET'])
+@bp_auth.route('/login/<string:backend>', methods=['GET', 'POST'])
 @anonymous_user_required
 @psa()
 def login(backend, *args, **kwargs):
@@ -52,7 +53,7 @@ def login(backend, *args, **kwargs):
         return do_complete(g.backend, login=do_login, user=current_user, *args, **kwargs)
     logging.info(f'After login user {current_user}')
     if DEV:
-        return render_template('login.html')
+        return render_template('dev/login.html')
     else:
         return jsonify({'error': 'No login form'}), HTTPStatus.BAD_REQUEST
 
