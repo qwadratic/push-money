@@ -60,6 +60,11 @@ def app_init():
 
     class UserDatastore(PeeweeUserDatastore):
 
+        def login_user_silent(self, user):
+            login_user(user)
+            user.login_count -= 1
+            self.put(user)
+
         def get_user(self, identifier):
             if isinstance(identifier, int):
                 try:
@@ -86,13 +91,13 @@ def app_init():
             return
         user_datastore.add_role_to_user(user, 'anonymous')
         user_datastore.remove_role_from_user(user, 'user')
-        login_user(user)
+        user_datastore.login_user_silent(user)
 
     @app.before_request
     def login_implicitly():
         if isinstance(current_user._get_current_object(), AnonymousUser):
             u = user_datastore.create_user(roles=['anonymous'])
-            login_user(u)
+            user_datastore.login_user_silent(u)
         g.user = current_user
 
     @app.context_processor
