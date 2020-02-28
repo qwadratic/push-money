@@ -7,6 +7,11 @@ from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanF
 from playhouse.flask_utils import FlaskDB
 from playhouse.postgres_ext import JSONField, DateTimeField, IPField, ArrayField
 
+base_models = [
+    'basemodel', 'passwordprotectedmodel',
+    'peeweeassociationmixin', 'peeweenoncemixin',
+    'peeweecodemixin', 'peeweeusermixin', 'peeweepartialmixin'
+]
 db = FlaskDB()
 
 
@@ -189,6 +194,7 @@ class Shop(db.Model):
 
 
 class Product(db.Model):
+    product_type = CharField()
     deleted = BooleanField(default=False)
     active = BooleanField(default=False)
     infinite = BooleanField(default=False)
