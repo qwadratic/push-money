@@ -9,6 +9,7 @@ from flask_security.utils import hash_password, get_identity_attributes, login_u
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
 from peewee import fn
+from social_core.exceptions import SocialAuthBaseException
 from social_flask.routes import social_auth
 from social_flask_peewee.models import init_social
 
@@ -28,7 +29,7 @@ from helpers.misc import setup_logging
 
 blueprints = [
     bp_auth,
-    social_auth,
+    # social_auth,
     bp_api,
     bp_sharing,
     bp_webhooks,
@@ -76,11 +77,11 @@ def app_init():
 
     @app.before_request
     def anonymous_login():
-        # if current_user.get_id() is not None:
-        #     return
-        # anonymous_role, _ = Role.get_or_create(name='anonymous')
-        # u = user_datastore.create_user(roles=[anonymous_role])
-        # login_user(u)
+        if current_user.get_id() is not None:
+            return
+        anonymous_role, _ = Role.get_or_create(name='anonymous')
+        u = user_datastore.create_user(roles=[anonymous_role])
+        login_user(u)
         g.user = current_user
 
     @app.context_processor
@@ -90,10 +91,11 @@ def app_init():
         except AttributeError:
             return {'user': None}
 
-    # @app.errorhandler(500)
-    # def error_handler(error):
-    #     if isinstance(error, SocialAuthBaseException):
-    #         return redirect('/socialerror')
+    if not DEV:
+        @app.errorhandler(500)
+        def error_handler(error):
+            if isinstance(error, SocialAuthBaseException):
+                return redirect('/socialerror')
 
     # Flask-Admin setup
 
