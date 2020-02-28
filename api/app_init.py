@@ -1,10 +1,11 @@
+from functools import partial
 from logging import info
 
-from flask import Flask, url_for, abort, redirect, request, g, logging
+from flask import Flask, url_for, abort, redirect, request, g, logging, after_this_request
 from flask_admin.contrib.peewee import ModelView
 from flask_admin.menu import MenuLink
 from flask_login import current_user, user_logged_out
-from flask_security import PeeweeUserDatastore, Security
+from flask_security import PeeweeUserDatastore, Security, AnonymousUser
 from flask_security.utils import hash_password, get_identity_attributes, login_user
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
@@ -56,6 +57,7 @@ def app_init():
     # Flask-Security setup
 
     class UserDatastore(PeeweeUserDatastore):
+
         def get_user(self, identifier):
             if isinstance(identifier, int):
                 try:
@@ -78,21 +80,18 @@ def app_init():
     @user_logged_out.connect_via(app)
     def on_logout(*args, **kwargs):
         user = kwargs['user']
-        g.user = user
         if user.has_role('superuser'):
             return
         user_datastore.add_role_to_user(user, 'anonymous')
         user_datastore.remove_role_from_user(user, 'user')
-        login_user(user, remember=True)
+        login_user(user)
 
     @app.before_request
-    def anonymous_login():
+    def login_implicitly():
+        if isinstance(current_user._get_current_object(), AnonymousUser):
+            u = user_datastore.create_user(roles=['anonymous'])
+            login_user(u)
         g.user = current_user
-        if current_user.get_id() is not None:
-            return
-        anonymous_role, _ = Role.get_or_create(name='anonymous')
-        u = user_datastore.create_user(roles=[anonymous_role])
-        login_user(u, remember=True)
 
     @app.context_processor
     def inject_user():

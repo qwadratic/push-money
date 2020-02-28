@@ -130,14 +130,14 @@ class User(db.Model, UserMixin):
 
     @property
     def is_anonymous(self):
-        return self.has_role('anonymous')
+        return self.has_role('anonymous') or not self.roles
 
     @property
     def is_authenticated(self):
         return not self.is_anonymous
 
     def __str__(self):
-        return f'<User {self.id} ({"LOGGED_OUT" if self.is_anonymous else "LOGGED IN"})>'
+        return f"{self.username or self.id} anonymous={self.is_anonymous}"
 
 
 class UserRole(db.Model):
@@ -145,3 +145,6 @@ class UserRole(db.Model):
     role = ForeignKeyField(Role, related_name='users')
     name = property(lambda self: self.role.name)
     description = property(lambda self: self.role.description)
+
+    def __str__(self):
+        return f'role:{self.name}'
