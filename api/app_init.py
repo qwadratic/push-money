@@ -13,6 +13,7 @@ from peewee import fn
 from social_core.exceptions import SocialAuthBaseException
 from social_flask.routes import social_auth
 from social_flask_peewee.models import init_social
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from api.auth import bp_auth
 from api.core import bp_api
@@ -46,6 +47,7 @@ if DEV:
 def app_init():
     setup_logging()
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app)
     app.config.from_object(FlaskConfig)
     for bp in blueprints:
         app.register_blueprint(bp)
