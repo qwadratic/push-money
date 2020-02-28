@@ -136,6 +136,9 @@ class User(db.Model, UserMixin):
     def is_authenticated(self):
         return not self.is_anonymous
 
+    def __str__(self):
+        return f'<User {self.id} ({"LOGGED_OUT" if self.is_anonymous else "LOGGED IN"})>'
+
 
 class UserRole(db.Model):
     user = ForeignKeyField(User, related_name='roles')
