@@ -34,6 +34,8 @@ ADMIN_PASS = os.environ.get('ADMIN_PASS')
 
 DB_NAME = os.environ.get('{}DB_NAME'.format('DEV_' if DEV else ''))
 DB_USER = os.environ.get('{}DB_USER'.format('DEV_' if DEV else ''))
+LOCAL_URL = 'http://127.0.0.1:8000'
+REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 
 
 class FlaskConfig:
@@ -44,10 +46,9 @@ class FlaskConfig:
     }
     FLASK_ADMIN_SWATCH = 'cyborg'
 
-    BASE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
+    BASE_URL = LOCAL_URL if LOCAL else REMOTE_URL
     UPLOADED_IMAGES_DEST = 'content/user_images'
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
-
     SECRET_KEY = os.environ.get('APP_SECRET_KEY')
     REMEMBER_COOKIE_NAME = 'keep'
 
