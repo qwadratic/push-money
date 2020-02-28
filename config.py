@@ -39,7 +39,7 @@ class FlaskConfig:
     }
     FLASK_ADMIN_SWATCH = 'cyborg'
 
-    BASE_URL = 'https://push.money{}'.format('/dev' if DEV else '')
+    BASE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
     UPLOADED_IMAGES_DEST = 'content/user_images'
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
 
@@ -52,6 +52,8 @@ class FlaskConfig:
     # SECURITY_POST_LOGOUT_VIEW = '/admin/'
 
     SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+    SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'https://yyy.cash'
+
     SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
         'social_core.backends.google.GoogleOAuth2',
         'social_core.backends.telegram.TelegramAuth',
@@ -62,10 +64,11 @@ class FlaskConfig:
     SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['keep']
 
     SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = os.environ.get('TG_TOKEN')
+    SOCIAL_AUTH_TELEGRAM_LOGIN_REDIRECT_URL = '/' if DEV else 'https://yyy.cash'
 
     SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_KEY')
     SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_SECRET')
     SOCIAL_AUTH_GOOGLE_OAUTH2_LOGIN_REDIRECT_URL = '/' if DEV else 'https://yyy.cash'
 
-    SOCIAL_AUTH_EMAIL_FORM_URL = 'https://yyy.cash/'
+    SOCIAL_AUTH_EMAIL_FORM_URL = '/auth/login/email' if DEV else 'https://yyy.cash/'
     SOCIAL_AUTH_EMAIL_FORM_HTML = 'dev/login.html'
