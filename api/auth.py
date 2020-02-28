@@ -22,8 +22,8 @@ def do_login(backend, user, social_user):
                request.args.get(name) or \
                request.form.get(name) or \
                False
-    security.user_datastore.add_role_to_user(user, 'user')
-    security.user_datastore.remove_role_from_user(user, 'anonymous')
+    security.datastore.add_role_to_user(user, 'user')
+    security.datastore.remove_role_from_user(user, 'anonymous')
     return login_user(user, remember=remember)
 
 

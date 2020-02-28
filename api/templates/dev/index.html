@@ -13,8 +13,10 @@
 {% endif %}
 
 User {{ user }} <br>
+{% if user %}}
 {% for name, value in user.__dict__.items() %}
 <span>{{name}}</span>=<span>{{ value }}</span>
 {% endfor %}
+{% endif %}
 </body>
 </html>
