@@ -47,7 +47,7 @@ if DEV:
 def app_init():
     setup_logging()
     app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=2)
     app.config.from_object(FlaskConfig)
     for bp in blueprints:
         app.register_blueprint(bp)
