@@ -5,7 +5,7 @@ from flask_security import RoleMixin, UserMixin, login_user
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanField
 from playhouse.flask_utils import FlaskDB
-from playhouse.postgres_ext import JSONField, DateTimeField, IPField
+from playhouse.postgres_ext import JSONField, DateTimeField, IPField, ArrayField
 
 db = FlaskDB()
 
@@ -17,6 +17,45 @@ class PasswordProtectedModel(db.Model):
         if self.password_hash is None:
             return True
         return password is not None and pbkdf2_sha256.verify(password, self.password_hash)
+
+
+class Role(db.Model, RoleMixin):
+    name = CharField(unique=True)
+    description = TextField(null=True)
+
+
+class User(db.Model, UserMixin):
+    username = CharField(null=True)
+    email = CharField(null=True)
+    password = CharField(null=True)
+    active = BooleanField(default=True)
+    confirmed_at = DateTimeField(null=True)
+    last_login_at = DateTimeField(null=True)
+    current_login_at = DateTimeField(null=True)
+    last_login_ip = IPField(null=True)
+    current_login_ip = IPField(null=True)
+    login_count = IntegerField(null=True)
+
+    @property
+    def is_anonymous(self):
+        return self.has_role('anonymous') or not self.roles
+
+    @property
+    def is_authenticated(self):
+        return not self.is_anonymous
+
+    def __str__(self):
+        return f"{self.username or self.id} anonymous={self.is_anonymous}"
+
+
+class UserRole(db.Model):
+    user = ForeignKeyField(User, related_name='roles')
+    role = ForeignKeyField(Role, related_name='users')
+    name = property(lambda self: self.role.name)
+    description = property(lambda self: self.role.description)
+
+    def __str__(self):
+        return f'role:{self.name}'
 
 
 class PushWallet(PasswordProtectedModel):
@@ -94,7 +133,8 @@ class Recipient(db.Model):
 
 
 class UserImage(db.Model):
-    filename = TextField()
+    filename = TextField(null=True)
+    url = TextField()
     created_at = DateTimeField(default=datetime.utcnow)
 
 
@@ -115,40 +155,75 @@ class CustomizationSetting(db.Model):
     only_target = BooleanField(default=False)
 
 
-class Role(db.Model, RoleMixin):
-    name = CharField(unique=True)
+class Merchant(db.Model):
+    user = ForeignKeyField(User, backref='merch')
+    address = CharField(null=True)
+    mnemonic = TextField(null=True)
+    balance_pip = CharField(default='0')
+    blocked_balance_pip = CharField(default='0')
+
+
+class Category(db.Model):
+    title = CharField()
+    title_en = CharField()
+    slug = CharField(unique=True)
+
+
+class Brand(db.Model):
+    name = CharField()
+    merchant = ForeignKeyField(Merchant, related_name='brands')
+
+
+class Shop(db.Model):
+    deleted = BooleanField(default=False)
+    integrated = BooleanField(default=False)
+    active = BooleanField(default=False)
+    in_moderation = BooleanField(default=True)
+
+    name = CharField()
     description = TextField(null=True)
 
+    brand = ForeignKeyField(Brand, related_name='shops', null=True)
+    merchant = ForeignKeyField(Merchant, related_name='shops')
 
-class User(db.Model, UserMixin):
-    username = CharField(null=True)
-    email = CharField(null=True)
-    password = CharField(null=True)
-    active = BooleanField(default=True)
-    confirmed_at = DateTimeField(null=True)
-    last_login_at = DateTimeField(null=True)
-    current_login_at = DateTimeField(null=True)
-    last_login_ip = IPField(null=True)
-    current_login_ip = IPField(null=True)
-    login_count = IntegerField(null=True)
 
-    @property
-    def is_anonymous(self):
-        return self.has_role('anonymous') or not self.roles
-
-    @property
-    def is_authenticated(self):
-        return not self.is_anonymous
+class ShopCategory(db.Model):
+    shop = ForeignKeyField(Shop, related_name='categories')
+    category = ForeignKeyField(Category, related_name='shops')
+    title = property(lambda self: self.category.title)
+    slug = property(lambda self: self.category.slug)
 
     def __str__(self):
-        return f"{self.username or self.id} anonymous={self.is_anonymous}"
+        return f'category:{self.title}'
 
 
-class UserRole(db.Model):
-    user = ForeignKeyField(User, related_name='roles')
-    role = ForeignKeyField(Role, related_name='users')
-    name = property(lambda self: self.role.name)
-    description = property(lambda self: self.role.description)
+class Product(db.Model):
+    deleted = BooleanField(default=False)
+    active = BooleanField(default=False)
+    infinite = BooleanField(default=False)
 
-    def __str__(self):
-        return f'role:{self.name}'
+    quantity = IntegerField(default=0, null=True)
+
+    price_fiat = IntegerField(null=True)
+    price_pip = CharField(null=True)
+
+    price_list_fiat = ArrayField(null=True)
+    price_fiat_min = IntegerField(null=True)
+    price_fiat_max = IntegerField(null=True)
+    price_fiat_step = IntegerField(null=True)
+
+    currency = CharField(null=False)
+    coin = CharField(default='BIP')
+
+    title = CharField()
+    description = TextField(null=True)
+    slug = CharField(null=True)
+
+    shop = ForeignKeyField(Shop, related_name='products')
+
+
+class MerchantImage(UserImage):
+    product = ForeignKeyField(Product, related_name='images', null=True)
+    shop = ForeignKeyField(Shop, related_name='images', null=True)
+    brand = ForeignKeyField(Brand, related_name='images', null=True)
+
