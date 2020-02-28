@@ -59,12 +59,12 @@ class FlaskConfig:
     SOCIAL_AUTH_USER_MODEL = 'api.models.User'
     SOCIAL_AUTH_STORAGE = 'social_flask_peewee.models.FlaskStorage'
     SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['keep']
-    SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'https://yyy.cash/'
 
     SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = os.environ.get('TG_TOKEN')
 
     SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_KEY')
     SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_SECRET')
+    SOCIAL_AUTH_GOOGLE_OAUTH2_LOGIN_REDIRECT_URL = '/' if DEV else 'https://yyy.cash'
 
     SOCIAL_AUTH_EMAIL_FORM_URL = 'https://yyy.cash/'
-    SOCIAL_AUTH_EMAIL_FORM_HTML = 'login.html'
+    SOCIAL_AUTH_EMAIL_FORM_HTML = 'dev/login.html'

@@ -15,6 +15,7 @@ from social_flask_peewee.models import init_social
 from api.auth import bp_auth
 from api.core import bp_api
 from api.customization import bp_customization
+from api.dev import bp_dev
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting
 from api.sharing import bp_sharing
@@ -22,7 +23,7 @@ from api.surprise import bp_surprise
 from api.swagger import bp_swagger
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
-from config import ADMIN_PASS, FlaskConfig
+from config import ADMIN_PASS, FlaskConfig, DEV
 from helpers.misc import setup_logging
 
 blueprints = [
@@ -36,6 +37,8 @@ blueprints = [
     bp_surprise,
     bp_swagger
 ]
+if DEV:
+    blueprints.append(bp_dev)
 
 
 def app_init():

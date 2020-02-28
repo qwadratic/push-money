@@ -11,9 +11,9 @@ from providers.minter import send_coins
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 
-@bp_api.route('/', methods=['GET'])
+@bp_api.route('', methods=['GET'])
 def health():
-    return f'Api ok. <a href="{url_for("swag")}">Swagger</a>'
+    return f'Api ok. <a href="{url_for("swagger.swag")}">Swagger</a>'
 
 
 @bp_api.route('/push/create', methods=['POST'])
