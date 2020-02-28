@@ -167,7 +167,7 @@ def app_init():
             first_name='Admin',
             email='admin',
             password=hash_password(ADMIN_PASS),
-            confirmed_at=datetime.utcnow,
+            confirmed_at=datetime.utcnow(),
             roles=[user_role, super_role])
         db.close_db(None)
 
