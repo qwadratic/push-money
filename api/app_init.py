@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import partial
 from logging import info
 
@@ -20,7 +21,7 @@ from api.core import bp_api
 from api.customization import bp_customization
 from api.dev import bp_dev
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
-    UserImage, CustomizationSetting
+    UserImage, CustomizationSetting, Product, Category, Shop
 from api.sharing import bp_sharing
 from api.surprise import bp_surprise
 from api.swagger import bp_swagger
@@ -133,6 +134,9 @@ def app_init():
             return current_user.is_authenticated
 
     admin = Admin(app, name='pushmoney', template_mode='bootstrap3')
+    admin.add_view(SecureModelView(Shop))
+    admin.add_view(SecureModelView(Category))
+    admin.add_view(SecureModelView(Product))
     admin.add_view(SecureModelView(User))
     admin.add_view(SecureModelView(PushWallet))
     admin.add_view(SecureModelView(PushCampaign))
@@ -156,12 +160,14 @@ def app_init():
         if User.get_or_none(email='admin'):
             db.close_db(None)
             return
+        anonymous_role, _ = Role.get_or_create(name='anonymous')
         super_role, _ = Role.get_or_create(name='superuser')
         user_role, _ = Role.get_or_create(name='user')
         user_datastore.create_user(
             first_name='Admin',
             email='admin',
             password=hash_password(ADMIN_PASS),
+            confirmed_at=datetime.utcnow,
             roles=[user_role, super_role])
         db.close_db(None)
 

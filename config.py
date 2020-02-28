@@ -11,8 +11,12 @@ LOCAL = bool(int(os.environ.get('LOCAL')))
 GOOGLE_CLIENT_KEY_FILENAME = 'gclient-keys.json'
 MSCAN_APIKEY = os.environ.get('MSCAN_APIKEY')
 BIP2PHONE_API_KEY = os.environ.get('BIP2PHONE_API_KEY')
+GIFTERY_TEST_API = bool(int(os.environ.get('GIFTERY_TEST_API')))
+DEV_GIFTERY_API_ID = os.environ.get('DEV_GIFTERY_API_ID')
+DEV_GIFTERY_API_SECRET = os.environ.get('DEV_GIFTERY_API_SECRET')
 GIFTERY_API_ID = os.environ.get('GIFTERY_API_ID')
 GIFTERY_API_SECRET = os.environ.get('GIFTERY_API_SECRET')
+
 GRATZ_API_KEY = os.environ.get('GRATZ_API_KEY')
 UNU_API_KEY = os.environ.get('UNU_API_KEY')
 

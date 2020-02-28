@@ -2,7 +2,8 @@ from datetime import datetime
 from http import HTTPStatus
 from flask import Blueprint, jsonify, request, url_for
 
-from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
+from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance, \
+    get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
 from minter.helpers import create_deeplink
 from minter.utils import to_bip
@@ -113,7 +114,7 @@ def spend_options():
     """
     swagger: swagger/core/spend-list.yml
     """
-    categories = get_spend_categories()
+    categories = get_spend_list()
     return jsonify(categories)
 
 

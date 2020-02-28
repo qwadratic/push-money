@@ -5,7 +5,8 @@ import typing
 from urllib.parse import urlencode
 
 from api.models import PushWallet, OrderHistory
-from config import BIP_WALLET, GIFTERY_API_ID, GIFTERY_API_SECRET
+from config import BIP_WALLET, GIFTERY_API_ID, GIFTERY_API_SECRET, DEV, GIFTERY_TEST_API, DEV_GIFTERY_API_SECRET, \
+    DEV_GIFTERY_API_ID
 from providers.currency_rates import rub_to_bip
 from providers.minter import send_coins
 
@@ -25,9 +26,12 @@ class GifteryAPIException(Exception):
 class GifteryAPIClient:
     """ API client wrapper for Giftery provider. """
 
-    @staticmethod
-    def _create_sign(cmd: str, data: str) -> str:
-        sign = f'{cmd}{data}{GIFTERY_API_SECRET}'
+    def __init__(self, test=GIFTERY_TEST_API):
+        self.api_secret = DEV_GIFTERY_API_SECRET if test else GIFTERY_API_SECRET
+        self.api_id = DEV_GIFTERY_API_ID if test else GIFTERY_API_ID
+
+    def _create_sign(self, cmd: str, data: str) -> str:
+        sign = f'{cmd}{data}{self.api_secret}'
 
         m = hashlib.sha256()
         m.update(sign.encode('utf-8'))
@@ -57,7 +61,7 @@ class GifteryAPIClient:
 
         params = {
             'cmd': cmd,
-            'id': GIFTERY_API_ID,
+            'id': self.api_id,
             'data': str_data,
             'sig': sign,
             'in': 'json'
