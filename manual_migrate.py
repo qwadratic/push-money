@@ -1,33 +1,22 @@
-from api.models import Merchant, User, Brand, Shop, Product, ShopCategory, Category, db, MerchantImage
+from api.models import Merchant, User, Brand, Shop, Product, Category, db, MerchantImage
 from minter.utils import to_pip
 from providers.gift import gift_order_create
 from providers.giftery import GifteryAPIClient
 from wsgi import app
 
-admin = User.get(email='admin')
-
-manual = Merchant.create(user=admin)
-
-biptophone = Brand.create(name='BipToPhone', merchant=manual)
-timeloop = Brand.create(name='Timeloop', merchant=manual)
-unu = Brand.create(name='UNU', merchant=manual)
-# gratz = Brand.create(name='Gratz', merchant=manual)
-gift = Brand.create(name='GIFT', merchant=manual)
-
 
 def create_gift():
+    food = Category.get(slug='food')
     yfood = Shop.create(
         name='Яндекс.Еда (GIFT)', integrated=True, active=True, in_moderation=False,
-        brand=gift, merchant=manual)
-    food = Category.get(slug='food')
-    ShopCategory.create(shop=yfood, category=food)
+        brand=gift, merchant=manual, category=food)
 
     for price in [1000, 2000, 3000]:
         slug = f'y{price}'
         resp = gift_order_create(slug)
         price_bip = to_pip(resp['price_bip'])
         p = Product.create(
-            title='Сертификат Яндекс.Еда', slug=slug, price_fiat=price * 100, currency='RUB',
+            title='Яндекс.Еда (GIFT)', slug=slug, price_fiat=price * 100, currency='RUB',
             price_pip=price_bip, coin='BIP', shop=yfood)
 
 
@@ -44,14 +33,15 @@ def create_giftery():
         giftery_cat[cat['id']] = mdl
 
     products = client.get_products()
-    unsorted = Category.create(slug='unsorted', title='Несортированное', title_en='Unsorted')
     for product in products:
         shop = Shop.create(
-            name='Яндекс.Еда (GIFT)', integrated=True, active=True, in_moderation=False,
+            name=product['title'], integrated=True, active=True, in_moderation=False,
             merchant=manual, description=product['brief'])
-        categories = [giftery_cat.get(c_id) or unsorted for c_id in product['categories']]
-        for cat in categories:
-            ShopCategory.create(shop=shop, category=cat)
+        categories = list(filter(None, [giftery_cat.get(c_id) for c_id in product['categories']]))
+        if not categories:
+            continue
+        shop.category = categories[0]
+        shop.save()
         if not product['faces']:
             continue
 
@@ -80,9 +70,23 @@ def create_giftery():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        with db.database.atomic():
-            create_giftery()
-            create_gift()
+    from peeweedbevolve import all_models
+    with db.database.atomic():
+        shop_models = [Merchant, Brand, Shop, Product, Category, MerchantImage]
+        admin = User.get(email='admin')
+
+        db.database.drop_tables(shop_models)
+        db.database.evolve(ignore_tables=[m for m in all_models if m in shop_models])
+
+        manual = Merchant.create(user=admin)
+        biptophone = Brand.create(name='BipToPhone', merchant=manual)
+        timeloop = Brand.create(name='Timeloop', merchant=manual)
+        unu = Brand.create(name='UNU', merchant=manual)
+        # gratz = Brand.create(name='Gratz', merchant=manual)
+        gift = Brand.create(name='GIFT', merchant=manual)
+
+        # db.database.drop_tables(all_models)
+        create_giftery()
+        create_gift()
 
 

@@ -13,6 +13,7 @@ GIFT_API_BASE_URL = 'http://minterfood.ru/miniapi/create_pay.php'
 
 
 def gift_product_list():
+
     good = []
     ya_food = ['y1000', 'y2000', 'y3000']
     for product in ya_food:

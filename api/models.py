@@ -185,16 +185,7 @@ class Shop(db.Model):
 
     brand = ForeignKeyField(Brand, related_name='shops', null=True)
     merchant = ForeignKeyField(Merchant, related_name='shops')
-
-
-class ShopCategory(db.Model):
-    shop = ForeignKeyField(Shop, related_name='categories')
-    category = ForeignKeyField(Category, related_name='shops')
-    title = property(lambda self: self.category.title)
-    slug = property(lambda self: self.category.slug)
-
-    def __str__(self):
-        return f'category:{self.title}'
+    category = ForeignKeyField(Category, related_name='shops', null=True)
 
 
 class Product(db.Model):
@@ -207,7 +198,7 @@ class Product(db.Model):
     price_fiat = IntegerField(null=True)
     price_pip = CharField(null=True)
 
-    price_list_fiat = ArrayField(null=True)
+    price_list_fiat = JSONField(null=True)
     price_fiat_min = IntegerField(null=True)
     price_fiat_max = IntegerField(null=True)
     price_fiat_step = IntegerField(null=True)
