@@ -51,6 +51,7 @@ class FlaskConfig:
     # SECURITY_POST_LOGIN_VIEW = '/auth/login/email'
     # SECURITY_POST_LOGOUT_VIEW = '/admin/'
 
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
     SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
         'social_core.backends.google.GoogleOAuth2',
         'social_core.backends.telegram.TelegramAuth',
