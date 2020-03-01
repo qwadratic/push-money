@@ -161,7 +161,7 @@ def get_spend_list():
     for category in Category.select().where(~Category.slug % '%,%'):
         categories[category.slug] = {
             'title': {'ru': category.title, 'en': category.title_en},
-            'color': '#' + category.display_color or '',
+            'color': '#' + (category.display_color or ''),
             'icon': category.icon_url,
         }
         for shop in category.shops.where(Shop.active & ~Shop.deleted):
