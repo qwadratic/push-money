@@ -246,8 +246,8 @@ def recreate_products(brand_name):
 
 
 if __name__ == '__main__':
-    # recreate_full_catalog()
-    recreate_products('Giftery')
+    recreate_full_catalog()
+    # recreate_products('Giftery')
     # biptophone = Brand.create(name='BipToPhone', merchant=manual)
     # timeloop = Brand.create(name='Timeloop', merchant=manual)
     # unu = Brand.create(name='UNU', merchant=manual)
