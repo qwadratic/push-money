@@ -4,6 +4,8 @@ import typing
 
 from urllib.parse import urlencode
 
+from flask import url_for, current_app
+
 from api.models import PushWallet, OrderHistory
 from config import BIP_WALLET, GIFTERY_API_ID, GIFTERY_API_SECRET, DEV, GIFTERY_TEST_API, DEV_GIFTERY_API_SECRET, \
     DEV_GIFTERY_API_ID
@@ -227,7 +229,6 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
     })
 
     code = client.get_code({'queue_id': order_id})
-    certificate = client.get_certificate(order_id)
 
     OrderHistory.create(
         provider='giftery',
@@ -238,7 +239,7 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
     )
 
     return {
-        'certificate': certificate,
+        'certificate': current_app.config['BASE_URL'] + url_for('upload.giftery-pdf', order_id=order_id),
         'order_id': order_id,
         'code': code
     }
