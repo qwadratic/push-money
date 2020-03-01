@@ -142,9 +142,6 @@ def get_spend_list():
     for category in Category.select():
         cat_name = category.title
         for shop in category.shops:
-            brand_slug = 'giftery'
-            if shop.brand and shop.brand.name == 'GIFT':
-                brand_slug = 'gift'
 
             for product in shop.products.where(Product.product_type == 'certificate'):
                 if not shop.active or shop.deleted:
@@ -153,7 +150,7 @@ def get_spend_list():
                     continue
                 certificates.setdefault(cat_name, {})
                 certificates[cat_name].setdefault(shop.name, [])
-                certificates[cat_name][shop.name].append(product.api_dict(bip_coin_price, f'{brand_slug}-'))
+                certificates[cat_name][shop.name].append(product.api_dict(bip_coin_price))
 
     return {
         'others': others,
