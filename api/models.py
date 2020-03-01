@@ -1,11 +1,11 @@
 from datetime import datetime
 
 import peeweedbevolve
-from flask_security import RoleMixin, UserMixin, login_user
+from flask_security import RoleMixin, UserMixin
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanField
 from playhouse.flask_utils import FlaskDB
-from playhouse.postgres_ext import JSONField, DateTimeField, IPField, ArrayField
+from playhouse.postgres_ext import JSONField, DateTimeField, IPField
 
 base_models = [
     'basemodel', 'passwordprotectedmodel',

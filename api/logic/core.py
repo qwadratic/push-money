@@ -14,7 +14,7 @@ from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
-from providers.timeloop import timeloop_top_up
+from providers.timeloop import timeloop_top_up, bipgame_top_up
 from providers.unu import unu_top_up
 
 
@@ -92,7 +92,8 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
         'transfer-minter': send_coins,
         'resend': push_resend,
         'unu': unu_top_up,
-        'timeloop': timeloop_top_up
+        'timeloop': timeloop_top_up,
+        'bipgame': bipgame_top_up
     }
     fn = spend_option_fns.get(option)
     if option not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
@@ -108,7 +109,6 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
     if 'giftery' in option:
         fn = giftery_buy
         kwargs['product'] = option.split('-')[1]
-        kwargs['face'] = option.split('-')[2]
 
     if not fn:
         return 'Spend option is not supported yet'

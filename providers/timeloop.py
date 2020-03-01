@@ -24,3 +24,20 @@ def timeloop_top_up(wallet: PushWallet, amount):
         return result
 
     return {'link': f'https://timeloop.games/?gift={gift_code}'}
+
+
+def bipgame_top_up(wallet: PushWallet, amount):
+    gift_code = uuid()
+    h = hashlib.sha256()
+    h.update(gift_code.encode('utf-8'))
+    payload = f'push:{h.hexdigest()}'
+
+    amount_fact = amount - float(estimate_payload_fee(payload, bip=True))
+    if amount_fact <= 0:
+        return 'Amount is too low'
+
+    result = send_coins(wallet, TIMELOOP_ADDRESS, amount_fact, payload=payload, wait=True)
+    if isinstance(result, str):
+        return result
+
+    return {'link': f'https://bipgame.io/public/push?gift={gift_code}'}
