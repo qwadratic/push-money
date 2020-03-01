@@ -137,23 +137,28 @@ def get_spend_categories():
 def get_spend_list():
     others = ['transfer-minter', 'resend', 'b2ph', 'unu', 'timeloop', 'bipgame']
     certificates = {}
+    categories = {}
     bip_coin_price = bip_price()
 
-    for category in Category.select():
-        cat_name = category.title
+    for category in Category.select().where(~Category.slug % '%,%'):
+        categories[category.slug] = {
+            'title': category.title,
+            'title_en': category.title_en,
+            'icon': category.icon_url
+        }
         for shop in category.shops:
-
             for product in shop.products.where(Product.product_type == 'certificate'):
                 if not shop.active or shop.deleted:
                     continue
                 if not product.active or product.deleted:
                     continue
-                certificates.setdefault(cat_name, {})
-                certificates[cat_name].setdefault(shop.name, [])
-                certificates[cat_name][shop.name].append(product.api_dict(bip_coin_price))
+                certificates.setdefault(category.slug, {})
+                certificates[category.slug].setdefault(shop.name, [])
+                certificates[category.slug][shop.name].append(product.api_dict(bip_coin_price))
 
     return {
         'others': others,
         'certificates': certificates,
+        'categories': categories,
         'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
