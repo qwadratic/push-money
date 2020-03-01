@@ -271,6 +271,7 @@ class Product(db.Model):
             'slug': self.slug,
             'currency': self.currency,
             'coin': self.coin,
+            'name': self.name,
             **price_patch
         }
 

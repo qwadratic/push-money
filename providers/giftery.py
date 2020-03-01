@@ -212,9 +212,10 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
     if not confirm:
         return {'price_bip': price_bip}
 
-    result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
-    if isinstance(result, str):
-        return result
+    if not DEV:
+        result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
+        if isinstance(result, str):
+            return result
 
     client = GifteryAPIClient()
 
@@ -225,6 +226,7 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
         'from': 'noreply@push.money',
     })
 
+    code = client.get_code({'queue_id': order_id})
     certificate = client.get_certificate(order_id)
 
     OrderHistory.create(
@@ -237,5 +239,6 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
 
     return {
         'certificate': certificate,
-        'order_id': order_id
+        'order_id': order_id,
+        'code': code
     }
