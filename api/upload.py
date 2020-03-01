@@ -3,11 +3,11 @@ from flask_uploads import UploadSet, IMAGES
 from http import HTTPStatus
 from api.models import UserImage
 
-bp_upload = Blueprint('upload', __name__, url_prefix='/api/upload')
+bp_upload = Blueprint('upload', __name__, url_prefix='/api')
 images = UploadSet('IMAGES', IMAGES)
 
 
-@bp_upload.route('', methods=['POST'])
+@bp_upload.route('/upload', methods=['POST'])
 def upload_img():
     """
     swagger: swagger/customization/upload-img.yml
@@ -20,10 +20,15 @@ def upload_img():
     return jsonify({'url': image.url, 'id': image.id})
 
 
-@bp_upload.route('/<path:filename>')
+@bp_upload.route('/upload/<path:filename>')
 def get_uploaded_img(filename):
     """
     swagger: swagger/customization/upload-img-get.yml
     """
     config = current_app.upload_set_config.get('IMAGES')
     return send_from_directory('../' + config.destination, filename)
+
+
+@bp_upload.route('/content/icons/<string:content_type>-<string:object_name>', endpoint='icons')
+def get_category_icon(content_type, object_name):
+    return send_from_directory('../content', f'{content_type}/{object_name}.png')

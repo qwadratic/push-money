@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import peeweedbevolve
+from flask import url_for
 from flask_security import RoleMixin, UserMixin
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanField
@@ -172,6 +173,10 @@ class Category(db.Model):
     title = CharField()
     title_en = CharField()
     slug = CharField(unique=True)
+
+    @property
+    def icon_url(self):
+        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name=self.slug)
 
 
 class Brand(db.Model):
