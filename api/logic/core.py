@@ -145,14 +145,14 @@ def get_spend_list():
     categories = {
         'mobile': {
             'title': {'ru': 'Связь', 'en': 'Mobile'},
-            'color': '#FF0000',
+            'color': '#1FC3F7',
             'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
         }
     }
     shops = {
         'biptophone': {
             'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
-            'color': '#FF0000',
+            'color': '#1FC3F7',
             'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
         }
     }
@@ -161,7 +161,7 @@ def get_spend_list():
     for category in Category.select().where(~Category.slug % '%,%'):
         categories[category.slug] = {
             'title': {'ru': category.title, 'en': category.title_en},
-            'color': '#FF0000',
+            'color': category.display_color,
             'icon': category.icon_url,
         }
         for shop in category.shops.where(Shop.active & ~Shop.deleted):
@@ -175,7 +175,6 @@ def get_spend_list():
             certificates[category.slug][shop.slug] = shop_repr
             shops[shop.slug] = {
                 'title': {'ru': shop.name, 'en': shop.name},
-                'color': '#FF0000',
                 'icon': shop.icon_url
             }
 
@@ -187,3 +186,5 @@ def get_spend_list():
         'bip_coin_price': bip_coin_price
         # 'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
+
+

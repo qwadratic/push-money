@@ -175,10 +175,13 @@ class Category(db.Model):
     title = CharField()
     title_en = CharField()
     slug = CharField(unique=True)
+    icon_filename = CharField(null=True)
+    display_color = CharField(null=True)
 
     @property
     def icon_url(self):
-        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name=self.slug)
+        filename = self.icon_filename or self.slug
+        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name=filename)
 
 
 class Brand(db.Model):
@@ -194,6 +197,7 @@ class Shop(db.Model):
 
     name = CharField()
     description = TextField(null=True)
+    logo_filename = CharField(null=True)
 
     brand = ForeignKeyField(Brand, related_name='shops', null=True)
     merchant = ForeignKeyField(Merchant, related_name='shops')
@@ -205,7 +209,8 @@ class Shop(db.Model):
 
     @property
     def icon_url(self):
-        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name=self.slug)
+        filename = self.logo_filename or self.slug
+        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name=filename)
 
     @property
     def api_repr(self):
