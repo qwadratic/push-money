@@ -4,7 +4,7 @@ from time import sleep
 import requests
 from shortuuid import uuid
 
-from api.models import WebhookEvent, OrderHistory
+from api.models import WebhookEvent, OrderHistory, Category
 from minter.utils import to_pip
 from providers.minter import send_coins
 
@@ -22,9 +22,10 @@ def gift_product_list():
             good.append(product)
         else:
             print(response)
+
     return {
         'food': {
-            'Яндекс.Еда': [
+            'Яндекс.Еда (GIFT)': [
                 {
                     'option': f'gift-{p}',
                     'value': int(p[1:]),

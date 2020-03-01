@@ -67,6 +67,16 @@ def fiat_to_usd_rates() -> Dict[str, float]:
     return {'UAH': uah_usd, **ecb_rates}
 
 
+def bip_price() -> float:
+    ecb_rates = ecb_usd_rates()
+    usd2rub = ecb_rates['RUB']
+
+    cfg = get_cfg()
+    usdt2bip = float(cfg['usdt2bip'])
+
+    return round(usdt2bip * usd2rub, 2)
+
+
 def rub_to_bip(value) -> float:
     if not value:
         return 0

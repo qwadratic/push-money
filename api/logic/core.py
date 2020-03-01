@@ -7,7 +7,7 @@ from shortuuid import uuid as _uuid
 from minter.helpers import calc_bip_values
 from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
-from api.models import PushWallet
+from api.models import PushWallet, Category, Product
 from providers.gift import gift_buy, gift_product_list
 from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
@@ -16,6 +16,7 @@ from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
 from providers.timeloop import timeloop_top_up, bipgame_top_up
 from providers.unu import unu_top_up
+from providers.currency_rates import bip_price
 
 
 def uuid():
@@ -134,37 +135,28 @@ def get_spend_categories():
 
 
 def get_spend_list():
-    return {
-        'others': ['transfer-minter', 'resend', 'b2ph', 'unu', 'timeloop'],
-        'certificates': {
-            'travel': {
-                'Каршеринг BelkaCar': [
-                    {
-                        'slug': 'giftery-13103',
-                        'brief': 'Вы платите только за минуты пользования машиной. Расходы на бензин, парковку, мойку и страховку берет на себя компания.\r\n\r\n',
-                        'price_list_fiat': [300, 500, 1000, 2000, 3000, 5000, 10000],
-                        'disclaimer': '<p>Каршеринг BelkaCar — это сервис поминутной аренды автомобилей в Москве. Вы платите только за минуты пользования. За бензин, парковку, мойку и страховку платим мы. Наши авто – KIA Rio, KIA Rio X-Line и Mercedes- Benz CLA\\GLA доступны для аренды в любое время суток. Больше 2125 автомобилей по всему городу в вашем смартфоне! Мобильное приложение доступно для Android и iOS.</p>\r\n<p>Как воспользоваться Сертификатом:</p>\r\n<p>1. Зарегистрируйтесь в сервисе BelkaCar через мобильное приложение или на сайте <a target="_blank" href="https://belkacar.ru/">belkacar.ru</a></p>\r\n<p>2. Загрузите необходимые документы и данные. Дождитесь подтверждения регистрации по СМС или e-mail.</p><p>3. Войдите в приложение BelkaCar</p>\r\n<p>4. До совершения бронирования введите промокод в разделе “Промокод”</p>\r\n<p>5. Можете бронировать автомобиль<br>Воспользоваться сервисом BelkaCar может любой, кому исполнился 21 год и водительский стаж более 2-х лет. Для подключения к сервису BelkaBlack (Mercedes-Benz CLA/GLA) вам должно быть не меньше 25 лет и водительский стаж более 5-ти лет. Перед использованием сервиса настоятельно рекомендуем ознакомится с разделом «Часто задаваемые вопросы», который находится на сайте <a target="_blank" href="https://belkacar.ru/">belkacar.ru</a>.<br>Бронирование автомобиля возможно через приложение и сайт BelkaCar. Аренду можно начать только с помощью приложения. Мобильное приложение доступно для Android и iOS.</p>\r\n<p>Телефон поддержки: +7 (495) 234 33-00</p>',
-                        'currency': 'RUB',
-                        'coin_price': 1.68,
-                        'coin': 'BIP'
-                    },
-                ]
-            },
-            'tech': {
-                'Cyber-touch.ru': [
-                    {
-                        'slug': 'giftery-14107',
-                        'brief': '...',
-                        'price_fiat_min': 100,
-                        'price_fiat_max': 100000,
-                        'price_fiat_step': 100,
-                        'currency': 'RUB',
-                        'coin_price': 1.68,
-                        'coin': 'BIP'
-                    }
-                ]
-            }
+    others = ['transfer-minter', 'resend', 'b2ph', 'unu', 'timeloop', 'bipgame']
+    certificates = {}
+    bip_coin_price = bip_price()
 
-        },
+    for category in Category.select():
+        cat_name = category.title
+        for shop in category.shops:
+            brand_slug = 'giftery'
+            if shop.brand and shop.brand.name == 'GIFT':
+                brand_slug = 'gift'
+
+            for product in shop.products.where(Product.product_type == 'certificate'):
+                if not shop.active or shop.deleted:
+                    continue
+                if not product.active or product.deleted:
+                    continue
+                certificates.setdefault(cat_name, {})
+                certificates[cat_name].setdefault(shop.name, [])
+                certificates[cat_name][shop.name].append(product.api_dict(bip_coin_price, f'{brand_slug}-'))
+
+    return {
+        'others': others,
+        'certificates': certificates,
         'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
