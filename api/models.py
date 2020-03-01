@@ -199,6 +199,29 @@ class Shop(db.Model):
     merchant = ForeignKeyField(Merchant, related_name='shops')
     category = ForeignKeyField(Category, related_name='shops', null=True)
 
+    @property
+    def slug(self):
+        return str(self.id)
+
+    @property
+    def icon_url(self):
+        return db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name=self.slug)
+
+    @property
+    def api_repr(self):
+        active_products = self.products.where(Product.active & ~Product.deleted)
+        if not active_products:
+            return
+        shop_repr = {
+            'products': [product.api_repr for product in active_products],
+        }
+        price_type = 'fixed' if self.brand \
+            else 'range' if ('price_list_fiat' not in shop_repr['products'][0]) \
+                or (shop_repr['products'][0]['price_list_fiat'][0] == 0) \
+            else 'list'
+        shop_repr['price_type'] = price_type
+        return shop_repr
+
 
 class Product(db.Model):
     product_type = CharField()
@@ -225,12 +248,13 @@ class Product(db.Model):
 
     shop = ForeignKeyField(Shop, related_name='products')
 
-    def api_dict(self, coin_price):
-        price_patch = {'price_list_fiat': self.price_list_fiat}
+    @property
+    def api_repr(self):
+        price_patch = None
         if not self.price_list_fiat and self.price_fiat:
             price_patch = {
                 'price_fiat': self.price_fiat,
-                'price_bip': float(to_bip(self.price_pip))
+                'price_bip': float(to_bip(self.price_pip)),
             }
         elif not self.price_list_fiat or (self.price_list_fiat and self.price_list_fiat[0] == 0):
             price_patch = {
@@ -238,13 +262,15 @@ class Product(db.Model):
                 'price_fiat_max': self.price_fiat_min,
                 'price_fiat_step': self.price_fiat_step
             }
-        if 'price_bip' not in price_patch:
-            price_patch['coin_price'] = coin_price
+        elif self.price_list_fiat:
+            price_patch = {
+                'price_list_fiat': self.price_list_fiat
+            }
+
         return {
             'slug': self.slug,
             'currency': self.currency,
             'coin': self.coin,
-            # 'disclaimer': self.description,
             **price_patch
         }
 

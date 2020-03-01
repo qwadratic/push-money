@@ -7,7 +7,7 @@ from shortuuid import uuid as _uuid
 from minter.helpers import calc_bip_values
 from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
-from api.models import PushWallet, Category, Product
+from api.models import PushWallet, Category, Product, Shop
 from providers.gift import gift_buy, gift_product_list
 from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
@@ -138,27 +138,34 @@ def get_spend_list():
     others = ['transfer-minter', 'resend', 'b2ph', 'unu', 'timeloop', 'bipgame']
     certificates = {}
     categories = {}
+    shops = {}
     bip_coin_price = bip_price()
 
     for category in Category.select().where(~Category.slug % '%,%'):
         categories[category.slug] = {
             'title': {'ru': category.title, 'en': category.title_en},
             'color': '#FF0000',
-            'icon': category.icon_url
+            'icon': category.icon_url,
         }
-        for shop in category.shops:
-            for product in shop.products.where(Product.product_type == 'certificate'):
-                if not shop.active or shop.deleted:
-                    continue
-                if not product.active or product.deleted:
-                    continue
-                certificates.setdefault(category.slug, {})
-                certificates[category.slug].setdefault(shop.name, [])
-                certificates[category.slug][shop.name].append(product.api_dict(bip_coin_price))
+        for shop in category.shops.where(Shop.active & ~Shop.deleted):
+            if not shop.products.count():
+                continue
+            certificates.setdefault(category.slug, {})
+            certificates[category.slug].setdefault(shop.slug, [])
+            shop_repr = shop.api_repr
+            if not shop_repr:
+                continue
+            certificates[category.slug][shop.slug] = shop_repr
+            shops[shop.slug] = {
+                'title': {'ru': shop.name, 'en': shop.name},
+                'color': '#FF0000',
+                'icon': shop.icon_url
+            }
 
     return {
         'others': others,
         'certificates': certificates,
         'categories': categories,
-        'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
+        'shops': shops
+        # 'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
