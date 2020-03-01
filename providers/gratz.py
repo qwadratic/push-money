@@ -55,7 +55,7 @@ def gratz_product_list():
         product_tree.setdefault(category_name, {})
         product_tree[category_name].setdefault(shop_name, [])
         product_tree[category_name][shop_name].append({
-            'option': f'gratz-{product_id}',
+            'slug': f'gratz-{product_id}',
             'value': value,
             'currency': 'UAH'
         })

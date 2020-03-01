@@ -218,7 +218,7 @@ class Product(db.Model):
 
     shop = ForeignKeyField(Shop, related_name='products')
 
-    def api_dict(self, coin_price, slug_prefix=''):
+    def api_dict(self, coin_price):
         price_patch = {'price_list_fiat': self.price_list_fiat}
         if not self.price_list_fiat or (self.price_list_fiat and self.price_list_fiat[0] == 0):
             price_patch = {
@@ -228,7 +228,7 @@ class Product(db.Model):
             }
 
         return {
-            'slug': slug_prefix + self.slug,
+            'slug': self.slug,
             'currency': self.currency,
             'coin_price': coin_price,
             'coin': self.coin,
@@ -238,7 +238,6 @@ class Product(db.Model):
 
 
 class MerchantImage(UserImage):
-    product = ForeignKeyField(Product, related_name='images', null=True)
+    product = ForeignKeyField(Product, related_name='images', null=True, on_delete='CASCADE')
     shop = ForeignKeyField(Shop, related_name='images', null=True)
     brand = ForeignKeyField(Brand, related_name='images', null=True)
-

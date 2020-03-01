@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import peeweedbevolve
@@ -10,6 +11,7 @@ from config import ADMIN_PASS
 from minter.utils import to_pip
 from providers.gift import gift_order_create
 from providers.giftery import GifteryAPIClient
+from providers.gratz import gratz_product_list, gratz_order_create
 from wsgi import app
 
 security = app.extensions['security']
@@ -36,8 +38,51 @@ def create_gift(merchant, brand):
             continue
         price_bip = to_pip(resp['price_bip'])
         p = Product.create(
-            title='Яндекс.Еда (GIFT)', slug=slug, price_fiat=price, currency='RUB',
-            price_pip=price_bip, coin='BIP', shop=yfood, product_type='certificate', active=True)
+            title=f'{price} RUB',
+            slug=slug,
+            price_fiat=price,
+            currency='RUB',
+            price_pip=price_bip,
+            coin='BIP',
+            shop=yfood,
+            product_type='certificate',
+            active=True)
+
+
+def create_gratz(merchant, brand):
+    gratz_products, _ = gratz_product_list()
+    categories = {c.slug: c for c in Category.select()}
+    gratz_shops = {s.name: s for s in Shop.select().where(Shop.brand == brand)}
+
+    for cat_slug, shops in gratz_products.items():
+        cat_model = categories.get(cat_slug)
+        if cat_slug == 'gas' and not cat_model:
+            cat_model = Category.create(slug='gas', title='АЗС', title_en='Gas')
+        if not cat_model:
+            logging.info(f'Bad category slug {cat_slug} (GRATZ)')
+            continue
+        for shop_name, products in shops.items():
+            shop_model = gratz_shops.get(shop_name)
+            if not shop_model:
+                shop_model = Shop.create(
+                    name=f'{shop_name} (GRATZ)',
+                    integrated=True, active=True, in_moderation=False,
+                    merchant=merchant, category=cat_model, brand=brand)
+                gratz_shops[shop_name] = shop_model
+
+            for product in products:
+                response = gratz_order_create(product['slug'].split('-')[1])
+                price_pip = to_pip(response['price_bip'])
+                Product.create(
+                    product_type='certificate',
+                    active=True,
+                    price_fiat=product['value'],
+                    price_pip=price_pip,
+                    coin='BIP',
+                    currency='UAH',
+                    slug=product['slug'],
+                    title=f"{product['value']} UAH",
+                    shop=shop_model)
 
 
 def create_giftery(merchant, brand=None):
@@ -48,25 +93,38 @@ def create_giftery(merchant, brand=None):
     categories = client.get_categories()
 
     giftery_cat = {}
-    giftery_slugs = {}
+    giftery_slugs = {c.slug: c for c in Category.select()}
     for cat in categories:
         slug = cat['code'] = cat['code'].lower()
         if slug in ['new', 'popular', '']:
             continue
         if slug in rename:
             cat['code'] = rename[slug]
-
-        mdl = Category.create(
-            slug=cat['code'], title=cat['title'], title_en=cat['title_en'])
+        mdl = giftery_slugs.get(cat['code'])
+        if not mdl:
+            mdl = Category.create(
+                slug=cat['code'],
+                title=cat['title'],
+                title_en=cat['title_en'])
+            giftery_slugs[cat['code']] = mdl
         giftery_cat[cat['id']] = mdl
         giftery_slugs[cat['code']] = mdl
 
     products = client.get_products()
     to_del = set()
+    shop_mdls = {s.name: s for s in Shop.select().where(Shop.brand.is_null())}
     for product in products:
-        shop = Shop.create(
-            name=product['title'], integrated=True, active=True, in_moderation=False,
-            merchant=merchant, description=product['brief'], brand=brand)
+        shop = shop_mdls.get(product['title'])
+        if not shop:
+            shop = Shop.create(
+                name=product['title'],
+                integrated=True,
+                active=True,
+                in_moderation=False,
+                merchant=merchant,
+                description=product['brief'],
+                brand=brand)
+            shop_mdls[shop.name] = shop
         categories = list(filter(None, [giftery_cat.get(c_id) for c_id in product['categories']]))
 
         if categories:
@@ -96,7 +154,7 @@ def create_giftery(merchant, brand=None):
                 currency='RUB',
                 title=product['title'],
                 description=product['disclaimer'],
-                slug=product['id'],
+                slug=f"giftery-{product['id']}",
                 price_fiat_min=int(product['face_min']),
                 price_fiat_max=int(product['face_max']),
                 price_fiat_step=int(product['face_step']),
@@ -109,7 +167,7 @@ def create_giftery(merchant, brand=None):
             currency='RUB',
             title=product['title'],
             description=product['disclaimer'],
-            slug=product['id'],
+            slug=f"giftery-{product['id']}",
             price_list_fiat=[int(price) for price in product['faces']],
             product_type='certificate')
         MerchantImage.create(product=p, url=product['image_url'])
@@ -117,15 +175,18 @@ def create_giftery(merchant, brand=None):
     for cat in to_del:
         cat.delete_instance()
 
+
 @database.atomic()
 def update_certificates():
     admin = User.get(email='admin')
-    manual = Merchant.create(user=admin)
+    manual, _ = Merchant.get_or_create(user=admin)
 
-    gift = Brand.create(name='GIFT', merchant=manual)
-    # gratz = Brand.create(name='Gratz', merchant=manual)
+    gift, _ = Brand.get_or_create(name='GIFT', merchant=manual)
+    gratz, _ = Brand.get_or_create(name='Gratz', merchant=manual)
+
     create_giftery(manual)
     create_gift(manual, gift)
+    create_gratz(manual, gratz)
 
 
 @database.atomic()
@@ -152,9 +213,41 @@ def recreate_schema(to_process=None):
     # create_admin()
 
 
-if __name__ == '__main__':
+@database.atomic()
+def recreate_full_catalog():
     recreate_schema(shop_models)
     update_certificates()
+
+
+@database.atomic()
+def recreate_products(brand_name):
+    giftery_flag = brand_name == 'Giftery'
+    brand = Brand.get_or_none(name=brand_name)
+    if not brand and not giftery_flag:
+        return
+    cond = Shop.brand == brand if not giftery_flag else Shop.brand.is_null()
+    if giftery_flag:
+        MerchantImage.delete().execute()
+
+    Product \
+        .delete() \
+        .where(
+            Product.shop.in_(Shop.select().where(cond))) \
+        .execute()
+
+    admin = User.get(email='admin')
+    manual = Merchant.get(user=admin)
+    if brand_name == 'Giftery':
+        create_giftery(manual)
+    if brand_name == 'GIFT':
+        create_gift(manual, brand)
+    if brand_name == 'Gratz':
+        create_gratz(manual, brand)
+
+
+if __name__ == '__main__':
+    # recreate_full_catalog()
+    recreate_products('Giftery')
     # biptophone = Brand.create(name='BipToPhone', merchant=manual)
     # timeloop = Brand.create(name='Timeloop', merchant=manual)
     # unu = Brand.create(name='UNU', merchant=manual)
