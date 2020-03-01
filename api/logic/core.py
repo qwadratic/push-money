@@ -166,6 +166,7 @@ def get_spend_list():
         'others': others,
         'certificates': certificates,
         'categories': categories,
-        'shops': shops
+        'shops': shops,
+        'bip_coin_price': bip_coin_price
         # 'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
