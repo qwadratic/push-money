@@ -88,29 +88,29 @@ def push_resend(
     return {'new_link_id': new_wallet.link_id}
 
 
-def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
+def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     spend_option_fns = {
-        'mobile': mobile_top_up,
+        'b2ph': mobile_top_up,
         'transfer-minter': send_coins,
         'resend': push_resend,
         'unu': unu_top_up,
         'timeloop': timeloop_top_up,
         'bipgame': bipgame_top_up
     }
-    fn = spend_option_fns.get(option)
-    if option not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
+    fn = spend_option_fns.get(slug)
+    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
         kwargs['confirm'] = confirm
 
     # im genius
-    if 'gift' in option:
+    if 'gift' in slug:
         fn = gift_buy
-        kwargs['product'] = option.split('-')[1]
-    if 'gratz' in option:
+        kwargs['product'] = slug.split('-')[1]
+    if 'gratz' in slug:
         fn = gratz_buy
-        kwargs['product'] = option.split('-')[1]
-    if 'giftery' in option:
+        kwargs['product'] = slug.split('-')[1]
+    if 'giftery' in slug:
         fn = giftery_buy
-        kwargs['product'] = option.split('-')[1]
+        kwargs['product'] = slug.split('-')[1]
 
     if not fn:
         return 'Spend option is not supported yet'

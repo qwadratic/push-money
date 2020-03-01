@@ -149,18 +149,18 @@ def make_spend(link_id):
         return jsonify({'success': False, 'error': '"option" key is required'}), HTTPStatus.BAD_REQUEST
 
     new_password = None
-    option = payload['option']
-    if password and option == 'resend':
+    slug = payload['slug']
+    if password and slug == 'resend':
         new_password = password
     if not wallet.auth(password):
         return jsonify({'success': False, 'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
 
     confirm = bool(int(request.args.get('confirm', 1)))
     params = payload.get('params', {})
-    if option == 'resend':
+    if slug == 'resend':
         params['new_password'] = new_password
 
-    result = spend_balance(wallet, option, confirm=confirm, **params)
+    result = spend_balance(wallet, slug, confirm=confirm, **params)
     if isinstance(result, str):
         return jsonify({'success': False, 'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
 
