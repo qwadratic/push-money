@@ -109,7 +109,7 @@ def push_balance(link_id):
     return jsonify(response)
 
 
-@bp_api.route('/push/<link_id>/mnemonic', methods=['POST'])
+@bp_api.route('/push/<link_id>/mnemonic', methods=['GET', 'POST'])
 def get_mnemonic(link_id):
     payload = request.get_json() or {}
     password = payload.get('password')
