@@ -212,9 +212,10 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = 
     if not confirm:
         return {'price_bip': price_bip}
 
-    result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
-    if isinstance(result, str):
-        return result
+    if not DEV:
+        result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
+        if isinstance(result, str):
+            return result
 
     client = GifteryAPIClient()
 
