@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from flask import url_for
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
@@ -7,7 +8,7 @@ from shortuuid import uuid as _uuid
 from minter.helpers import calc_bip_values
 from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
-from api.models import PushWallet, Category, Product, Shop
+from api.models import PushWallet, Category, Product, Shop, db
 from providers.gift import gift_buy, gift_product_list
 from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
@@ -135,10 +136,26 @@ def get_spend_categories():
 
 
 def get_spend_list():
-    others = ['transfer-minter', 'resend', 'b2ph', 'unu', 'timeloop', 'bipgame']
-    certificates = {}
-    categories = {}
-    shops = {}
+    others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
+    certificates = {
+        'mobile': {
+            'biptophone': [{'price_type': 'any', 'slug': 'b2ph'}]
+        }
+    }
+    categories = {
+        'mobile': {
+            'title': {'ru': 'Связь', 'en': 'Mobile'},
+            'color': '#FF0000',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
+        }
+    }
+    shops = {
+        'biptophone': {
+            'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
+            'color': '#FF0000',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
+        }
+    }
     bip_coin_price = bip_price()
 
     for category in Category.select().where(~Category.slug % '%,%'):
