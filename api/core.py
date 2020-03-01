@@ -145,8 +145,8 @@ def make_spend(link_id):
     if not wallet:
         return jsonify({'success': False, 'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
 
-    if 'option' not in payload:
-        return jsonify({'success': False, 'error': '"option" key is required'}), HTTPStatus.BAD_REQUEST
+    if 'slug' not in payload:
+        return jsonify({'success': False, 'error': '"slug" key is required'}), HTTPStatus.BAD_REQUEST
 
     new_password = None
     slug = payload['slug']
