@@ -206,8 +206,8 @@ class GifteryAPIClient:
         return resp_data['data']
 
 
-def giftery_buy(wallet: PushWallet, product: int, fiat_price: int, email: str = None, confirm: bool = True):
-    price_bip = 0 if DEV else rub_to_bip(fiat_price)
+def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, email: str = None, confirm: bool = True):
+    price_bip = 0 if DEV else rub_to_bip(price_fiat)
 
     if not confirm:
         return {'price_bip': price_bip}
@@ -220,7 +220,7 @@ def giftery_buy(wallet: PushWallet, product: int, fiat_price: int, email: str = 
 
     order_id = client.make_order({
         'product_id': product,
-        'face': fiat_price,
+        'face': price_fiat,
         'email_to': email or 'noreply@push.money',
         'from': 'noreply@push.money',
     })
