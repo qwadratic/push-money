@@ -218,6 +218,24 @@ class Product(db.Model):
 
     shop = ForeignKeyField(Shop, related_name='products')
 
+    def api_dict(self, coin_price, slug_prefix=''):
+        price_patch = {'price_list_fiat': self.price_list_fiat}
+        if not self.price_list_fiat or (self.price_list_fiat and self.price_list_fiat[0] == 0):
+            price_patch = {
+                'price_fiat_min': self.price_fiat_min,
+                'price_fiat_max': self.price_fiat_min,
+                'price_fiat_step': self.price_fiat_step
+            }
+
+        return {
+            'slug': slug_prefix + self.slug,
+            'currency': self.currency,
+            'coin_price': coin_price,
+            'coin': self.coin,
+            'disclaimer': self.description,
+            **price_patch
+        }
+
 
 class MerchantImage(UserImage):
     product = ForeignKeyField(Product, related_name='images', null=True)
