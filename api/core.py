@@ -109,6 +109,21 @@ def push_balance(link_id):
     return jsonify(response)
 
 
+@bp_api.route('/push/<link_id>/mnemonic', methods=['POST'])
+def get_mnemonic(link_id):
+    payload = request.get_json() or {}
+    password = payload.get('password')
+
+    wallet = PushWallet.get_or_none(link_id=link_id)
+    if not wallet:
+        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
+
+    if not wallet.auth(password):
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
+
+    return jsonify({'mnemonic': wallet.mnemonic})
+
+
 @bp_api.route('/spend/list', methods=['GET'])
 def spend_options():
     """
