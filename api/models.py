@@ -8,6 +8,8 @@ from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanF
 from playhouse.flask_utils import FlaskDB
 from playhouse.postgres_ext import JSONField, DateTimeField, IPField
 
+from minter.utils import to_bip
+
 base_models = [
     'basemodel', 'passwordprotectedmodel',
     'peeweeassociationmixin', 'peeweenoncemixin',
@@ -225,17 +227,22 @@ class Product(db.Model):
 
     def api_dict(self, coin_price):
         price_patch = {'price_list_fiat': self.price_list_fiat}
-        if not self.price_list_fiat or (self.price_list_fiat and self.price_list_fiat[0] == 0):
+        if not self.price_list_fiat and self.price_fiat:
+            price_patch = {
+                'price_fiat': self.price_fiat,
+                'price_bip': float(to_bip(self.price_pip))
+            }
+        elif not self.price_list_fiat or (self.price_list_fiat and self.price_list_fiat[0] == 0):
             price_patch = {
                 'price_fiat_min': self.price_fiat_min,
                 'price_fiat_max': self.price_fiat_min,
                 'price_fiat_step': self.price_fiat_step
             }
-
+        if 'price_bip' not in price_patch:
+            price_patch['coin_price'] = coin_price
         return {
             'slug': self.slug,
             'currency': self.currency,
-            'coin_price': coin_price,
             'coin': self.coin,
             # 'disclaimer': self.description,
             **price_patch
