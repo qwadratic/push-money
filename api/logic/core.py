@@ -142,8 +142,8 @@ def get_spend_list():
 
     for category in Category.select().where(~Category.slug % '%,%'):
         categories[category.slug] = {
-            'title': category.title,
-            'title_en': category.title_en,
+            'title': {'ru': category.title, 'en': category.title_en},
+            'color': 'FF0000',
             'icon': category.icon_url
         }
         for shop in category.shops:
