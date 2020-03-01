@@ -237,7 +237,7 @@ class Product(db.Model):
             'currency': self.currency,
             'coin_price': coin_price,
             'coin': self.coin,
-            'disclaimer': self.description,
+            # 'disclaimer': self.description,
             **price_patch
         }
 
