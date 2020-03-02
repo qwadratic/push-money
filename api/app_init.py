@@ -23,7 +23,7 @@ from api.dev import bp_dev
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting, Product, Category, Shop
 from api.sharing import bp_sharing
-from api.surprise import bp_surprise
+# from api.surprise import bp_surprise
 from api.swagger import bp_swagger
 from api.upload import bp_upload, images
 from api.webhooks import bp_webhooks
@@ -38,7 +38,7 @@ blueprints = [
     bp_webhooks,
     bp_upload,
     bp_customization,
-    bp_surprise,
+    # bp_surprise,
     bp_swagger
 ]
 if DEV:

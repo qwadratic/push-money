@@ -214,7 +214,7 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
     if not confirm:
         return {'price_bip': price_bip}
 
-    if not DEV:
+    if False: #if not DEV:
         result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
         if isinstance(result, str):
             return result
