@@ -1,4 +1,7 @@
 import hashlib
+import logging
+from time import sleep
+
 import requests
 import typing
 
@@ -214,12 +217,12 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
     if not confirm:
         return {'price_bip': price_bip}
 
-    if False: #if not DEV:
+    if not DEV:
         result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
         if isinstance(result, str):
             return result
 
-    client = GifteryAPIClient()
+    client = GifteryAPIClient(test=DEV)
 
     if not is_email(contact):
         contact = 'noreply@push.money'
@@ -229,8 +232,12 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
         'email_to': contact,
         'from': 'noreply@push.money',
     })
-
-    code = client.get_code({'queue_id': order_id})
+    sleep(5)
+    code = None
+    try:
+        code = client.get_code({'queue_id': order_id})
+    except Exception as e:
+        logging.info(f'GIFTERY SHIT {e}')
 
     OrderHistory.create(
         provider='giftery',
