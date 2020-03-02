@@ -149,7 +149,7 @@ def make_spend(link_id):
         return jsonify({'success': False, 'error': '"slug" key is required'}), HTTPStatus.BAD_REQUEST
 
     new_password = None
-    slug = payload.get('slug', payload['option'])
+    slug = payload.get('slug', payload.get('option'))
     if password and slug == 'resend':
         new_password = password
     if not wallet.auth(password):
