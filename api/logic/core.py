@@ -159,12 +159,15 @@ def get_spend_list():
     bip_coin_price = bip_price()
 
     for category in Category.select().where(~Category.slug % '%,%'):
+        cat_shops = category.shops.where(Shop.active & ~Shop.deleted)
+        if not cat_shops:
+            continue
         categories[category.slug] = {
             'title': {'ru': category.title, 'en': category.title_en},
             'color': '#' + (category.display_color or ''),
             'icon': category.icon_url,
         }
-        for shop in category.shops.where(Shop.active & ~Shop.deleted):
+        for shop in cat_shops:
             if not shop.products.count():
                 continue
             certificates.setdefault(category.slug, {})
