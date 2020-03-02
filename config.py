@@ -51,6 +51,7 @@ class FlaskConfig:
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
     SECRET_KEY = os.environ.get('APP_SECRET_KEY')
     REMEMBER_COOKIE_NAME = 'keep'
+    LOGIN_DISABLED = DEV
 
     SECURITY_DEFAULT_REMEMBER_ME = True
     SECURITY_CONFIRMABLE = True

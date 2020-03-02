@@ -40,7 +40,7 @@ def _ctx(endpoint):
 @bp_auth.route('/login/<string:backend>/', methods=('GET', 'POST'))
 @anonymous_user_required
 @psa('auth.complete')
-def auth(backend):
+def login(backend):
     return do_auth(g.backend)
 
 
