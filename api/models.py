@@ -142,7 +142,7 @@ class Recipient(db.Model):
 
 class UserImage(db.Model):
     filename = TextField(null=True)
-    url = TextField()
+    url = TextField(default='')
     created_at = DateTimeField(default=datetime.utcnow)
 
 
