@@ -221,10 +221,12 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
 
     client = GifteryAPIClient()
 
+    if not is_email(contact):
+        contact = 'noreply@push.money'
     order_id = client.make_order({
         'product_id': product,
         'face': price_fiat,
-        'email_to': contact or 'noreply@push.money',
+        'email_to': contact,
         'from': 'noreply@push.money',
     })
 
