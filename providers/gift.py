@@ -70,7 +70,7 @@ def gift_order_confirm(order_id):
     return 'Gift Provider Error: No payment confirmation'
 
 
-def gift_buy(wallet, product, confirm=True):
+def gift_buy(wallet, product, confirm=True, price_fiat=None):
     response = gift_order_create(product)
     if isinstance(response, str):
         return response

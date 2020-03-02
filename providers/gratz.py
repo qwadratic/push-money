@@ -86,7 +86,7 @@ def gratz_order_confirm(order_id):
     return data
 
 
-def gratz_buy(wallet, product, confirm=True, contact=None):
+def gratz_buy(wallet, product, confirm=True, contact=None, price_fiat=None):
     logging.info(f'Buy gratz product id {product}')
     response = gratz_order_create(product)
     if isinstance(response, str):
