@@ -5,7 +5,7 @@ import typing
 from urllib.parse import urlencode
 
 from flask import url_for, current_app
-
+from helpers.validation import is_email
 from api.models import PushWallet, OrderHistory
 from config import BIP_WALLET, GIFTERY_API_ID, GIFTERY_API_SECRET, DEV, GIFTERY_TEST_API, DEV_GIFTERY_API_SECRET, \
     DEV_GIFTERY_API_ID
