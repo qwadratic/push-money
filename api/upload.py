@@ -34,7 +34,7 @@ def get_uploaded_img(filename):
 
 @bp_upload.route('/content/icons/<string:content_type>-<string:object_name>', endpoint='icons')
 def get_category_icon(content_type, object_name):
-    ext = '' if content_type == 'category' else 'png'
+    ext = '' if content_type == 'shop' else '.png'
     return send_from_directory('../content', f'{content_type}/{object_name}{ext}')
 
 
