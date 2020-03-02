@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from flask import url_for
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
@@ -7,12 +8,16 @@ from shortuuid import uuid as _uuid
 from minter.helpers import calc_bip_values
 from minter.utils import to_bip, to_pip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
-from api.models import PushWallet
+from api.models import PushWallet, Category, Product, Shop, db
 from providers.gift import gift_buy, gift_product_list
+from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy, gratz_product_list
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
+from providers.timeloop import timeloop_top_up, bipgame_top_up
+from providers.unu import unu_top_up
+from providers.currency_rates import bip_price
 
 
 def uuid():
@@ -83,23 +88,29 @@ def push_resend(
     return {'new_link_id': new_wallet.link_id}
 
 
-def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
+def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     spend_option_fns = {
-        'mobile': mobile_top_up,
+        'b2ph': mobile_top_up,
         'transfer-minter': send_coins,
-        'resend': push_resend
+        'resend': push_resend,
+        'unu': unu_top_up,
+        'timeloop': timeloop_top_up,
+        'bipgame': bipgame_top_up
     }
-    fn = spend_option_fns.get(option)
-    if option not in ['transfer-minter', 'resend']:
+    fn = spend_option_fns.get(slug)
+    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
         kwargs['confirm'] = confirm
 
     # im genius
-    if 'gift' in option:
+    if 'gift' in slug:
         fn = gift_buy
-        kwargs['product'] = option.split('-')[1]
-    if 'gratz' in option:
+        kwargs['product'] = slug.split('-')[1]
+    if 'gratz' in slug:
         fn = gratz_buy
-        kwargs['product'] = option.split('-')[1]
+        kwargs['product'] = slug.split('-')[1]
+    if 'giftery' in slug:
+        fn = giftery_buy
+        kwargs['product'] = slug.split('-')[1]
 
     if not fn:
         return 'Spend option is not supported yet'
@@ -108,7 +119,8 @@ def spend_balance(wallet: PushWallet, option, confirm=True, **kwargs):
 
 def get_spend_categories():
     # все еще mock, рано создавать абстрактную модель
-    standalone_options = ['transfer-minter', 'resend', 'mobile']
+    standalone_options = [
+        'transfer-minter', 'resend', 'mobile', 'unu', 'timeloop']
 
     gratz_products, gratz_test_product = gratz_product_list()
     gift_products, gift_test_product = gift_product_list()
@@ -121,3 +133,61 @@ def get_spend_categories():
         'certificates': product_tree,
         'test': [gratz_test_product, gift_test_product]
     }
+
+
+def get_spend_list():
+    others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
+    certificates = {
+        'mobile': {
+            'biptophone': [{'price_type': 'any', 'slug': 'b2ph'}]
+        }
+    }
+    categories = {
+        'mobile': {
+            'title': {'ru': 'Связь', 'en': 'Mobile'},
+            'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
+        }
+    }
+    shops = {
+        'biptophone': {
+            'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
+            'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
+        }
+    }
+    bip_coin_price = bip_price()
+
+    for category in Category.select().where(~Category.slug % '%,%'):
+        cat_shops = category.shops.where(Shop.active & ~Shop.deleted)
+        if not cat_shops:
+            continue
+        categories[category.slug] = {
+            'title': {'ru': category.title, 'en': category.title_en},
+            'color': '#' + (category.display_color or ''),
+            'icon': category.icon_url,
+        }
+        for shop in cat_shops:
+            if not shop.products.count():
+                continue
+            certificates.setdefault(category.slug, {})
+            certificates[category.slug].setdefault(shop.slug, [])
+            shop_repr = shop.api_repr
+            if not shop_repr:
+                continue
+            certificates[category.slug][shop.slug] = shop_repr
+            shops[shop.slug] = {
+                'title': {'ru': shop.name, 'en': shop.name},
+                'icon': shop.icon_url
+            }
+
+    return {
+        'others': others,
+        'certificates': certificates,
+        'categories': categories,
+        'shops': shops,
+        'bip_coin_price': bip_coin_price
+        # 'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
+    }
+
+

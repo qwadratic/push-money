@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
-
-from api.consts import HTTP_404_NOT_FOUND
+from http import HTTPStatus
 from api.models import CustomizationSetting, UserImage
 from api.upload import images
 
@@ -35,19 +34,19 @@ def get_customization_setting(setting_id):
     """
     customization_obj = CustomizationSetting.get_or_none(id=setting_id)
     if not customization_obj:
-        return jsonify({'error': 'Customization setting not found'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Customization setting not found'}), HTTPStatus.NOT_FOUND
 
     response = {'id': setting_id}
     if customization_obj.logo_image_id:
         logo_img = UserImage.get_or_none(id=customization_obj.logo_image_id)
         if not logo_img:
-            return jsonify({'error': 'Logo image not found'}), HTTP_404_NOT_FOUND
+            return jsonify({'error': 'Logo image not found'}), HTTPStatus.NOT_FOUND
         response['logo_image_url'] = images.url(logo_img.filename)
 
     if customization_obj.email_image_id:
         email_img = UserImage.get_or_none(id=customization_obj.email_image_id)
         if not email_img:
-            return jsonify({'error': 'Email image not found'}), HTTP_404_NOT_FOUND
+            return jsonify({'error': 'Email image not found'}), HTTPStatus.NOT_FOUND
         response['email_image_url'] = images.url(email_img.filename)
 
     setting_fields = [

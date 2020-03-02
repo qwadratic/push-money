@@ -1,0 +1,43 @@
+# This is a MINFO document in TOML format, which contains all information about the project.
+
+[document]
+created = 2020-02-16T02:50:00+02:00 # YYYY-MM-DDThh:mm:ssÂ±hh:mm
+updated = 2020-02-26T04:19:00+02:00 # YYYY-MM-DDThh:mm:ssÂ±hh:mm
+
+[project]
+name = "YYY Cash" # 20 characters max
+title = "Receive and spend crypto instantly and without wallet." # 70 characters max
+short_dewcription = "YYY Cash lets projects and companies engage audience with value distributions on the blockchain. Recipient with any crypto-adoption level is able to receive and spend Blockchain Instant Payments." # 300 characters max
+logo = "https://yyy.cash/img/cash_logo.dec37dcc.svg" # .SVG, .PNG, .JPG
+immediate_goal = "Provide goods for crypto"
+stage = "mvp" # Current stage of the project: dev, alpha, beta, mvp, prod
+launch = 2020-01-27T18:00:00+02:00 # YYYY-MM-DDThh:mm:ssÂ±hh:mm
+
+languages = [ # ISO 639-1
+  "en",
+  "ru"
+]
+
+contact_email = "ivan.d.kotelnikov@gmail.com" # Email for complaints and suggestions
+support = "https://t.me/yyychat" #  Link to support service
+
+links = [
+  {type = "site", url = "https://yyy.cash/"},
+  {type = "telegram", url = "https://t.me/yyychat"},
+  {type = "github", url = "https://github.com/eternalflow/push-money/"}
+]
+
+#[owner]
+#owner_name = "" # 30 characters max
+#owner_role = "Product Manager"
+#owner_address = "" # Mx...
+#owner_about = ""
+
+[[member]]
+    member_name = "Ivan Kotelnikov"
+    member_role = "Backend Developer"
+    member_address = "Mx1d2111ef33c0735ae6d97a8a7948a43cca3a4bd1"
+    member_about = "I'm here from the very first commit"
+    member_contact_telegram = "isheldon"
+
+# with Minter inside

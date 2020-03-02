@@ -82,7 +82,7 @@ def send_mail(campaign):
         campaign.save()
 
 
-@scheduler.scheduled_job('interval', seconds=30)
+@scheduler.scheduled_job('interval', seconds=30, disable_dev=True)
 def job_execute_campaigns():
     to_start = PushCampaign \
         .select(PushCampaign, PushWallet) \

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+{% if user.is_authenticated %}
+<a href="{{ url_for_security('logout') }}">Logout</a><br>
+<a href="{{ url_for('admin.index') }}">Admin</a><br>
+{% else %}
+<a href="{{ url_for('auth.auth', backend='email') }}">Login</a><br>
+{% endif %}
+
+User {{ user }} <br>
+{% if user %}}
+{% for name, value in user.__dict__.__data__.items() %}
+<span>{{name}}</span>=<span>{{ value }}</span><br>
+{% endfor %}
+{% endif %}
+
+</body>
+</html>

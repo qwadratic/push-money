@@ -13,12 +13,12 @@ GRATZ_API_BASE_URL = 'https://gratz-bot.click.in.ua/api'
 GRATZ_HACK_HEADERS = {'user-agent': 'hack'}  # HTTP 424 if use python std headers :)
 
 CATEGORY_ID_MAPPING = {
-    '11': 'tickets',
+    '11': 'entertainment',
     '13': 'grocery',
     '14': 'books',
-    '15': 'clothing',
+    '15': 'clothes',
     '16': 'kids',
-    '18': 'cosmetics',
+    '18': 'beauty',
     '21': 'tech',
     '27': 'gas'
 }
@@ -55,7 +55,7 @@ def gratz_product_list():
         product_tree.setdefault(category_name, {})
         product_tree[category_name].setdefault(shop_name, [])
         product_tree[category_name][shop_name].append({
-            'option': f'gratz-{product_id}',
+            'slug': f'gratz-{product_id}',
             'value': value,
             'currency': 'UAH'
         })

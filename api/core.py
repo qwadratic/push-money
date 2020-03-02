@@ -1,9 +1,9 @@
 from datetime import datetime
-
+from http import HTTPStatus
 from flask import Blueprint, jsonify, request, url_for
 
-from api.consts import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
-from api.logic.core import generate_and_save_wallet, get_address_balance, get_spend_categories, spend_balance
+from api.logic.core import generate_and_save_wallet, get_address_balance, spend_balance, \
+    get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
 from minter.helpers import create_deeplink
 from minter.utils import to_bip
@@ -12,9 +12,9 @@ from providers.minter import send_coins
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
 
-@bp_api.route('/', methods=['GET'])
+@bp_api.route('', methods=['GET'])
 def health():
-    return f'Api ok. <a href="{url_for("swag")}">Swagger</a>'
+    return f'Api ok. <a href="{url_for("swagger.swag")}">Swagger</a>'
 
 
 @bp_api.route('/push/create', methods=['POST'])
@@ -29,7 +29,7 @@ def push_create():
     customization_setting_id = payload.get('customization_setting_id')
     setting = CustomizationSetting.get_or_none(id=customization_setting_id)
     if not setting:
-        jsonify({'error': 'Customization setting does not exist'}), HTTP_400_BAD_REQUEST
+        jsonify({'error': 'Customization setting does not exist'}), HTTPStatus.BAD_REQUEST
 
     wallet = generate_and_save_wallet(
         sender=sender, recipient=recipient, password=password,
@@ -50,7 +50,7 @@ def push_info(link_id):
     """
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
 
     return jsonify({
         'seen': wallet.seen,
@@ -71,10 +71,10 @@ def push_balance(link_id):
 
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
+        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
 
     if not wallet.auth(password):
-        return jsonify({'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
 
     # зарефакторить
     virtual_balance = None if wallet.virtual_balance == '0' else wallet.virtual_balance
@@ -83,7 +83,7 @@ def push_balance(link_id):
             from_w = PushWallet.get(link_id=wallet.sent_from)
             result = send_coins(from_w, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
             if result is not True:
-                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+                return jsonify({'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
             wallet.virtual_balance = '0'
             wallet.save()
         else:
@@ -91,7 +91,7 @@ def push_balance(link_id):
             cmp_wallet = PushWallet.get(link_id=cmp.wallet_link_id)
             result = send_coins(cmp_wallet, wallet.address, amount=to_bip(wallet.virtual_balance), wait=False)
             if result is not True:
-                return jsonify({'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+                return jsonify({'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
             wallet.virtual_balance = '0'
             recipient = Recipient.get(wallet_link_id=wallet.link_id)
             recipient.linked_at = datetime.utcnow()
@@ -109,12 +109,27 @@ def push_balance(link_id):
     return jsonify(response)
 
 
+@bp_api.route('/push/<link_id>/mnemonic', methods=['GET', 'POST'])
+def get_mnemonic(link_id):
+    payload = request.get_json() or {}
+    password = payload.get('password')
+
+    wallet = PushWallet.get_or_none(link_id=link_id)
+    if not wallet:
+        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
+
+    if not wallet.auth(password):
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
+
+    return jsonify({'mnemonic': wallet.mnemonic})
+
+
 @bp_api.route('/spend/list', methods=['GET'])
 def spend_options():
     """
     swagger: swagger/core/spend-list.yml
     """
-    categories = get_spend_categories()
+    categories = get_spend_list()
     return jsonify(categories)
 
 
@@ -128,26 +143,26 @@ def make_spend(link_id):
 
     wallet = PushWallet.get_or_none(link_id=link_id)
     if not wallet:
-        return jsonify({'success': False, 'error': 'Link does not exist'}), HTTP_404_NOT_FOUND
+        return jsonify({'success': False, 'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
 
-    if 'option' not in payload:
-        return jsonify({'success': False, 'error': '"option" key is required'}), HTTP_400_BAD_REQUEST
+    if 'slug' not in payload:
+        return jsonify({'success': False, 'error': '"slug" key is required'}), HTTPStatus.BAD_REQUEST
 
     new_password = None
-    option = payload['option']
-    if password and option == 'resend':
+    slug = payload['slug']
+    if password and slug == 'resend':
         new_password = password
     if not wallet.auth(password):
-        return jsonify({'success': False, 'error': 'Incorrect password'}), HTTP_401_UNAUTHORIZED
+        return jsonify({'success': False, 'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
 
     confirm = bool(int(request.args.get('confirm', 1)))
     params = payload.get('params', {})
-    if option == 'resend':
+    if slug == 'resend':
         params['new_password'] = new_password
 
-    result = spend_balance(wallet, option, confirm=confirm, **params)
+    result = spend_balance(wallet, slug, confirm=confirm, **params)
     if isinstance(result, str):
-        return jsonify({'success': False, 'error': result}), HTTP_500_INTERNAL_SERVER_ERROR
+        return jsonify({'success': False, 'error': result}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     result = {} if isinstance(result, bool) else result
     return jsonify({'success': True, **result})
