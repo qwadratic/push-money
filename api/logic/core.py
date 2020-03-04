@@ -118,13 +118,13 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
 
 def get_spend_list():
     others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
-    certificates = {}
+    certificates = {'communication': {}}
     categories = {
-        # 'communication': {
-        #     'title': {'ru': 'Связь', 'en': 'Mobile'},
-        #     'color': '#1FC3F7',
-        #     'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
-        # }
+        'communication': {
+            'title': {'ru': 'Связь', 'en': 'Mobile'},
+            'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
+        }
     }
     shops = {
         # 'biptophone': {
