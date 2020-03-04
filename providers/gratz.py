@@ -6,7 +6,7 @@ from cachetools.func import ttl_cache
 from api.models import OrderHistory
 from config import GRATZ_API_KEY
 from jobs import schedule_gratz_notification
-from minter.utils import to_pip
+from minter.helpers import to_pip
 from providers.minter import send_coins
 
 GRATZ_API_BASE_URL = 'https://gratz-bot.click.in.ua/api'

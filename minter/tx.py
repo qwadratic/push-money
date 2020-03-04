@@ -1,8 +1,7 @@
 from mintersdk import MinterHelper
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterTx
 
-from minter.helpers import BASE_COIN
-from minter.utils import to_bip
+from minter.helpers import BASE_COIN, to_bip
 
 
 def send_coin_tx(pk, coin, value, to, nonce, gas_coin=BASE_COIN, payload=''):

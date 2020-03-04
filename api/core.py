@@ -5,8 +5,7 @@ from flask import Blueprint, jsonify, request, url_for
 from api.logic.core import generate_and_save_wallet, get_address_balance, spend_balance, \
     get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
-from minter.helpers import create_deeplink
-from minter.utils import to_bip
+from minter.helpers import to_bip, TxDeeplink
 from providers.minter import send_coins
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
@@ -15,6 +14,30 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 @bp_api.route('', methods=['GET'])
 def health():
     return f'Api ok. <a href="{url_for("swagger.swag")}">Swagger</a>'
+
+
+@bp_api.route('/deeplink')
+def deeplink():
+    address = request.args.get('address')
+    amount = request.args.get('amount')
+    coin = request.args.get('coin')
+
+    if not address:
+        return jsonify({'success': False, 'error': '"address" key is required'}), HTTPStatus.BAD_REQUEST
+    if not amount:
+        return jsonify({'success': False, 'error': '"amount" key is required'}), HTTPStatus.BAD_REQUEST
+    if not coin:
+        return jsonify({'success': False, 'error': '"coin" key is required'}), HTTPStatus.BAD_REQUEST
+
+    address = address.strip()
+    amount = float(amount) + 0.01
+    coin = coin.strip().upper()
+    link = TxDeeplink.create('send', to=address, value=amount, coin=coin)
+    return {
+        'success': True,
+        'web': link.web,
+        'mobile': link.mobile
+    }
 
 
 @bp_api.route('/push/create', methods=['POST'])
@@ -39,7 +62,7 @@ def push_create():
         'link_id': wallet.link_id
     }
     if amount:
-        response['deeplink'] = create_deeplink(wallet.address, float(amount) + 0.01)
+        response['deeplink'] = TxDeeplink.create('send', to=wallet.address, value=float(amount) + 0.01).mobile
     return jsonify(response)
 
 
@@ -59,6 +82,21 @@ def push_info(link_id):
         'is_protected': wallet.password_hash is not None,
         'customization_id': wallet.customization_setting_id,
     })
+
+
+@bp_api.route('/push/<link_id>/mnemonic', methods=['GET', 'POST'])
+def get_mnemonic(link_id):
+    payload = request.get_json() or {}
+    password = payload.get('password')
+
+    wallet = PushWallet.get_or_none(link_id=link_id)
+    if not wallet:
+        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
+
+    if not wallet.auth(password):
+        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
+
+    return jsonify({'mnemonic': wallet.mnemonic})
 
 
 @bp_api.route('/push/<link_id>/balance', methods=['POST'])
@@ -107,21 +145,6 @@ def push_balance(link_id):
         **balance
     }
     return jsonify(response)
-
-
-@bp_api.route('/push/<link_id>/mnemonic', methods=['GET', 'POST'])
-def get_mnemonic(link_id):
-    payload = request.get_json() or {}
-    password = payload.get('password')
-
-    wallet = PushWallet.get_or_none(link_id=link_id)
-    if not wallet:
-        return jsonify({'error': 'Link does not exist'}), HTTPStatus.NOT_FOUND
-
-    if not wallet.auth(password):
-        return jsonify({'error': 'Incorrect password'}), HTTPStatus.UNAUTHORIZED
-
-    return jsonify({'mnemonic': wallet.mnemonic})
 
 
 @bp_api.route('/spend/list', methods=['GET'])
