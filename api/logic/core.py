@@ -117,8 +117,10 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
 
 
 def get_spend_list():
-    _top = Shop.select(Shop.id).where(Shop.name.in_(['Яндекс.Еда', 'Перекресток', 'okko.tv']))
-    shops_top = ['resend', 'transfer-minter', 'biptophone'] + [str(s.id) for s in _top]
+    _top_shop_names = ['Яндекс.Еда', 'Перекресток', 'okko.tv']
+    _top_shop_query = Shop.select(Shop.id, Shop.name).where(Shop.name.in_(_top_shop_names))
+    _top = {s.name: s.id for s in _top_shop_query}
+    shops_top = ['resend', 'transfer-minter', 'biptophone'] + [str(_top[name]) for name in _top_shop_names]
     certificates = {}
     categories = {}
     shops = {
