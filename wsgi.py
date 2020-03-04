@@ -1,4 +1,5 @@
 from api.app_init import app_init
+from config import DEV, APP_PORT
 from jobs.scheduler import scheduler
 
 
@@ -7,4 +8,4 @@ scheduler.app = app
 scheduler.start()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=DEV, port=APP_PORT)
