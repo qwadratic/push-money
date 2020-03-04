@@ -127,11 +127,11 @@ def get_spend_list():
         }
     }
     shops = {
-        # 'biptophone': {
-        #     'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
-        #     'color': '#1FC3F7',
-        #     'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
-        # }
+        'biptophone': {
+            'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
+            'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
+        }
     }
     bip_coin_price = bip_price()
 
