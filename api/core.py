@@ -6,6 +6,7 @@ from api.logic.core import generate_and_save_wallet, get_address_balance, spend_
     get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
 from minter.helpers import to_bip, TxDeeplink
+from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from providers.minter import send_coins
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
@@ -14,6 +15,17 @@ bp_api = Blueprint('api', __name__, url_prefix='/api')
 @bp_api.route('', methods=['GET'])
 def health():
     return f'Api ok. <a href="{url_for("swagger.swag")}">Swagger</a>'
+
+
+@bp_api.route('/exchange-rates')
+def exchange_rates():
+    bip_usd_price = bip_to_usdt(1)
+    fiat_usd = fiat_to_usd_rates()
+    bip2x = {
+        currency: usd_value * bip_usd_price
+        for currency, usd_value in fiat_usd.items()
+    }
+    return jsonify(bip2x)
 
 
 @bp_api.route('/deeplink')
