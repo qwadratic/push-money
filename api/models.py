@@ -8,7 +8,7 @@ from peewee import CharField, TextField, IntegerField, ForeignKeyField, BooleanF
 from playhouse.flask_utils import FlaskDB
 from playhouse.postgres_ext import JSONField, DateTimeField, IPField
 
-from minter.utils import to_bip
+from minter.helpers import to_bip
 
 base_models = [
     'basemodel', 'passwordprotectedmodel',

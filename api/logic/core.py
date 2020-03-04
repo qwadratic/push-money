@@ -5,8 +5,7 @@ from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
-from minter.helpers import calc_bip_values
-from minter.utils import to_bip, to_pip
+from minter.helpers import calc_bip_values, to_pip, to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Product, Shop, db
 from providers.gift import gift_buy, gift_product_list
@@ -119,7 +118,7 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
 
 def get_spend_list():
     others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
-    certificates = {'communication': {}}
+    certificates = {'communication': {'biptophone': []}}
     categories = {
         'communication': {
             'title': {'ru': 'Связь', 'en': 'Mobile'},
@@ -128,11 +127,9 @@ def get_spend_list():
         }
     }
     shops = {
-        # 'biptophone': {
-        #     'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
-        #     'color': '#1FC3F7',
-        #     'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
-        # }
+        'biptophone': {
+            'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
+        }
     }
     bip_coin_price = bip_price()
 

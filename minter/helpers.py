@@ -1,13 +1,39 @@
 from decimal import Decimal
 
+from mintersdk import MinterConvertor
 from mintersdk.sdk.deeplink import MinterDeeplink
-from mintersdk.sdk.transactions import MinterSendCoinTx
+from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, MinterSellAllCoinTx, MinterBuyCoinTx, \
+    MinterCreateCoinTx, MinterDeclareCandidacyTx, MinterDelegateTx, MinterUnbondTx, MinterRedeemCheckTx, \
+    MinterSetCandidateOnTx, MinterSetCandidateOffTx, MinterEditCandidateTx, MinterMultiSendCoinTx
 
 from config import TESTNET
 from providers.mscan import MscanAPI
-from minter.utils import to_bip, to_pip
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
+TX_TYPES = {
+    'send':	MinterSendCoinTx,
+    'sell': MinterSellCoinTx,
+    'sellall': MinterSellAllCoinTx,
+    'buy': MinterBuyCoinTx,
+    'mint': MinterCreateCoinTx,
+    'declare': MinterDeclareCandidacyTx,
+    'delegate': MinterDelegateTx,
+    'unbond': MinterUnbondTx,
+    'redeem': MinterRedeemCheckTx,
+    'on': MinterSetCandidateOnTx,
+    'off': MinterSetCandidateOffTx,
+    'edit': MinterEditCandidateTx,
+    'multisig': NotImplemented,
+    'multisend': MinterMultiSendCoinTx,
+}
+
+
+def to_pip(bip):
+    return MinterConvertor.convert_value(bip, 'pip')
+
+
+def to_bip(pip):
+    return MinterConvertor.convert_value(pip, 'bip')
 
 
 def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
@@ -47,7 +73,31 @@ def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
     return result
 
 
-def create_deeplink(to, value, coin=BASE_COIN):
-    tx = MinterSendCoinTx(coin, to, value, nonce=None, gas_coin=coin)
-    deeplink = MinterDeeplink(tx, data_only=True, base_url='minter:///tx')
-    return deeplink.generate()
+class TxDeeplink(MinterDeeplink):
+
+    def __init__(self, tx, data_only=True, base_url=''):
+        super().__init__(tx, data_only=data_only, base_url=base_url)
+
+    @staticmethod
+    def create(tx_type, **kwargs):
+        kwargs.setdefault('nonce', None)
+        kwargs.setdefault('coin', 'BIP')
+        kwargs.setdefault('gas_coin', BASE_COIN)
+        tx = TX_TYPES[tx_type](**kwargs)
+        return TxDeeplink(tx)
+
+    @property
+    def mobile(self):
+        base_url = self.base_url
+        self.base_url = 'minter:///tx'
+        link = self.generate()
+        self.base_url = base_url
+        return link
+
+    @property
+    def web(self):
+        base_url = self.base_url
+        self.base_url = 'https://bip.to/tx'
+        link = self.generate()
+        self.base_url = base_url
+        return link
