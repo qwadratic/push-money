@@ -4,6 +4,7 @@ import dotenv
 
 dotenv.load_dotenv()
 
+APP_PORT = int(os.environ.get('APP_PORT', '8000'))
 DEV = bool(int(os.environ.get('DEV')))
 TESTNET = bool(int(os.environ.get('TESTNET')))
 LOCAL = bool(int(os.environ.get('LOCAL')))
