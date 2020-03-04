@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 
 from api.logic.sharing import get_google_sheet_data, create_campaign, check_campaign_paid, get_campaign_stats
 from api.models import PushCampaign, PushWallet
-from minter.helpers import create_deeplink
+from minter.helpers import TxDeeplink
 from providers.minter import get_balance, send_coins, get_first_transaction
 
 bp_sharing = Blueprint('sharing', __name__, url_prefix='/api/sharing')
@@ -73,7 +73,7 @@ def campaign_create():
     return jsonify({
         'campaign_id': campaign.id,
         'address': campaign_wallet.address,
-        'deeplink': create_deeplink(campaign_wallet.address, campaign_cost),
+        'deeplink': TxDeeplink.create('send', to=campaign_wallet.address, value=campaign_cost).mobile,
         'total_bip': campaign_cost
     })
 

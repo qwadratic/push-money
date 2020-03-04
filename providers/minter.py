@@ -2,7 +2,7 @@ from mintersdk.sdk.wallet import MinterWallet
 
 from api.models import PushWallet
 from minter.tx import send_coin_tx, estimate_payload_fee
-from minter.utils import to_bip
+from minter.helpers import to_bip
 from providers.mscan import MscanAPI
 
 

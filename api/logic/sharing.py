@@ -4,7 +4,7 @@ from peewee import fn
 
 from api.logic.core import generate_and_save_wallet
 from api.models import PushCampaign, Recipient, PushWallet
-from minter.utils import to_pip, to_bip
+from minter.helpers import to_pip, to_bip
 from providers.google_sheets import get_spreadsheet, parse_recipients
 from providers.minter import ensure_balance
 

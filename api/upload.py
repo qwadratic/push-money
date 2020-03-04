@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request, current_app, send_from_directory,
 from flask_uploads import UploadSet, IMAGES
 from http import HTTPStatus
 from api.models import UserImage
+from config import DEV
 from providers.giftery import GifteryAPIClient
 
 bp_upload = Blueprint('upload', __name__, url_prefix='/api')
@@ -39,7 +40,7 @@ def get_category_icon(content_type, object_name):
 
 @bp_upload.route('/content/giftery/<int:order_id>', endpoint='giftery-pdf')
 def get_giftery_pdf(order_id):
-    client = GifteryAPIClient()
+    client = GifteryAPIClient(test=DEV)
     pdf_base64 = client.get_certificate(order_id)
     pdf = b64decode(pdf_base64)
     response = make_response(pdf)

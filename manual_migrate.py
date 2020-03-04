@@ -8,7 +8,7 @@ from social_flask_peewee.models import FlaskStorage
 from api.models import Merchant, User, Brand, Shop, Product, Category, MerchantImage, base_models, Role, UserRole, \
     WebhookEvent, UserImage, CustomizationSetting, OrderHistory, PushCampaign, PushWallet, Recipient, db
 from config import ADMIN_PASS
-from minter.utils import to_pip
+from minter.helpers import to_pip
 from providers.gift import gift_order_create
 from providers.giftery import GifteryAPIClient
 from providers.gratz import gratz_product_list, gratz_order_create

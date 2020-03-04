@@ -1,8 +1,9 @@
 from datetime import datetime
 from functools import partial
+from http import HTTPStatus
 from logging import info
 
-from flask import Flask, url_for, abort, redirect, request, g, logging, after_this_request
+from flask import Flask, url_for, abort, redirect, request, g, logging, after_this_request, jsonify
 from flask_admin.contrib.peewee import ModelView
 from flask_admin.menu import MenuLink
 from flask_login import current_user, user_logged_out
@@ -20,6 +21,7 @@ from api.auth import bp_auth
 from api.core import bp_api
 from api.customization import bp_customization
 from api.dev import bp_dev
+from api.merchant import bp_merchant
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting, Product, Category, Shop
 from api.sharing import bp_sharing
@@ -39,7 +41,8 @@ blueprints = [
     bp_upload,
     bp_customization,
     # bp_surprise,
-    bp_swagger
+    bp_swagger,
+    bp_merchant
 ]
 if DEV:
     blueprints.append(bp_dev)
@@ -84,6 +87,10 @@ def app_init():
     user_datastore = UserDatastore(db, User, Role, UserRole)
     security = Security(app, user_datastore)
     security.login_manager.login_view = 'auth.login'
+
+    @security.login_manager.unauthorized_handler
+    def unauthorized():
+        return 'Unauthorized', HTTPStatus.UNAUTHORIZED
 
     @user_logged_out.connect_via(app)
     def on_logout(*args, **kwargs):

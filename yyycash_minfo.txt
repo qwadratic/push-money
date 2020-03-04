@@ -7,7 +7,7 @@ updated = 2020-02-26T04:19:00+02:00 # YYYY-MM-DDThh:mm:ssÂ±hh:mm
 [project]
 name = "YYY Cash" # 20 characters max
 title = "Receive and spend crypto instantly and without wallet." # 70 characters max
-short_dewcription = "YYY Cash lets projects and companies engage audience with value distributions on the blockchain. Recipient with any crypto-adoption level is able to receive and spend Blockchain Instant Payments." # 300 characters max
+short_decription = "YYY Cash lets projects and companies engage audience with value distributions on the blockchain. Recipient with any crypto-adoption level is able to receive and spend Blockchain Instant Payments." # 300 characters max
 logo = "https://yyy.cash/img/cash_logo.dec37dcc.svg" # .SVG, .PNG, .JPG
 immediate_goal = "Provide goods for crypto"
 stage = "mvp" # Current stage of the project: dev, alpha, beta, mvp, prod
@@ -26,12 +26,6 @@ links = [
   {type = "telegram", url = "https://t.me/yyychat"},
   {type = "github", url = "https://github.com/eternalflow/push-money/"}
 ]
-
-#[owner]
-#owner_name = "" # 30 characters max
-#owner_role = "Product Manager"
-#owner_address = "" # Mx...
-#owner_about = ""
 
 [[member]]
     member_name = "Ivan Kotelnikov"
