@@ -89,7 +89,7 @@ def push_resend(
 
 def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     spend_option_fns = {
-        'b2ph': mobile_top_up,
+        'mobile': mobile_top_up,
         'transfer-minter': send_coins,
         'resend': push_resend,
         'unu': unu_top_up,
@@ -97,7 +97,7 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
         'bipgame': bipgame_top_up
     }
     fn = spend_option_fns.get(slug)
-    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu']:
+    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu', 'bipgame']:
         kwargs['confirm'] = confirm
 
     # im genius
@@ -116,33 +116,11 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     return fn(wallet, **kwargs)
 
 
-def get_spend_categories():
-    # все еще mock, рано создавать абстрактную модель
-    standalone_options = [
-        'transfer-minter', 'resend', 'mobile', 'unu', 'timeloop']
-
-    gratz_products, gratz_test_product = gratz_product_list()
-    gift_products, gift_test_product = gift_product_list()
-
-    # так делать норм, пока категории не пересекаются
-    product_tree = {**gratz_products, **gift_products}
-
-    return {
-        'others': standalone_options,
-        'certificates': product_tree,
-        'test': [gratz_test_product, gift_test_product]
-    }
-
-
 def get_spend_list():
     others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
-    certificates = {
-        'mobile': {
-            'biptophone': [{'price_type': 'any', 'slug': 'b2ph'}]
-        }
-    }
+    certificates = {'communication': {'biptophone': []}}
     categories = {
-        'mobile': {
+        'communication': {
             'title': {'ru': 'Связь', 'en': 'Mobile'},
             'color': '#1FC3F7',
             'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
@@ -151,8 +129,6 @@ def get_spend_list():
     shops = {
         'biptophone': {
             'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
-            'color': '#1FC3F7',
-            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='shop', object_name='biptophone')
         }
     }
     bip_coin_price = bip_price()
