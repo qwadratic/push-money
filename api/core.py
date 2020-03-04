@@ -21,11 +21,11 @@ def health():
 def exchange_rates():
     bip_usd_price = bip_to_usdt(1)
     fiat_usd = fiat_to_usd_rates()
-    bip2x = {
-        currency: usd_value * bip_usd_price
+    x2bip = {
+        currency: 1 / (usd_value * bip_usd_price)
         for currency, usd_value in fiat_usd.items()
     }
-    return jsonify(bip2x)
+    return jsonify(x2bip)
 
 
 @bp_api.route('/deeplink')
