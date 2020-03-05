@@ -120,15 +120,21 @@ def get_spend_list():
     _top_shop_names = ['Яндекс.Еда', 'Перекресток', 'okko.tv']
     _top_shop_query = Shop.select(Shop.id, Shop.name).where(Shop.name.in_(_top_shop_names))
     _top = {s.name: s.id for s in _top_shop_query}
-    shops_top = ['resend', 'transfer-minter', 'biptophone'] + [_top[name] for name in _top_shop_names]
+    shops_top = ['resend', 'transfer-minter', 'biptophone'] + [_top[name] + '-fav' for name in _top_shop_names]
     certificates = {}
     categories = {}
+    shops_fav = {
+        s.name + '-fav': {
+            'title': s.name,
+            'icon': s.icon_url + '-fav'
+        } for s in _top.values()
+    }
     shops = {
         'biptophone': {
             'title': {'ru': 'Пополнить', 'en': 'BipToPhone'},
             'color': '#1FC3F7',
             'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
-        }
+        }, **shops_fav
     }
     bip_coin_price = bip_price()
 
