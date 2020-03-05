@@ -21,10 +21,10 @@ def health():
 def exchange_rates():
     bip_usd_price = bip_to_usdt(1)
     fiat_usd = fiat_to_usd_rates()
-    x2bip = {
+    x2bip = {'BIP': 1.0, **{
         currency: 1 / (usd_value * bip_usd_price)
-        for currency, usd_value in fiat_usd.items()
-    }
+        for currency, usd_value in fiat_usd.items() if currency in ['USD', 'UAH', 'EUR', 'RUB']
+    }}
     return jsonify(x2bip)
 
 

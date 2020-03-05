@@ -42,5 +42,8 @@ restart:
 shell:
 	. .venv/bin/activate && python
 
+logs:
+	tail -f debug.log
+
 %:
 	@:
