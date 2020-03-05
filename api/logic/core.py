@@ -117,18 +117,17 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
 
 
 def get_spend_list():
-    others = ['transfer-minter', 'resend', 'unu', 'timeloop', 'bipgame']
-    certificates = {'communication': {'biptophone': []}}
-    categories = {
-        'communication': {
-            'title': {'ru': 'Связь', 'en': 'Mobile'},
-            'color': '#1FC3F7',
-            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
-        }
-    }
+    _top_shop_names = ['Яндекс.Еда', 'Перекресток', 'okko.tv']
+    _top_shops = [s for s in Shop.select(Shop.id, Shop.name).where(Shop.name.in_(_top_shop_names))]
+    _top_shop_slugs = [s.slug for s in _top_shops]
+    shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs
+    certificates = {}
+    categories = {}
     shops = {
         'biptophone': {
-            'title': {'ru': 'BipToPhone', 'en': 'BipToPhone'},
+            'title': {'ru': 'Пополнить', 'en': 'BipToPhone'},
+            # 'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
         }
     }
     bip_coin_price = bip_price()
@@ -153,16 +152,17 @@ def get_spend_list():
             certificates[category.slug][shop.slug] = shop_repr
             shops[shop.slug] = {
                 'title': {'ru': shop.name, 'en': shop.name},
-                'icon': shop.icon_url
+                'icon': shop.icon_url,
             }
+            if shop.slug in _top_shop_slugs:
+                shops[shop.slug]['icon_fav'] = shop.icon_url + '_fav'
 
     return {
-        'others': others,
+        'shops_top': shops_top,
         'certificates': certificates,
         'categories': categories,
         'shops': shops,
         'bip_coin_price': bip_coin_price
-        # 'test': {'slug': 'gift-t1', 'price_bip': 1, 'coin': 'BIP', 'coin_price': 1.68}
     }
 
 
