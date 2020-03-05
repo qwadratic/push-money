@@ -220,7 +220,8 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
         return {'price_bip': price_bip}
 
     client = GifteryAPIClient(test=DEV)
-    if DEV:
+
+    if not DEV:
         balance = client.get_balance()
         if balance < float(price_fiat):
             return 'No balance on merchant account.'
