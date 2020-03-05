@@ -21,8 +21,9 @@ BASE_URL = 'https://ssl-api.giftery.ru/'
 
 class GifteryAPIException(Exception):
 
-    def __init__(self, msg: str):
+    def __init__(self, msg: str, code: int):
         self.msg = msg
+        self.code = code
 
     def __str__(self):
         return self.msg
@@ -74,7 +75,8 @@ class GifteryAPIClient:
 
         resp = requests.get(BASE_URL, params=urlencode(params))
         if not resp or resp.json()['status'] != 'ok':
-            raise GifteryAPIException(resp.json()['error']['text'])
+            err = resp.json()['error']
+            raise GifteryAPIException(err['text'], err['code'])
 
         return resp.json()
 
@@ -217,27 +219,36 @@ def giftery_buy(wallet: PushWallet, product: int, price_fiat: int, contact: str 
     if not confirm:
         return {'price_bip': price_bip}
 
+    client = GifteryAPIClient(test=DEV)
+    if DEV:
+        balance = client.get_balance()
+        if balance < float(price_fiat):
+            return 'No balance on merchant account.'
+
+    if not is_email(contact):
+        contact = 'noreply@push.money'
+
+    try:
+        order_id = client.make_order({
+            'product_id': product,
+            'face': price_fiat,
+            'email_to': contact,
+            'from': 'noreply@push.money',
+        })
+    except GifteryAPIException as e:
+        logging.info(f'GIFTERY EXCEPTION: {e}')
+        return 'Product sold out :('
+
     if not DEV:
         result = send_coins(wallet, to=BIP_WALLET, amount=price_bip, wait=True)
         if isinstance(result, str):
             return result
 
-    client = GifteryAPIClient(test=DEV)
-
-    if not is_email(contact):
-        contact = 'noreply@push.money'
-    order_id = client.make_order({
-        'product_id': product,
-        'face': price_fiat,
-        'email_to': contact,
-        'from': 'noreply@push.money',
-    })
-    sleep(5)
     code = None
     try:
         code = client.get_code({'queue_id': order_id})
-    except Exception as e:
-        logging.info(f'GIFTERY SHIT {e}')
+    except GifteryAPIException as e:
+        logging.info(f'GIFTERY EXCEPTION {e}')
 
     OrderHistory.create(
         provider='giftery',
