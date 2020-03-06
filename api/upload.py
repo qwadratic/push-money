@@ -52,5 +52,5 @@ def get_giftery_pdf(order_id):
 
 @bp_upload.route('/content/preview-<string:link_id>')
 def get_push_preview_img(link_id):
-    rand_name = choice(['1', '2', '5', '7', '8', '10'])
+    rand_name = 'default-preview'
     return send_from_directory('../content', f'shop/{rand_name}.png')
