@@ -122,12 +122,18 @@ def get_spend_list():
     _top_shop_slugs = [s.slug for s in _top_shops]
     shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs
     certificates = {}
-    categories = {}
+    categories = {
+        'biptophone': {
+            'title': {'ru': 'Связь', 'en': 'Communication'},
+            'color': '#1FC3F7',
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
+        }
+    }
     shops = {
         'biptophone': {
-            'title': {'ru': 'Пополнить', 'en': 'BipToPhone'},
-            # 'color': '#1FC3F7',
-            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
+            'title': {'ru': 'Пополнить', 'en': 'Top Up'},
+            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
+            'icon_fav': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
         }
     }
     bip_coin_price = bip_price()
