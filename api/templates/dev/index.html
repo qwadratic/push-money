@@ -9,7 +9,7 @@
 <a href="{{ url_for_security('logout') }}">Logout</a><br>
 <a href="{{ url_for('admin.index') }}">Admin</a><br>
 {% else %}
-<a href="{{ url_for('auth.auth', backend='email') }}">Login</a><br>
+<a href="{{ url_for('auth.login', backend='email') }}">Login</a><br>
 {% endif %}
 
 User {{ user }} <br>
