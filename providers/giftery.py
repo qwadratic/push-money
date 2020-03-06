@@ -26,7 +26,7 @@ class GifteryAPIException(Exception):
         self.code = code
 
     def __str__(self):
-        return self.msg
+        return f'Code: {self.code}. Message: {self.msg}'
 
 
 class GifteryAPIClient:

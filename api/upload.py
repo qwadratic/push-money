@@ -1,4 +1,5 @@
 from base64 import b64decode
+from random import choice
 
 from flask import Blueprint, jsonify, request, current_app, send_from_directory, make_response
 from flask_uploads import UploadSet, IMAGES
@@ -47,3 +48,9 @@ def get_giftery_pdf(order_id):
     response.headers['Content-Disposition'] = f"attachment; filename=giftery-{order_id}.pdf"
     response.mimetype = 'application/pdf'
     return response
+
+
+@bp_upload.route('/content/preview-<string:link_id>')
+def get_push_preview_img(link_id):
+    rand_name = choice(['1', '2', '5', '7', '8', '10'])
+    return send_from_directory('../content', f'shop/{rand_name}.png')
