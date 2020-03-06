@@ -123,11 +123,11 @@ def get_spend_list():
     shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs
     certificates = {}
     categories = {
-        'biptophone': {
-            'title': {'ru': 'Связь', 'en': 'Communication'},
-            'color': '#1FC3F7',
-            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
-        }
+        # 'biptophone': {
+        #     'title': {'ru': 'Связь', 'en': 'Communication'},
+        #     'color': '#1FC3F7',
+        #     'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
+        # }
     }
     shops = {
         'biptophone': {
