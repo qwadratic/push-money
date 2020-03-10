@@ -87,6 +87,6 @@ def rub_to_bip(value) -> float:
     rub2usd_rate = ecb_rates['RUB']
 
     cfg = get_cfg()
-    usdt2bip_rate = float(cfg['usdt2bip'])
+    bip2usdt_rate = float(cfg['bip2usdt'])
 
-    return float(value / rub2usd_rate) / usdt2bip_rate
+    return float(value / rub2usd_rate) / bip2usdt_rate
