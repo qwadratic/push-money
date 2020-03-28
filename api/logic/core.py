@@ -122,7 +122,7 @@ def get_spend_list():
     _top_shop_names = ['Яндекс.Еда', 'Перекресток', 'okko.tv']
     _top_shops = [s for s in Shop.select(Shop.id, Shop.name).where(Shop.name.in_(_top_shop_names))]
     _top_shop_slugs = [s.slug for s in _top_shops]
-    shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs + ['timeloop', 'unu', 'flatfm']
+    shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs + ['timeloop', 'bipgame', 'unu', 'flatfm']
     certificates = {}
     categories = {
         # 'biptophone': {
