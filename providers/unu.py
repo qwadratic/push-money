@@ -8,6 +8,7 @@ UNU_BASE_URL = 'https://unu.ru/api'
 
 
 def unu_top_up(wallet: PushWallet, amount, email=None):
+    email = email.strip()
     if not email:
         return 'Email not specified'
 

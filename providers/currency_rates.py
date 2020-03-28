@@ -43,7 +43,7 @@ def privat24_usd_uah():
     r.raise_for_status()
     rates_list = r.json()
     buy_rates = {rate['ccy']: float(rate['buy']) for rate in rates_list}
-    return buy_rates['USD']
+    return buy_rates.get('USD', 30)
 
 
 def bip_to_usdt(bip_value) -> float:

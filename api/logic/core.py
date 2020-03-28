@@ -1,16 +1,17 @@
 from decimal import Decimal
 
-from flask import url_for
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
+from helpers.url import make_icon_url
 from minter.helpers import calc_bip_values, to_pip, to_bip
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
-from api.models import PushWallet, Category, Product, Shop, db
-from providers.gift import gift_buy, gift_product_list
+from api.models import PushWallet, Category, Shop
+from providers.flatfm import flatfm_top_up
+from providers.gift import gift_buy
 from providers.giftery import giftery_buy
-from providers.gratz import gratz_buy, gratz_product_list
+from providers.gratz import gratz_buy
 from providers.minter import send_coins
 from providers.mscan import MscanAPI
 from providers.biptophone import mobile_top_up
@@ -94,10 +95,11 @@ def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
         'resend': push_resend,
         'unu': unu_top_up,
         'timeloop': timeloop_top_up,
-        'bipgame': bipgame_top_up
+        'bipgame': bipgame_top_up,
+        'flatfm': flatfm_top_up
     }
     fn = spend_option_fns.get(slug)
-    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu', 'bipgame']:
+    if slug not in ['transfer-minter', 'resend', 'timeloop', 'unu', 'bipgame', 'flatfm']:
         kwargs['confirm'] = confirm
 
     # im genius
@@ -120,7 +122,7 @@ def get_spend_list():
     _top_shop_names = ['Яндекс.Еда', 'Перекресток', 'okko.tv']
     _top_shops = [s for s in Shop.select(Shop.id, Shop.name).where(Shop.name.in_(_top_shop_names))]
     _top_shop_slugs = [s.slug for s in _top_shops]
-    shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs
+    shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs + ['timeloop', 'unu', 'flatfm']
     certificates = {}
     categories = {
         # 'biptophone': {
@@ -132,8 +134,42 @@ def get_spend_list():
     shops = {
         'biptophone': {
             'title': {'ru': 'Пополнить', 'en': 'Top Up'},
-            'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
-            'icon_fav': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile')
+            'icon': make_icon_url('category', 'mobile'),
+            'icon_fav': make_icon_url('category', 'mobile'),
+            'inputs': [
+                {'type': 'amount', 'param_name': 'amount'},
+                {'type': 'phone', 'param_name': 'phone'}
+            ]
+        },
+        'unu': {
+            'title': {'ru': 'UNU Platform', 'en': 'UNU Platform'},
+            'icon': make_icon_url('shop', 'unu'),
+            'icon_fav': make_icon_url('shop', 'unu'),
+            'inputs': [
+                {'type': 'amount', 'param_name': 'amount'},
+                {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email'}
+            ]
+        },
+        'flatfm': {
+            'title': {'ru': 'flat.fm', 'en': 'flat.fm'},
+            'icon': make_icon_url('shop', 'flatfm'),
+            'icon_fav': make_icon_url('shop', 'flatfm'),
+            'inputs': [
+                {'type': 'amount', 'param_name': 'amount'},
+                {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm profile link, username or email'}
+            ]
+        },
+        'timeloop': {
+            'title': {'ru': 'Timeloop', 'en': 'Timeloop'},
+            'icon': make_icon_url('shop', 'timeloop'),
+            'icon_fav': make_icon_url('shop', 'timeloop'),
+            'inputs': [{'type': 'amount', 'param_name': 'amount'}],
+        },
+        'bipgame': {
+            'title': {'ru': 'Галактика Онлайн', 'en': 'Bipgame'},
+            'icon': make_icon_url('shop', 'bipgame'),
+            'icon_fav': make_icon_url('shop', 'bipgame'),
+            'inputs': [{'type': 'amount', 'param_name': 'amount'}],
         }
     }
     bip_coin_price = bip_price()
@@ -170,5 +206,3 @@ def get_spend_list():
         'shops': shops,
         'bip_coin_price': bip_coin_price
     }
-
-

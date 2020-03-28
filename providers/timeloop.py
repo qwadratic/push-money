@@ -7,6 +7,7 @@ from minter.tx import estimate_payload_fee
 from providers.minter import send_coins
 
 TIMELOOP_ADDRESS = 'Mx3650064486380210127159872871912061022891'
+BIPGAME_ADDRESS = 'Mxc938ac4123503aa691ff106ce98f732fae0f01b3'
 
 
 def timeloop_top_up(wallet: PushWallet, amount):
@@ -36,7 +37,7 @@ def bipgame_top_up(wallet: PushWallet, amount):
     if amount_fact <= 0:
         return 'Amount is too low'
 
-    result = send_coins(wallet, TIMELOOP_ADDRESS, amount_fact, payload=payload, wait=True)
+    result = send_coins(wallet, BIPGAME_ADDRESS, amount_fact, payload=payload, wait=True)
     if isinstance(result, str):
         return result
 
