@@ -125,60 +125,73 @@ def get_spend_list():
     shops_top = ['resend', 'transfer-minter', 'biptophone'] + _top_shop_slugs + ['timeloop', 'bipgame', 'unu', 'flatfm']
     certificates = {
         'games': {
-            'timeloop': [],
-            'bipgame': []
+            'timeloop': {
+                'price_type': 'custom',
+                'inputs': [{'type': 'amount', 'param_name': 'amount'}]
+            },
+            'bipgame': {
+                'price_type': 'custom',
+                'inputs': [{'type': 'amount', 'param_name': 'amount'}]
+            }
         },
         'online': {
-            'unu': [],
-            'flatfm': []
+            'unu': {
+                'price_type': 'custom',
+                'inputs': [
+                    {'type': 'amount', 'param_name': 'amount'},
+                    {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email'}
+                ]
+            },
+            'flatfm': {
+                'price_type': 'custom',
+                'inputs': [
+                    {'type': 'amount', 'param_name': 'amount'},
+                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm profile link, username or email'}
+                ]
+            }
+        },
+        'mobile': {
+            'biptophone': {
+                'price_type': 'custom',
+                'inputs': [
+                    {'type': 'amount', 'param_name': 'amount'},
+                    {'type': 'phone', 'param_name': 'phone'}
+                ]
+            }
         }
     }
     categories = {
-        # 'biptophone': {
-        #     'title': {'ru': 'Связь', 'en': 'Communication'},
-        #     'color': '#1FC3F7',
-        #     'icon': db._app.config['BASE_URL'] + url_for('upload.icons', content_type='category', object_name='mobile'),
-        # }
+        'mobile': {
+            'title': {'ru': 'Связь', 'en': 'Communication'},
+            'color': '#1FC3F7',
+            'icon': make_icon_url('cateogory', 'mobile'),
+        }
     }
     shops = {
         'biptophone': {
             'title': {'ru': 'Пополнить', 'en': 'Top Up'},
             'icon': make_icon_url('category', 'mobile'),
-            'icon_fav': make_icon_url('category', 'mobile'),
-            'inputs': [
-                {'type': 'amount', 'param_name': 'amount'},
-                {'type': 'phone', 'param_name': 'phone'}
-            ]
+            'icon_fav': make_icon_url('category', 'mobile')
         },
         'unu': {
             'title': {'ru': 'UNU Platform', 'en': 'UNU Platform'},
             'icon': make_icon_url('shop', 'unu'),
             'icon_fav': make_icon_url('shop', 'unu'),
-            'inputs': [
-                {'type': 'amount', 'param_name': 'amount'},
-                {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email'}
-            ]
         },
         'flatfm': {
             'title': {'ru': 'flat.fm', 'en': 'flat.fm'},
             'icon': make_icon_url('shop', 'flatfm'),
-            'icon_fav': make_icon_url('shop', 'flatfm'),
-            'inputs': [
-                {'type': 'amount', 'param_name': 'amount'},
-                {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm profile link, username or email'}
-            ]
+            'icon_fav': make_icon_url('shop', 'flatfm')
         },
         'timeloop': {
             'title': {'ru': 'Timeloop', 'en': 'Timeloop'},
             'icon': make_icon_url('shop', 'timeloop'),
             'icon_fav': make_icon_url('shop', 'timeloop'),
-            'inputs': [{'type': 'amount', 'param_name': 'amount'}],
         },
         'bipgame': {
             'title': {'ru': 'Галактика Онлайн', 'en': 'Bipgame'},
             'icon': make_icon_url('shop', 'bipgame'),
-            'icon_fav': make_icon_url('shop', 'bipgame'),
-            'inputs': [{'type': 'amount', 'param_name': 'amount'}],
+            'icon_fav': make_icon_url('shop', 'bipgame')
         }
     }
     bip_coin_price = bip_price()
