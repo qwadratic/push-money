@@ -7,8 +7,6 @@ from providers.mscan import MscanAPI
 
 
 def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True):
-    amount = float(amount)
-
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
     response = MscanAPI.get_balance(wallet.address)
     nonce = int(response['transaction_count']) + 1

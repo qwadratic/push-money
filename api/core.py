@@ -192,6 +192,9 @@ def make_spend(link_id):
 
     confirm = bool(int(request.args.get('confirm', 1)))
     params = payload.get('params', {})
+    if params.get('amount'):
+        params['amount'] = float(params['amount'])
+
     if slug == 'resend':
         params['new_password'] = new_password
 

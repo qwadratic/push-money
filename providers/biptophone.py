@@ -22,8 +22,6 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     if not confirm:
         return get_info()
 
-    amount = float(amount)
-
     phone_reqs = get_tx_requirements(phone)
     if not phone_reqs:
         return f'Phone number {phone} not supported or invalid'
