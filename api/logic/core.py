@@ -165,6 +165,7 @@ def get_spend_list():
             'title': {'ru': 'Связь', 'en': 'Communication'},
             'color': '#1FC3F7',
             'icon': make_icon_url('category', 'mobile'),
+            'icon_fav': make_icon_url('category', 'mobile'),
         }
     }
     shops = {
@@ -178,6 +179,7 @@ def get_spend_list():
             'title': {'ru': 'UNU Platform', 'en': 'UNU Platform'},
             'icon': make_icon_url('shop', 'unu_fav'),
             'icon_fav': make_icon_url('shop', 'unu_fav'),
+            'color': '#5C28B3'
         },
         'flatfm': {
             'title': {'ru': 'flat.fm', 'en': 'flat.fm'},
