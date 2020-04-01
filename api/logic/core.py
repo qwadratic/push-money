@@ -171,7 +171,8 @@ def get_spend_list():
         'biptophone': {
             'title': {'ru': 'Пополнить', 'en': 'Top Up'},
             'icon': make_icon_url('category', 'mobile'),
-            'icon_fav': make_icon_url('category', 'mobile')
+            'icon_fav': make_icon_url('category', 'mobile'),
+            'color': '#1FC3F7'
         },
         'unu': {
             'title': {'ru': 'UNU Platform', 'en': 'UNU Platform'},
