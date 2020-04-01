@@ -175,22 +175,22 @@ def get_spend_list():
         },
         'unu': {
             'title': {'ru': 'UNU Platform', 'en': 'UNU Platform'},
-            'icon': make_icon_url('shop', 'unu'),
+            'icon': make_icon_url('shop', 'unu_fav'),
             'icon_fav': make_icon_url('shop', 'unu_fav'),
         },
         'flatfm': {
             'title': {'ru': 'flat.fm', 'en': 'flat.fm'},
-            'icon': make_icon_url('shop', 'flatfm'),
+            'icon': make_icon_url('shop', 'flatfm_fav'),
             'icon_fav': make_icon_url('shop', 'flatfm_fav')
         },
         'timeloop': {
             'title': {'ru': 'Timeloop', 'en': 'Timeloop'},
-            'icon': make_icon_url('shop', 'timeloop'),
+            'icon': make_icon_url('shop', 'timeloop_fav'),
             'icon_fav': make_icon_url('shop', 'timeloop_fav'),
         },
         'bipgame': {
             'title': {'ru': 'Галактика Онлайн', 'en': 'Bipgame'},
-            'icon': make_icon_url('shop', 'bipgame'),
+            'icon': make_icon_url('shop', 'bipgame_fav'),
             'icon_fav': make_icon_url('shop', 'bipgame_fav')
         }
     }
