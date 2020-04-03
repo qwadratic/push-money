@@ -139,14 +139,14 @@ def get_spend_list():
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email'}
+                    {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email', 'suggest_last': True}
                 ]
             },
             'flatfm': {
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm profile link, username or email'}
+                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm username', 'suggest_last': True}
                 ]
             }
         },
@@ -155,7 +155,7 @@ def get_spend_list():
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'phone', 'param_name': 'phone'}
+                    {'type': 'phone', 'param_name': 'phone', 'suggest_last': True}
                 ]
             }
         }
