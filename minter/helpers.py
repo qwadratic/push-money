@@ -44,9 +44,9 @@ def effective_balance(balances):
             continue
         est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
-        if int(balance) < comm_pip:
+        if int(balance) < int(comm_pip):
             continue
-        will_get_pip = will_get_pip - to_pip(0.1)
+        will_get_pip = int(will_get_pip) - to_pip(0.1)
         balances_bip[coin] = to_bip(will_get_pip)
     return balances_bip or {'BIP': Decimal(0)}
 
