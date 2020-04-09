@@ -15,7 +15,7 @@ PRIVAT24_API_BASE_URL = 'https://api.privatbank.ua/p24api'
 
 
 @ttl_cache(ttl=10 * ONE_MINUTE)
-@retry((requests.HTTPError, requests.Timeout), tries=3, delay=0.5, backoff=2, default={'bip2usdt': 0, 'usdt2bip': 0})
+@retry((requests.HTTPError, requests.Timeout), tries=3, delay=0.5, backoff=2, default={'bip2usdt': 0.01, 'usdt2bip': 0.01})
 def get_cfg():
     r = requests.get(f'{MINTER1001_BASE_URL}/getcfg', timeout=1)
     r.raise_for_status()
