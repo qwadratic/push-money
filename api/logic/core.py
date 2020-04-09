@@ -50,14 +50,15 @@ def get_address_balance(address, virtual=None):
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
-    bip_value_total = float(main_balance_bip - Decimal(0.01))
+    bip_value_total = round(float(main_balance_bip - Decimal(0.01)), 4)
     if bip_value_total < 0:
         bip_value_total = 0
 
-    usd_value_total = bip_to_usdt(bip_value_total)
+    usd_value_total = round(bip_to_usdt(bip_value_total), 4)
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
-    coin_value = float(to_bip(balances[main_coin]))
+    local_fiat_value = round(usd_value_total * usd_rates[local_fiat], 4)
+    coin_value = round(float(to_bip(balances[main_coin])), 4)
     return {
         'balance': {
             'coin': main_coin,
@@ -65,7 +66,7 @@ def get_address_balance(address, virtual=None):
             'bip_value': bip_value_total,
             'usd_value': usd_value_total,
             'local_fiat': local_fiat,
-            'local_fiat_value': usd_value_total * usd_rates[local_fiat]
+            'local_fiat_value': local_fiat_value
         },
         'fiat_rates': {
             symbol: rate for symbol, rate in usd_rates.items()
