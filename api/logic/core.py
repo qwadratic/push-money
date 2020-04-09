@@ -5,7 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
 from helpers.url import make_icon_url
-from minter.helpers import calc_bip_values, to_pip, to_bip, effective_balance
+from minter.helpers import calc_bip_values, to_pip, to_bip, effective_balance, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -50,18 +50,19 @@ def get_address_balance(address, virtual=None):
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
-    bip_value_total = main_balance_bip - Decimal(0.01)
+    bip_value_total = float(main_balance_bip - Decimal(0.01))
     if bip_value_total < 0:
         bip_value_total = 0
 
     usd_value_total = bip_to_usdt(bip_value_total)
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
+    coin_value = float(to_bip(balances[main_coin]))
     return {
         'balance': {
             'coin': main_coin,
-            'value': float(to_bip(balances[main_coin])),
-            'bip_value': float(bip_value_total),
+            'value': bip_value_total if main_coin == BASE_COIN else coin_value,
+            'bip_value': bip_value_total,
             'usd_value': usd_value_total,
             'local_fiat': local_fiat,
             'local_fiat_value': usd_value_total * usd_rates[local_fiat]

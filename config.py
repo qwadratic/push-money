@@ -35,6 +35,8 @@ ADMIN_PASS = os.environ.get('ADMIN_PASS')
 
 DB_NAME = os.environ.get('{}DB_NAME'.format('DEV_' if DEV else ''))
 DB_USER = os.environ.get('{}DB_USER'.format('DEV_' if DEV else ''))
+if LOCAL:
+    DB_USER = 'ivankotelnikov'
 LOCAL_URL = 'http://127.0.0.1:8000'
 REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 

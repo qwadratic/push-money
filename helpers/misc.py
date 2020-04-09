@@ -5,7 +5,9 @@ from time import sleep
 from typing import Union, Iterable, Callable
 
 
-def retry(exceptions: Union[Exception, Iterable[Exception]], logger: Callable = print, tries=4, delay=3, backoff=2):
+def retry(
+        exceptions: Union[Exception, Iterable[Exception]], logger: Callable = print, tries=4, delay=3, backoff=2,
+        default=None):
     """
     Retry calling the decorated function using an exponential backoff.
 
@@ -33,7 +35,7 @@ def retry(exceptions: Union[Exception, Iterable[Exception]], logger: Callable = 
                     sleep(f_delay)
                     f_tries -= 1
                     f_delay *= backoff
-            return f(*args, **kwargs)
+            return default if default is not None else f(*args, **kwargs)
         return f_retry
     return deco_retry
 
