@@ -61,7 +61,7 @@ def get_address_balance(address, virtual=None):
         'balance': {
             'coin': main_coin,
             'value': float(to_bip(balances[main_coin])),
-            'bip_value': float(main_balance_bip),
+            'bip_value': float(bip_value_total),
             'usd_value': usd_value_total,
             'local_fiat': local_fiat,
             'local_fiat_value': usd_value_total * usd_rates[local_fiat]

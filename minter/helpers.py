@@ -48,7 +48,7 @@ def effective_balance(balances):
             continue
         will_get_pip = will_get_pip - to_pip(0.1)
         balances_bip[coin] = to_bip(will_get_pip)
-    return balances_bip or {'BIP': 0}
+    return balances_bip or {'BIP': Decimal(0)}
 
 
 def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
