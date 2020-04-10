@@ -36,6 +36,21 @@ def to_bip(pip):
     return MinterConvertor.convert_value(pip, 'bip')
 
 
+def effective_balance(balances):
+    balances_bip = {}
+    for coin, balance in balances.items():
+        if coin == BASE_COIN:
+            balances_bip[coin] = to_bip(balance)
+            continue
+        est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
+        will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
+        if int(balance) < int(comm_pip):
+            continue
+        will_get_pip = int(will_get_pip) - to_pip(0.1)
+        balances_bip[coin] = to_bip(will_get_pip)
+    return balances_bip or {'BIP': Decimal(0)}
+
+
 def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
     """
     Get BIP (MNT for testnet) equivalent for each coin balance

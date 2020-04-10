@@ -7,7 +7,7 @@ from api.models import PushWallet
 from config import BIP2PHONE_API_KEY
 from providers.mscan import MscanAPI
 from minter.tx import send_coin_tx
-from minter.helpers import to_bip
+from minter.helpers import to_bip, effective_balance
 
 # BIP2PHONE_API_URL = 'https://biptophone.ru/api.php'
 # requests to my proxy, because my server doesn't see API host :)
@@ -28,26 +28,30 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
 
     response = MscanAPI.get_balance(wallet.address)
     balance = response['balance']
-    available_bip = float(to_bip(balance['BIP']))
+    balances_bip = effective_balance(balance)
+    main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
+    balance_coin = to_bip(balance[main_coin])
     nonce = int(response['transaction_count']) + 1
-    to_send = amount or available_bip
+    to_send = amount or balance_coin
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
 
     tx = send_coin_tx(
-        private_key, 'BIP', to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
-        payload=phone_reqs['payload'])
-    fee = to_bip(tx.get_fee())
+        private_key, main_coin, to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        payload=phone_reqs['payload'], gas_coin=main_coin)
+    fee = to_bip(tx.get_fee()) if main_coin == 'BIP' \
+        else to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission'])
     min_topup = phone_reqs['min_bip_value'] + fee
     effective_topup = Decimal(to_send) - fee
-    if available_bip < to_send:
+
+    if balance_coin < to_send:
         return 'Not enough balance'
     if effective_topup < min_topup:
         return f"Minimal top-up: {min_topup} BIP"
 
     tx = send_coin_tx(
-        private_key, 'BIP', effective_topup, BIP2PHONE_PAYMENT_ADDRESS, nonce,
-        payload=phone_reqs['payload'])
+        private_key, main_coin, effective_topup, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        payload=phone_reqs['payload'], gas_coin=main_coin)
     MscanAPI.send_tx(tx, wait=True)
     return True
 

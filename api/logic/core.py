@@ -4,8 +4,9 @@ from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
+from helpers.misc import truncate
 from helpers.url import make_icon_url
-from minter.helpers import calc_bip_values, to_pip, to_bip
+from minter.helpers import calc_bip_values, to_pip, to_bip, effective_balance, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -47,26 +48,30 @@ def get_address_balance(address, virtual=None):
         balances_bip = {'BIP': Decimal(to_bip(virtual))}
     else:
         balances = MscanAPI.get_balance(address)['balance']
-        balances_bip = calc_bip_values(balances)
+        balances_bip = effective_balance(balances)
 
-    bip_value_total = sum(balances_bip.values()) - Decimal(0.01)
+    main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
+    bip_value_total = truncate(float(main_balance_bip - Decimal(0.01)), 4)
     if bip_value_total < 0:
         bip_value_total = 0
-    usd_value_total = bip_to_usdt(bip_value_total)
+
+    usd_value_total = truncate(bip_to_usdt(bip_value_total), 4)
     usd_rates = fiat_to_usd_rates()
+    local_fiat = 'RUB'
+    local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
+    coin_value = truncate(float(to_bip(balances[main_coin])), 4)
     return {
         'balance': {
-            coin: {
-                'value': float(to_bip(balances[coin])),
-                'bip_value': float(bip_value),
-                'usd_value': bip_to_usdt(bip_value)
-            }
-            for coin, bip_value in balances_bip.items()
+            'coin': main_coin,
+            'value': bip_value_total if main_coin == BASE_COIN else coin_value,
+            'bip_value': bip_value_total,
+            'usd_value': usd_value_total,
+            'local_fiat': local_fiat,
+            'local_fiat_value': local_fiat_value
         },
-        'bip_value_total': float(bip_value_total),
-        'usd_value_total': usd_value_total,
         'fiat_rates': {
             symbol: rate for symbol, rate in usd_rates.items()
+            if symbol in ['UAH', 'USD', 'RUB']
         }
     }
 
