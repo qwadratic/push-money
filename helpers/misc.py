@@ -3,6 +3,7 @@ from functools import wraps
 from logging.handlers import TimedRotatingFileHandler
 from time import sleep
 from typing import Union, Iterable, Callable
+import math
 
 
 def retry(
@@ -50,3 +51,8 @@ def setup_logging():
             TimedRotatingFileHandler("debug.log", when='midnight', utc=True, backupCount=7)
         ])
     logging.basicConfig(**config)
+
+
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return math.trunc(stepper * number) / stepper

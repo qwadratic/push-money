@@ -4,6 +4,7 @@ from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from shortuuid import uuid as _uuid
 
+from helpers.misc import truncate
 from helpers.url import make_icon_url
 from minter.helpers import calc_bip_values, to_pip, to_bip, effective_balance, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
@@ -50,15 +51,15 @@ def get_address_balance(address, virtual=None):
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
-    bip_value_total = round(float(main_balance_bip - Decimal(0.01)), 4)
+    bip_value_total = truncate(float(main_balance_bip - Decimal(0.01)), 4)
     if bip_value_total < 0:
         bip_value_total = 0
 
-    usd_value_total = round(bip_to_usdt(bip_value_total), 4)
+    usd_value_total = truncate(bip_to_usdt(bip_value_total), 4)
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
-    local_fiat_value = round(usd_value_total * usd_rates[local_fiat], 4)
-    coin_value = round(float(to_bip(balances[main_coin])), 4)
+    local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
+    coin_value = truncate(float(to_bip(balances[main_coin])), 4)
     return {
         'balance': {
             'coin': main_coin,
