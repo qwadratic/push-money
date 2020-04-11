@@ -5,6 +5,8 @@ from time import sleep
 from typing import Union, Iterable, Callable
 import math
 
+from shortuuid import uuid as _uuid
+
 
 def retry(
         exceptions: Union[Exception, Iterable[Exception]], logger: Callable = print, tries=4, delay=3, backoff=2,
@@ -56,3 +58,16 @@ def setup_logging():
 def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
+
+
+def uuid(unique_for_model=None, model_param=None, length=6):
+    if not unique_for_model:
+        return _uuid()[:length]
+    if unique_for_model and not model_param:
+        raise RuntimeError('Model param not specified')
+
+    while True:
+        link_id = _uuid()[:length]
+        if unique_for_model.get_or_none(**{model_param: link_id}):
+            continue
+        return link_id

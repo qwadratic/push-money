@@ -24,6 +24,7 @@ from api.dev import bp_dev
 from api.merchant import bp_merchant
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting, Product, Category, Shop
+from api.rewards import bp_rewards
 from api.sharing import bp_sharing
 # from api.surprise import bp_surprise
 from api.swagger import bp_swagger
@@ -34,15 +35,16 @@ from helpers.misc import setup_logging
 
 blueprints = [
     bp_auth,
-    # social_auth,
     bp_api,
     bp_sharing,
     bp_webhooks,
     bp_upload,
     bp_customization,
-    # bp_surprise,
     bp_swagger,
-    bp_merchant
+    bp_rewards,
+    # social_auth,
+    # bp_surprise,
+    # bp_merchant,
 ]
 if DEV:
     blueprints.append(bp_dev)

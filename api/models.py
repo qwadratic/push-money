@@ -285,3 +285,9 @@ class MerchantImage(UserImage):
     product = ForeignKeyField(Product, related_name='images', null=True, on_delete='CASCADE')
     shop = ForeignKeyField(Shop, related_name='images', null=True)
     brand = ForeignKeyField(Brand, related_name='images', null=True)
+
+
+class RewardCampaign(db.Model):
+    link_id = CharField()
+    address = CharField()
+    mnemonic = TextField()
