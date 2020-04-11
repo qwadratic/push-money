@@ -50,6 +50,8 @@ class FlaskConfig:
     FLASK_ADMIN_SWATCH = 'cyborg'
 
     BASE_URL = LOCAL_URL if LOCAL else REMOTE_URL
+    PREFERRED_URL_SCHEME = 'http' if LOCAL else 'https'
+
     UPLOADED_IMAGES_DEST = 'content/user_images'
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
     SECRET_KEY = os.environ.get('APP_SECRET_KEY')
