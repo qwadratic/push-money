@@ -42,6 +42,7 @@ REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 
 
 class FlaskConfig:
+    LOCAL = LOCAL
     DATABASE = {
         'name': DB_NAME,
         'engine': 'peewee.PostgresqlDatabase',
