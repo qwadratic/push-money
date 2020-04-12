@@ -1,6 +1,5 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-cd /root/push-dev
 source .venv/bin/activate
 make stop
 git pull
