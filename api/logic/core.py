@@ -2,11 +2,10 @@ from decimal import Decimal
 
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from shortuuid import uuid as _uuid
 
-from helpers.misc import truncate
+from helpers.misc import truncate, uuid
 from helpers.url import make_icon_url
-from minter.helpers import calc_bip_values, to_pip, to_bip, effective_balance, BASE_COIN
+from minter.helpers import to_pip, to_bip, effective_balance, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -21,19 +20,11 @@ from providers.unu import unu_top_up
 from providers.currency_rates import bip_price
 
 
-def uuid():
-    while True:
-        link_id = _uuid()[:6]
-        if PushWallet.get_or_none(link_id=link_id):
-            continue
-        return link_id
-
-
 def generate_and_save_wallet(**kwargs):
     password = kwargs.pop('password', None)
     password_hash = pbkdf2_sha256.hash(password) if password is not None else None
 
-    link_id = uuid()
+    link_id = uuid(unique_for_model=PushWallet, model_param='link_id')
     wallet = MinterWallet.create()
     return PushWallet.create(
         link_id=link_id,

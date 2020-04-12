@@ -14,6 +14,10 @@ migrate:
 	echo Executing migration script.
 	. .venv/bin/activate && python migrate.py
 
+automigrate:
+	echo Executing migration script.
+	. .venv/bin/activate && python migrate.py --auto
+
 update:
 	echo pull, stop, install, migrate, run
 	git pull && make stop && make install && make migrate && make run prod

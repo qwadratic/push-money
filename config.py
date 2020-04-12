@@ -42,6 +42,7 @@ REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 
 
 class FlaskConfig:
+    LOCAL = LOCAL
     DATABASE = {
         'name': DB_NAME,
         'engine': 'peewee.PostgresqlDatabase',
@@ -50,6 +51,7 @@ class FlaskConfig:
     FLASK_ADMIN_SWATCH = 'cyborg'
 
     BASE_URL = LOCAL_URL if LOCAL else REMOTE_URL
+
     UPLOADED_IMAGES_DEST = 'content/user_images'
     UPLOADED_IMAGES_URL = BASE_URL + '/api/upload/'
     SECRET_KEY = os.environ.get('APP_SECRET_KEY')

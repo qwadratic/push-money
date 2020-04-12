@@ -24,6 +24,7 @@ from api.dev import bp_dev
 from api.merchant import bp_merchant
 from api.models import db, PushWallet, User, Role, UserRole, PushCampaign, OrderHistory, WebhookEvent, Recipient, \
     UserImage, CustomizationSetting, Product, Category, Shop
+from api.rewards import bp_rewards
 from api.sharing import bp_sharing
 # from api.surprise import bp_surprise
 from api.swagger import bp_swagger
@@ -34,18 +35,28 @@ from helpers.misc import setup_logging
 
 blueprints = [
     bp_auth,
-    # social_auth,
     bp_api,
     bp_sharing,
     bp_webhooks,
     bp_upload,
     bp_customization,
-    # bp_surprise,
     bp_swagger,
-    bp_merchant
+    bp_rewards,
+    # social_auth,
+    # bp_surprise,
+    # bp_merchant,
 ]
 if DEV:
     blueprints.append(bp_dev)
+
+
+class ReverseProxied(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        environ['wsgi.url_scheme'] = 'https'
+        return self.app(environ, start_response)
 
 
 def app_init():
@@ -53,6 +64,8 @@ def app_init():
     app = Flask(__name__)
     app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=2)
     app.config.from_object(FlaskConfig)
+    if not app.config['LOCAL']:
+        app.wsgi_app = ReverseProxied(app.wsgi_app)
     for bp in blueprints:
         app.register_blueprint(bp)
 
@@ -183,3 +196,4 @@ def app_init():
         if 'admin' not in str(rule)])
     info('\n'.join(endpoints))
     return app
+
