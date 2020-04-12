@@ -5,7 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 from helpers.misc import truncate, uuid
 from helpers.url import make_icon_url
-from minter.helpers import to_pip, to_bip, effective_balance, BASE_COIN
+from minter.helpers import to_pip, to_bip, effective_balance, effective_value, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -42,15 +42,14 @@ def get_address_balance(address, virtual=None):
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
-    bip_value_total = truncate(float(main_balance_bip - Decimal(0.01)), 4)
-    if bip_value_total < 0:
-        bip_value_total = 0
+    bip_value_total = truncate(float(main_balance_bip), 4)
 
     usd_value_total = truncate(bip_to_usdt(bip_value_total), 4)
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
     local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
     coin_value = truncate(float(to_bip(balances[main_coin])), 4)
+    coin_value = effective_value(coin_value, main_coin)
     return {
         'balance': {
             'coin': main_coin,
