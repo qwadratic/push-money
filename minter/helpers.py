@@ -46,8 +46,9 @@ def effective_balance(balances):
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
         if int(balance) < int(comm_pip):
             continue
-        will_get_pip = int(will_get_pip) - to_pip(0.11)
-        balances_bip[coin] = to_bip(will_get_pip)
+        will_get_pip = int(will_get_pip) - to_pip(0.01)
+        if will_get_pip > 0:
+            balances_bip[coin] = to_bip(will_get_pip)
     return balances_bip or {'BIP': Decimal(0)}
 
 
