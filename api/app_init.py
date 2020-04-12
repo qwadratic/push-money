@@ -195,4 +195,5 @@ def app_init():
         str(rule) for rule in app.url_map.iter_rules()
         if 'admin' not in str(rule)])
     info('\n'.join(endpoints))
+
     return app
