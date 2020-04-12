@@ -196,4 +196,3 @@ def app_init():
         if 'admin' not in str(rule)])
     info('\n'.join(endpoints))
     return app
-
