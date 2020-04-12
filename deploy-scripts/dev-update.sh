@@ -1,5 +1,4 @@
 #!/bin/bash
-
 source .venv/bin/activate
 make stop
 git pull
