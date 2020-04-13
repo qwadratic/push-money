@@ -8,6 +8,7 @@ from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, Minte
     MinterSetCandidateOnTx, MinterSetCandidateOffTx, MinterEditCandidateTx, MinterMultiSendCoinTx
 
 from config import TESTNET
+from minter.tx import send_coin_tx
 from providers.mscan import MscanAPI
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
