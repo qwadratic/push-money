@@ -1,7 +1,9 @@
 from mintersdk import MinterHelper
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterTx
+from mintersdk.sdk.shortcuts import to_bip
+from config import TESTNET
 
-from minter.helpers import BASE_COIN, to_bip
+BASE_COIN = 'MNT' if TESTNET else 'BIP'
 
 
 def send_coin_tx(pk, coin, value, to, nonce, gas_coin=BASE_COIN, payload=''):
