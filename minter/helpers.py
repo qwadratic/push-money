@@ -43,7 +43,7 @@ def effective_value(value, coin):
     pk = wallet['private_key']
     to = wallet['address']
     send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=coin)
-    send_fee = MscanAPI.estimate_tx_commission(send_tx.signed_tx, pip2bip=True)['commission']
+    send_fee = to_bip(MscanAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
     if send_fee >= value:
         return Decimal(0)
     return Decimal(value) - send_fee
