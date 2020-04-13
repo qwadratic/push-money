@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from mintersdk import MinterConvertor
+from mintersdk.sdk.wallet import MinterWallet
 from mintersdk.sdk.deeplink import MinterDeeplink
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, MinterSellAllCoinTx, MinterBuyCoinTx, \
     MinterCreateCoinTx, MinterDeclareCandidacyTx, MinterDelegateTx, MinterUnbondTx, MinterRedeemCheckTx, \
@@ -34,6 +35,17 @@ def to_pip(bip):
 
 def to_bip(pip):
     return MinterConvertor.convert_value(pip, 'bip')
+
+
+def effective_value(value, coin):
+    wallet = MinterWallet.create()
+    pk = wallet['private_key']
+    to = wallet['address']
+    send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=coin)
+    send_fee = MscanAPI.estimate_tx_commission(send_tx.signed_tx, pip2bip=True)['result']['commission']
+    if send_fee >= value:
+        return Decimal(0)
+    return Decimal(value) - send_fee
 
 
 def effective_balance(balances):
