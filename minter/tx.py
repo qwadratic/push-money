@@ -1,6 +1,6 @@
 from mintersdk import MinterHelper
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterTx
-from mintersdk.sdk.shortcuts import to_bip
+from mintersdk.shortcuts import to_bip
 from config import TESTNET
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
