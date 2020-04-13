@@ -48,12 +48,12 @@ def get_address_balance(address, virtual=None):
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
     local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
-    coin_value = truncate(float(to_bip(balances[main_coin])), 4)
-    coin_value = effective_value(coin_value, main_coin)
+    coin_value = to_bip(balances[main_coin])
+    coin_value = truncate(float(effective_value(coin_value, main_coin)), 4)
     return {
         'balance': {
             'coin': main_coin,
-            'value': bip_value_total if main_coin == BASE_COIN else coin_value,
+            'value': coin_value,
             'bip_value': bip_value_total,
             'usd_value': usd_value_total,
             'local_fiat': local_fiat,
