@@ -5,7 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 from helpers.misc import truncate, uuid
 from helpers.url import make_icon_url
-from minter.helpers import to_pip, to_bip, effective_balance, BASE_COIN
+from minter.helpers import to_pip, to_bip, effective_balance, effective_value, BASE_COIN
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -42,19 +42,18 @@ def get_address_balance(address, virtual=None):
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
-    bip_value_total = truncate(float(main_balance_bip - Decimal(0.01)), 4)
-    if bip_value_total < 0:
-        bip_value_total = 0
+    bip_value_total = truncate(float(main_balance_bip), 4)
 
     usd_value_total = truncate(bip_to_usdt(bip_value_total), 4)
     usd_rates = fiat_to_usd_rates()
     local_fiat = 'RUB'
     local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
-    coin_value = truncate(float(to_bip(balances[main_coin])), 4)
+    coin_value = to_bip(balances[main_coin])
+    coin_value = truncate(float(effective_value(coin_value, main_coin)), 4)
     return {
         'balance': {
             'coin': main_coin,
-            'value': bip_value_total if main_coin == BASE_COIN else coin_value,
+            'value': coin_value,
             'bip_value': bip_value_total,
             'usd_value': usd_value_total,
             'local_fiat': local_fiat,
@@ -135,14 +134,14 @@ def get_spend_list():
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email'}
+                    {'type': 'email', 'param_name': 'email', 'placeholder': 'Unu.ru registration email', 'suggest_last': True}
                 ]
             },
             'flatfm': {
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm profile link, username or email'}
+                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm username', 'suggest_last': True}
                 ]
             }
         },
@@ -151,7 +150,7 @@ def get_spend_list():
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'phone', 'param_name': 'phone'}
+                    {'type': 'phone', 'param_name': 'phone', 'suggest_last': True}
                 ]
             }
         }
