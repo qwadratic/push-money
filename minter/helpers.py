@@ -53,7 +53,7 @@ def effective_balance(balances):
     balances_bip = {}
     for coin, balance in balances.items():
         if coin == BASE_COIN:
-            balances_bip[coin] = to_bip(balance) - Decimal(0.01)
+            balances_bip[coin] = max(Decimal(0), to_bip(balance) - Decimal(0.01))
             continue
         est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
