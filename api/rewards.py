@@ -75,9 +75,9 @@ class Action(Resource):
     @ns_action.expect(parser_action)
     def post(self):
         args = parser_action.parse_args()
-        print('#####', args)
         return {
             'rewards': [{
+                'id': 'fasdadg',
                 'amount': 0.01,
                 'coin': 'POPE',
                 'text': 'Todo: Subscribe',
@@ -85,6 +85,7 @@ class Action(Resource):
                 'type': 'youtube-subscribe',
                 'channel': 'UC7Rtksgq4z0c9uqqz2JDWNQ',
             }, {
+                'id': 'asGEW',
                 'amount': 0.02,
                 'coin': 'POPE',
                 'text': 'Pending: Like',
@@ -93,6 +94,7 @@ class Action(Resource):
                 'video': 'iWHRfPuJPnc',
                 'push_link': '2SwMph'
             }, {
+                'id': 'XZBE00',
                 'amount': 0.03,
                 'coin': 'POPE',
                 'text': 'Done: Comment',
