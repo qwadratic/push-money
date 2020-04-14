@@ -1,12 +1,14 @@
 from decimal import Decimal
 
 from mintersdk import MinterConvertor
+from mintersdk.sdk.wallet import MinterWallet
 from mintersdk.sdk.deeplink import MinterDeeplink
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, MinterSellAllCoinTx, MinterBuyCoinTx, \
     MinterCreateCoinTx, MinterDeclareCandidacyTx, MinterDelegateTx, MinterUnbondTx, MinterRedeemCheckTx, \
     MinterSetCandidateOnTx, MinterSetCandidateOffTx, MinterEditCandidateTx, MinterMultiSendCoinTx
 
 from config import TESTNET
+from minter.tx import send_coin_tx
 from providers.mscan import MscanAPI
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
@@ -36,18 +38,30 @@ def to_bip(pip):
     return MinterConvertor.convert_value(pip, 'bip')
 
 
+def effective_value(value, coin):
+    wallet = MinterWallet.create()
+    pk = wallet['private_key']
+    to = wallet['address']
+    send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=coin)
+    send_fee = to_bip(MscanAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
+    if send_fee >= value:
+        return Decimal(0)
+    return Decimal(value) - send_fee
+
+
 def effective_balance(balances):
     balances_bip = {}
     for coin, balance in balances.items():
         if coin == BASE_COIN:
-            balances_bip[coin] = to_bip(balance)
+            balances_bip[coin] = max(Decimal(0), to_bip(balance) - Decimal(0.01))
             continue
         est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
         if int(balance) < int(comm_pip):
             continue
-        will_get_pip = int(will_get_pip) - to_pip(0.1)
-        balances_bip[coin] = to_bip(will_get_pip)
+        will_get_pip = int(will_get_pip) - to_pip(0.01)
+        if will_get_pip > 0:
+            balances_bip[coin] = to_bip(will_get_pip)
     return balances_bip or {'BIP': Decimal(0)}
 
 
