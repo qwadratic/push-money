@@ -16,13 +16,13 @@ action_mdl = ns_campaign.model('Action', {
     'channel': fields.String(),
     'video': fields.String,
 })
-parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=False)
+parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_campaign_create.add_argument('name', required=True)
 parser_campaign_create.add_argument('coin', required=True)
 parser_campaign_create.add_argument('budget', type=float, required=True)
 parser_campaign_create.add_argument('action', type=action_mdl, required=True)
 
-parser_action = reqparse.RequestParser(trim=True, bundle_errors=False)
+parser_action = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_action.add_argument('type', required=True)
 parser_action.add_argument('video')
 parser_action.add_argument('videos', action='append')
@@ -71,8 +71,11 @@ class CampaignOne(Resource):
 
 @ns_action.route('/')
 class Action(Resource):
+
+    @ns_action.expect(parser_action)
     def post(self):
         args = parser_action.parse_args()
+        print('#####', args)
         return {
             'rewards': [{
                 'amount': 0.01,
