@@ -8,19 +8,26 @@ from minter.helpers import TxDeeplink
 bp_rewards = Blueprint('rewards', __name__, url_prefix='/api/rewards')
 api = Api(bp_rewards, title="Rewards API", description="YYY Rewards API")
 ns_campaign = api.namespace('campaign', description='Campaign operations')
-
+ns_action = api.namespace('action', description='User actions')
 
 action_mdl = ns_campaign.model('Action', {
     'type': fields.String(enum=['youtube-subscribe', 'youtube-comment', 'youtube-like']),
     'reward': fields.Float,
-    'channel': fields.String(discriminator='123'),
+    'channel': fields.String(),
     'video': fields.String,
 })
 parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=False)
 parser_campaign_create.add_argument('name', required=True)
 parser_campaign_create.add_argument('coin', required=True)
 parser_campaign_create.add_argument('budget', type=float, required=True)
-parser_campaign_create.add_argument('actions', type=action_mdl, action='append', required=True)
+parser_campaign_create.add_argument('action', type=action_mdl, required=True)
+
+parser_action = reqparse.RequestParser(trim=True, bundle_errors=False)
+parser_action.add_argument('type', required=True)
+parser_action.add_argument('video')
+parser_action.add_argument('videos', action='append')
+parser_action.add_argument('channel')
+parser_action.add_argument('duration', type=float)
 
 
 @ns_campaign.route('/')
@@ -51,22 +58,43 @@ class CampaignOne(Resource):
             'address': 'Mx...',
             'budget': 10,
             'balance': 9.85,
-            'total_spent': 0.15,
+            'times_completed': 3,
+            'value_spent': 0.15,
             'coin': 'POPE',
-            'actions': [
-                {
-                    'type': 'youtube-subscribe',
-                    'channel': 'ChannelName',
-                    'reward': 0.02,
-                    'times_completed': 5,
-                    'value_spent': 0.1
-                },
-                {
-                    'type': 'youtube-like',
-                    'video': 'adfKGG2',
-                    'reward': 0.01,
-                    'times_completed': 5,
-                    'value_spent': 0.05
-                }
-            ]
+            'action': {
+                'type': 'youtube-subscribe',
+                'channel': 'ChannelName',
+                'reward': 0.05,
+            }
+        }
+
+
+@ns_action.route('/')
+class Action(Resource):
+    def post(self):
+        args = parser_action.parse_args()
+        return {
+            'rewards': [{
+                'amount': 0.01,
+                'coin': 'POPE',
+                'text': 'Todo: Subscribe',
+                'status': 'todo',
+                'type': 'youtube-subscribe',
+                'channel': 'UC7Rtksgq4z0c9uqqz2JDWNQ',
+            }, {
+                'amount': 0.02,
+                'coin': 'POPE',
+                'text': 'Pending: Like',
+                'status': 'pending',
+                'type': 'youtube-like',
+                'video': 'iWHRfPuJPnc',
+                'push_link': '2SwMph'
+            }, {
+                'amount': 0.03,
+                'coin': 'POPE',
+                'text': 'Done: Comment',
+                'status': 'done',
+                'type': 'youtube-comment',
+                'video': 'iWHRfPuJPnc',
+            }]
         }
