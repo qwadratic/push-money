@@ -20,6 +20,11 @@ def health():
     return f'Api ok. <a href="{url_for("swagger.swag")}">Swagger</a>'
 
 
+@bp_api.route('/custom-coins')
+def custom_coins():
+    return jsonify({"symbols": ["DICE", "TIME"]})
+
+
 @bp_api.route('/exchange-rates')
 def exchange_rates():
     bip_usd_price = bip_to_usdt(1)
