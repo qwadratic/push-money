@@ -1,13 +1,16 @@
 from datetime import datetime
 from http import HTTPStatus
 from flask import Blueprint, jsonify, request, url_for
+from mintersdk.sdk.wallet import MinterWallet
 
 from api.logic.core import generate_and_save_wallet, get_address_balance, spend_balance, \
     get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
 from minter.helpers import to_bip, TxDeeplink
+from minter.tx import send_coin_tx
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from providers.minter import send_coins
+from providers.mscan import MscanAPI
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -61,6 +64,8 @@ def push_create():
     sender, recipient = payload.get('sender'), payload.get('recipient')
     password = payload.get('password')
     amount = payload.get('amount')
+    coin = payload.get('coin')
+
     customization_setting_id = payload.get('customization_setting_id')
     setting = CustomizationSetting.get_or_none(id=customization_setting_id)
     if not setting:
@@ -74,7 +79,10 @@ def push_create():
         'link_id': wallet.link_id
     }
     if amount:
-        response['deeplink'] = TxDeeplink.create('send', to=wallet.address, value=float(amount) + 0.01).mobile
+        w = MinterWallet.create()
+        tx = send_coin_tx(w['private_key'], coin, float(amount), w['address'], 1, gas_coin=coin)
+        tx_fee = float(to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission']))
+        response['deeplink'] = TxDeeplink.create('send', to=wallet.address, value=float(amount) + tx_fee, coin=coin).mobile
     return jsonify(response)
 
 
