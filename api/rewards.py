@@ -29,7 +29,7 @@ action_mdl = ns_campaign.model('Action', {
 })
 parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_campaign_create.add_argument('name', required=True, location='form')
-parser_campaign_create.add_argument('coin', required=True, location='form')
+parser_campaign_create.add_argument('action_coin', required=True, location='form')
 parser_campaign_create.add_argument('count', type=float, required=True, location='form')
 parser_campaign_create.add_argument('action_type', required=True, location='form')
 parser_campaign_create.add_argument('action_reward', type=float, required=True, location='form')
@@ -52,7 +52,7 @@ class Campaign(Resource):
     def post(self):
         args = parser_campaign_create.parse_args()
         count = args['count']
-        coin = args['coin']
+        coin = args['action_coin']
         name = args['name']
         action_type = args['action_type']
         action_reward = args['action_reward']
