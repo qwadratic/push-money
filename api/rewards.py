@@ -137,7 +137,7 @@ def get_channel_id(video_id):
     if not response['items']:
         return
 
-    return response['items'][0]['channelId']
+    return response['items'][0]['snippet']['channelId']
 
 
 def parse_video_id(url):
