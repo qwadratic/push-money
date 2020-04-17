@@ -88,7 +88,7 @@ class Campaign(Resource):
         return {
             'id': campaign_id,
             'address': wallet['address'],
-            'deeplink': deeplink.mobile
+            'deeplink': deeplink.web
         }
 
 
