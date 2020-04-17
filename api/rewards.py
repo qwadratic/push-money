@@ -1,8 +1,11 @@
 from flask import Blueprint
-from flask_restx import Api, Resource, reqparse, fields, inputs
+from flask_restx import Api, Resource, reqparse, fields
+from flask_uploads import extension
 from mintersdk.sdk.wallet import MinterWallet
+from werkzeug.datastructures import FileStorage
 
-from api.models import RewardCampaign
+from api.models import RewardCampaign, RewardIcon
+from api.upload import images
 from helpers.misc import uuid
 from minter.helpers import TxDeeplink, to_pip, to_bip
 from providers.mscan import MscanAPI
@@ -18,10 +21,16 @@ action_mdl = ns_campaign.model('Action', {
     'link': fields.String,
 })
 parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=True)
-parser_campaign_create.add_argument('name', required=True)
-parser_campaign_create.add_argument('coin', required=True)
-parser_campaign_create.add_argument('count', type=float, required=True)
-parser_campaign_create.add_argument('action', type=action_mdl, required=True)
+parser_campaign_create.add_argument('name', required=True, location='form')
+parser_campaign_create.add_argument('coin', required=True, location='form')
+parser_campaign_create.add_argument('count', type=float, required=True, location='form')
+parser_campaign_create.add_argument('action_type', required=True, location='form')
+parser_campaign_create.add_argument('action_reward', type=float, required=True, location='form')
+parser_campaign_create.add_argument('action_link', required=True, location='form')
+parser_campaign_create.add_argument('action_duration', required=False, location='form')
+parser_campaign_create.add_argument('icon', location='files', type=FileStorage, required=True)
+# parser_campaign_add_icon = reqparse.RequestParser(trim=True, bundle_errors=True)
+# parser_campaign_add_icon.add_argument('icon', location='files', type=FileStorage, required=True)
 
 parser_action = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_action.add_argument('type', required=True)
@@ -40,12 +49,26 @@ class Campaign(Resource):
         count = args['count']
         coin = args['coin']
         name = args['name']
-        action = args['action']
+        action_type = args['action_type']
+        action_reward = args['action_reward']
+        action_link = args['action_link']
+        action_duration = args['action_duration']
+
+        action = {
+            'type': action_type,
+            'reward': action_reward,
+            'link': action_link,
+            'duration': action_duration
+        }
         campaign_id = uuid()
         wallet = MinterWallet.create()
         action_reward = float(action['reward'])
         fees = 0
         deeplink = TxDeeplink.create('send', to=wallet['address'], value=action_reward * count + fees, coin=coin)
+
+        icon_storage = args['icon']
+        filename = images.save(icon_storage, name=f'{campaign_id}.{extension(icon_storage.filename)}')
+        icon = RewardIcon.create(filename=filename, url=images.url(filename))
         RewardCampaign.create(
             link_id=campaign_id,
             address=wallet['address'],
@@ -55,7 +78,8 @@ class Campaign(Resource):
             coin=coin,
             action_type=action['type'],
             action_reward=to_pip(action_reward),
-            action_params=action)
+            action_params=action,
+            icon=icon)
         return {
             'id': campaign_id,
             'address': wallet['address'],
@@ -84,6 +108,7 @@ class CampaignOne(Resource):
             'balance': campaign_balance,
             'times_completed': times_completed,
             'value_spent': value_spent,
+            'icon_url': campaign.icon.url if campaign.icon else None,
             'action': {
                 'type': campaign.action_type,
                 'link': campaign.action_params['link'],
@@ -91,12 +116,21 @@ class CampaignOne(Resource):
             }
         }
 
+    # @ns_campaign.expect(parser_campaign_add_icon)
+    # def put(self, campaign_id):
+    #     campaign = RewardCampaign.get_or_none(link_id=campaign_id)
+    #     if not campaign:
+    #         return {}
+    #     args = parser_campaign_add_icon.parse_args()
+    #     f = args['icon']
+
 
 @ns_action.route('/')
 class Action(Resource):
 
     @ns_action.expect(parser_action)
     def post(self):
+
         args = parser_action.parse_args()
         return {
             'rewards': [{
