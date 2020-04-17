@@ -287,7 +287,18 @@ class MerchantImage(UserImage):
     brand = ForeignKeyField(Brand, related_name='images', null=True)
 
 
+class RewardIcon(UserImage):
+    pass
+
+
 class RewardCampaign(db.Model):
     link_id = CharField()
+    name = CharField()
     address = CharField()
     mnemonic = TextField()
+    count = IntegerField()
+    coin = CharField()
+    action_type = CharField()
+    action_reward = CharField()
+    action_params = JSONField()
+    icon = ForeignKeyField(RewardIcon, null=True)

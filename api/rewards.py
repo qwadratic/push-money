@@ -2,8 +2,10 @@ from flask import Blueprint
 from flask_restx import Api, Resource, reqparse, fields, inputs
 from mintersdk.sdk.wallet import MinterWallet
 
+from api.models import RewardCampaign
 from helpers.misc import uuid
-from minter.helpers import TxDeeplink
+from minter.helpers import TxDeeplink, to_pip, to_bip
+from providers.mscan import MscanAPI
 
 bp_rewards = Blueprint('rewards', __name__, url_prefix='/api/rewards')
 api = Api(bp_rewards, title="Rewards API", description="YYY Rewards API")
@@ -11,15 +13,14 @@ ns_campaign = api.namespace('campaign', description='Campaign operations')
 ns_action = api.namespace('action', description='User actions')
 
 action_mdl = ns_campaign.model('Action', {
-    'type': fields.String(enum=['youtube-subscribe', 'youtube-comment', 'youtube-like']),
+    'type': fields.String(enum=['youtube-subscribe', 'youtube-comment', 'youtube-like', 'youtube-watch']),
     'reward': fields.Float,
-    'channel': fields.String(),
-    'video': fields.String,
+    'link': fields.String,
 })
 parser_campaign_create = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_campaign_create.add_argument('name', required=True)
 parser_campaign_create.add_argument('coin', required=True)
-parser_campaign_create.add_argument('budget', type=float, required=True)
+parser_campaign_create.add_argument('count', type=float, required=True)
 parser_campaign_create.add_argument('action', type=action_mdl, required=True)
 
 parser_action = reqparse.RequestParser(trim=True, bundle_errors=True)
@@ -36,11 +37,25 @@ class Campaign(Resource):
     @ns_campaign.expect(parser_campaign_create)
     def post(self):
         args = parser_campaign_create.parse_args()
-        budget = args['budget']
+        count = args['count']
         coin = args['coin']
+        name = args['name']
+        action = args['action']
         campaign_id = uuid()
         wallet = MinterWallet.create()
-        deeplink = TxDeeplink.create('send', to=wallet['address'], value=float(budget), coin=coin)
+        action_reward = float(action['reward'])
+        fees = 0
+        deeplink = TxDeeplink.create('send', to=wallet['address'], value=action_reward * count + fees, coin=coin)
+        RewardCampaign.create(
+            link_id=campaign_id,
+            address=wallet['address'],
+            mnemonic=wallet['mnemonic'],
+            name=name,
+            count=count,
+            coin=coin,
+            action_type=action['type'],
+            action_reward=to_pip(action_reward),
+            action_params=action)
         return {
             'id': campaign_id,
             'address': wallet['address'],
@@ -52,19 +67,27 @@ class Campaign(Resource):
 class CampaignOne(Resource):
 
     def get(self, campaign_id):
+        campaign = RewardCampaign.get_or_none(link_id=campaign_id)
+        if not campaign:
+            return {}
+        balances = MscanAPI.get_balance(campaign.address)['balance']
+        campaign_balance = float(to_bip(balances.get(campaign.coin, '0')))
+        times_completed = 0
+        reward = float(to_bip(campaign.action_reward))
+        value_spent = times_completed * reward
         return {
-            'id': campaign_id,
-            'name': 'Campaign Name',
-            'address': 'Mx...',
-            'budget': 10,
-            'balance': 9.85,
-            'times_completed': 3,
-            'value_spent': 0.15,
-            'coin': 'POPE',
+            'id': campaign.link_id,
+            'name': campaign.name,
+            'address': campaign.address,
+            'count': campaign.count,
+            'coin': campaign.coin,
+            'balance': campaign_balance,
+            'times_completed': times_completed,
+            'value_spent': value_spent,
             'action': {
-                'type': 'youtube-subscribe',
-                'channel': 'ChannelName',
-                'reward': 0.05,
+                'type': campaign.action_type,
+                'link': campaign.action_params['link'],
+                'reward': reward,
             }
         }
 
