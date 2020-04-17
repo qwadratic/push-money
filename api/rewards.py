@@ -227,8 +227,8 @@ class Action(Resource):
             video_id = parse_video_id(args['video'])
             available_rewards = get_available_rewards_video(video_id)
 
-        if args['type'] == 'youtube-watch' and 'youtube-watch' in available_rewards:
-            duration = args['duration']
+        if args['type'] in ['youtube-watch', 'youtube-visit'] and 'youtube-watch' in available_rewards:
+            duration = args['duration'] or 0
             for task in available_rewards['youtube-watch']:
                 if duration >= task['duration']:
                     task['status'] = 'pending'
