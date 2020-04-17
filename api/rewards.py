@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from urllib.parse import parse_qs, urlparse
 
@@ -184,6 +186,7 @@ class Action(Resource):
         #     'channel': None,
         #     'duration': None
         # }
+        logging.info(f'##### {args}')
         if args['type'] == 'youtube-visit':
             video_id = parse_video_id(args['video'])
             campaigns = get_campaigns_by_video_id(video_id)
