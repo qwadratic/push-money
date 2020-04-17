@@ -180,8 +180,9 @@ def get_available_rewards_video(video_id):
     if not video_id:
         return []
     campaigns = get_campaigns_by_video_id(video_id)
-    rewards = []
+    rewards = {}
     for action_type, models in campaigns.items():
+        rewards.setdefault(action_type, [])
         for cmp in models:
             params = {}
             if action_type == 'youtube-subscribe':
@@ -189,13 +190,17 @@ def get_available_rewards_video(video_id):
             if action_type in ['youtube-watch', 'youtube-comment', 'youtube-like']:
                 params['video'] = cmp.action_params['link']
             if 'duration' in cmp.action_params and action_type == 'youtube-watch':
-                params['duration'] = cmp.action_params['duration']
-            rewards.append({
+                try:
+                    casted_duration = float(cmp.action_params['duration'])
+                except Exception:
+                    continue
+                params['duration'] = casted_duration
+
+            rewards[action_type].append({
                 'id': cmp.link_id,
                 'amount': cmp.action_params['reward'],
                 'coin': cmp.coin,
                 'text': cmp.name,
-                'status': 'todo',
                 'type': cmp.action_type,
                 **params
             })
@@ -216,13 +221,29 @@ class Action(Resource):
         #     'duration': None
         # }
         logging.info(f'##### {args}')
-        if args['type'] in ['youtube-visit', 'youtube-watch']:
+
+        available_rewards = {}
+        if args['video']:
             video_id = parse_video_id(args['video'])
             available_rewards = get_available_rewards_video(video_id)
-            return {'rewards': available_rewards}
+
+        if args['type'] == 'youtube-watch' and 'youtube-watch' in available_rewards:
+            duration = args['duration']
+            for task in available_rewards['youtube-watch']:
+                if duration >= task['duration']:
+                    task['status'] = 'pending'
+                    task['push_link'] = 'abcdef'
+                else:
+                    task['status'] = 'todo'
+
+        all_rewards = []
+        for rewards in available_rewards.values():
+            all_rewards.extend(rewards)
 
         return {
-            'rewards': [
+            'rewards': all_rewards
+        }
+            #[
             #     {
             #     'id': 'fasdadg',
             #     'amount': 0.01,
@@ -249,5 +270,4 @@ class Action(Resource):
             #     'type': 'youtube-comment',
             #     'video': 'iWHRfPuJPnc',
             # }
-            ]
-        }
+            #]
