@@ -126,6 +126,7 @@ class CampaignOne(Resource):
 ONE_MINUTE = 60
 ONE_HOUR = 60 * ONE_MINUTE
 
+
 @ttl_cache(ttl=24 * ONE_HOUR)
 def get_channel_id(video_id):
     r = requests.get('https://www.googleapis.com/youtube/v3/videos', params={
@@ -174,6 +175,7 @@ def get_campaigns_by_video_id(video_id):
     return campaigns
 
 
+@ttl_cache(ttl=ONE_HOUR)
 def get_available_rewards_video(video_id):
     if not video_id:
         return []
@@ -214,9 +216,10 @@ class Action(Resource):
         #     'duration': None
         # }
         logging.info(f'##### {args}')
-        if args['type'] == 'youtube-visit':
+        if args['type'] in ['youtube-visit', 'youtube-watch']:
             video_id = parse_video_id(args['video'])
-            return {'rewards': get_available_rewards_video(video_id)}
+            available_rewards = get_available_rewards_video(video_id)
+            return {'rewards': available_rewards}
 
         return {
             'rewards': [
