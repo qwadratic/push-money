@@ -142,7 +142,8 @@ def get_channel_id(video_id):
 
 def parse_video_id(url):
     parsed = urlparse(url)
-    return parse_qs(parsed.query)['v'][0]
+    v = parse_qs(parsed.query).get('v')
+    return v[0] if v else None
 
 
 def parse_channel_id(url):
@@ -173,6 +174,32 @@ def get_campaigns_by_video_id(video_id):
     return campaigns
 
 
+def get_available_rewards_video(video_id):
+    if not video_id:
+        return []
+    campaigns = get_campaigns_by_video_id(video_id)
+    rewards = []
+    for action_type, models in campaigns.items():
+        for cmp in models:
+            params = {}
+            if action_type == 'youtube-subscribe':
+                params['channel'] = cmp.action_params['link']
+            if action_type in ['youtube-watch', 'youtube-comment', 'youtube-like']:
+                params['video'] = cmp.action_params['link']
+            if 'duration' in cmp.action_params and action_type == 'youtube-watch':
+                params['duration'] = cmp.action_params['duration']
+            rewards.append({
+                'id': cmp.link_id,
+                'amount': cmp.action_params['reward'],
+                'coin': cmp.coin,
+                'text': cmp.name,
+                'status': 'todo',
+                'type': cmp.action_type,
+                **params
+            })
+    return rewards
+
+
 @ns_action.route('/')
 class Action(Resource):
 
@@ -189,34 +216,7 @@ class Action(Resource):
         logging.info(f'##### {args}')
         if args['type'] == 'youtube-visit':
             video_id = parse_video_id(args['video'])
-            campaigns = get_campaigns_by_video_id(video_id)
-            rewards = []
-            for action_type, models in campaigns.items():
-                for cmp in models:
-                    params = {}
-                    if action_type == 'youtube-subscribe':
-                        params['channel'] = cmp.action_params['link']
-                    if action_type in ['youtube-watch', 'youtube-comment', 'youtube-like']:
-                        params['video'] = cmp.action_params['link']
-                    if 'duration' in cmp.action_params and action_type == 'youtube-watch':
-                        params['duration'] = cmp.action_params['duration']
-                    rewards.append({
-                        'id': cmp.link_id,
-                        'amount': cmp.action_params['reward'],
-                        'coin': cmp.coin,
-                        'text': cmp.name,
-                        'status': 'todo',
-                        'type': cmp.action_type,
-                        **params
-                    })
-            return rewards
-
-        # channel_id = None
-        # if args['type'] == 'youtube-subscribe' and not args['channel']:
-        #     video_id = parse_video_id(args['video'])
-        #     channel_id = get_channel_id(video_id)
-        # elif args['type'] == 'youtube-subscribe' and args['channel']:
-        #     channel_id = parse_channel_id(args['channel'])
+            return {'rewards': get_available_rewards_video(video_id)}
 
         return {
             'rewards': [
