@@ -219,30 +219,32 @@ class Action(Resource):
         #     channel_id = parse_channel_id(args['channel'])
 
         return {
-            'rewards': [{
-                'id': 'fasdadg',
-                'amount': 0.01,
-                'coin': 'POPE',
-                'text': 'Todo: Subscribe',
-                'status': 'todo',
-                'type': 'youtube-subscribe',
-                'channel': 'UC7Rtksgq4z0c9uqqz2JDWNQ',
-            }, {
-                'id': 'asGEW',
-                'amount': 0.02,
-                'coin': 'POPE',
-                'text': 'Pending: Like',
-                'status': 'pending',
-                'type': 'youtube-like',
-                'video': 'iWHRfPuJPnc',
-                'push_link': '2SwMph'
-            }, {
-                'id': 'XZBE00',
-                'amount': 0.03,
-                'coin': 'POPE',
-                'text': 'Done: Comment',
-                'status': 'done',
-                'type': 'youtube-comment',
-                'video': 'iWHRfPuJPnc',
-            }]
+            'rewards': [
+            #     {
+            #     'id': 'fasdadg',
+            #     'amount': 0.01,
+            #     'coin': 'POPE',
+            #     'text': 'Todo: Subscribe',
+            #     'status': 'todo',
+            #     'type': 'youtube-subscribe',
+            #     'channel': 'UC7Rtksgq4z0c9uqqz2JDWNQ',
+            # }, {
+            #     'id': 'asGEW',
+            #     'amount': 0.02,
+            #     'coin': 'POPE',
+            #     'text': 'Pending: Like',
+            #     'status': 'pending',
+            #     'type': 'youtube-like',
+            #     'video': 'iWHRfPuJPnc',
+            #     'push_link': '2SwMph'
+            # }, {
+            #     'id': 'XZBE00',
+            #     'amount': 0.03,
+            #     'coin': 'POPE',
+            #     'text': 'Done: Comment',
+            #     'status': 'done',
+            #     'type': 'youtube-comment',
+            #     'video': 'iWHRfPuJPnc',
+            # }
+            ]
         }
