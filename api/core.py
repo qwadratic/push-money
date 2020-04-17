@@ -22,7 +22,7 @@ def health():
 
 @bp_api.route('/custom-coins')
 def custom_coins():
-    return jsonify({"symbols": ["BIP", "DICE", "TIME"]})
+    return jsonify({"symbols": ["DICE", "TIME", "UNUCOIN", "PIZZA", "POPE"]})
 
 
 @bp_api.route('/exchange-rates')
