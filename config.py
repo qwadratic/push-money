@@ -40,6 +40,8 @@ if LOCAL:
 LOCAL_URL = 'http://127.0.0.1:8000'
 REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 
+YOUTUBE_APIKEY = os.environ.get('YOUTUBE_APIKEY')
+
 
 class FlaskConfig:
     LOCAL = LOCAL

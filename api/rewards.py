@@ -1,3 +1,7 @@
+import requests
+from urllib.parse import parse_qs, urlparse
+
+from cachetools.func import ttl_cache
 from flask import Blueprint
 from flask_restx import Api, Resource, reqparse, fields
 from flask_uploads import extension
@@ -6,6 +10,7 @@ from werkzeug.datastructures import FileStorage
 
 from api.models import RewardCampaign, RewardIcon
 from api.upload import images
+from config import YOUTUBE_APIKEY
 from helpers.misc import uuid
 from minter.helpers import TxDeeplink, to_pip, to_bip
 from providers.mscan import MscanAPI
@@ -29,8 +34,6 @@ parser_campaign_create.add_argument('action_reward', type=float, required=True, 
 parser_campaign_create.add_argument('action_link', required=True, location='form')
 parser_campaign_create.add_argument('action_duration', required=False, location='form')
 parser_campaign_create.add_argument('icon', location='files', type=FileStorage, required=True)
-# parser_campaign_add_icon = reqparse.RequestParser(trim=True, bundle_errors=True)
-# parser_campaign_add_icon.add_argument('icon', location='files', type=FileStorage, required=True)
 
 parser_action = reqparse.RequestParser(trim=True, bundle_errors=True)
 parser_action.add_argument('type', required=True)
@@ -116,13 +119,56 @@ class CampaignOne(Resource):
             }
         }
 
-    # @ns_campaign.expect(parser_campaign_add_icon)
-    # def put(self, campaign_id):
-    #     campaign = RewardCampaign.get_or_none(link_id=campaign_id)
-    #     if not campaign:
-    #         return {}
-    #     args = parser_campaign_add_icon.parse_args()
-    #     f = args['icon']
+
+
+ONE_MINUTE = 60
+ONE_HOUR = 60 * ONE_MINUTE
+
+@ttl_cache(ttl=24 * ONE_HOUR)
+def get_channel_id(video_id):
+    r = requests.get('https://www.googleapis.com/youtube/v3/videos', params={
+        'part': 'snippet',
+        'id': video_id,
+        'key': YOUTUBE_APIKEY
+    })
+    response = r.json()
+    if not response['items']:
+        return
+
+    return response['items'][0]['channelId']
+
+
+def parse_video_id(url):
+    parsed = urlparse(url)
+    return parse_qs(parsed.query)['v'][0]
+
+
+def parse_channel_id(url):
+    path_parts = urlparse(url).path.split('/')
+    if 'channel' not in path_parts or 'user' not in path_parts:
+        return
+    return path_parts[-1]
+
+
+def get_campaigns_by_video_id(video_id):
+    campaigns = {}
+    for cmp in RewardCampaign.filter(
+            action_type__in=['youtube-like', 'youtube-subscribe', 'youtube-watch']):
+
+        link = cmp.action_params['link']
+        if cmp.action_type == 'youtube-subscribe':
+            if video_id not in link:
+                channel_id = get_channel_id(video_id)
+                if not channel_id or channel_id not in link:
+                    continue
+        if cmp.action_type in ['youtube-watch', 'youtube-like', 'youtube-comment']:
+            if video_id not in link:
+                continue
+
+        # check is done
+        campaigns.setdefault(cmp.action_type, [])
+        campaigns[cmp.action_type].append(cmp)
+    return campaigns
 
 
 @ns_action.route('/')
@@ -130,8 +176,45 @@ class Action(Resource):
 
     @ns_action.expect(parser_action)
     def post(self):
-
         args = parser_action.parse_args()
+        # {
+        #     'type': 'youtube-subscribe',
+        #     'video': 'https://www.youtube.com/watch?v=a-2OE6TZw24',
+        #     'videos': None,
+        #     'channel': None,
+        #     'duration': None
+        # }
+        if args['type'] == 'youtube-visit':
+            video_id = parse_video_id(args['video'])
+            campaigns = get_campaigns_by_video_id(video_id)
+            rewards = []
+            for action_type, models in campaigns.items():
+                for cmp in models:
+                    params = {}
+                    if action_type == 'youtube-subscribe':
+                        params['channel'] = cmp.action_params['link']
+                    if action_type in ['youtube-watch', 'youtube-comment', 'youtube-like']:
+                        params['video'] = cmp.action_params['link']
+                    if 'duration' in cmp.action_params and action_type == 'youtube-watch':
+                        params['duration'] = cmp.action_params['duration']
+                    rewards.append({
+                        'id': cmp.link_id,
+                        'amount': cmp.action_params['reward'],
+                        'coin': cmp.coin,
+                        'text': cmp.name,
+                        'status': 'todo',
+                        'type': cmp.action_type,
+                        **params
+                    })
+            return rewards
+
+        # channel_id = None
+        # if args['type'] == 'youtube-subscribe' and not args['channel']:
+        #     video_id = parse_video_id(args['video'])
+        #     channel_id = get_channel_id(video_id)
+        # elif args['type'] == 'youtube-subscribe' and args['channel']:
+        #     channel_id = parse_channel_id(args['channel'])
+
         return {
             'rewards': [{
                 'id': 'fasdadg',
