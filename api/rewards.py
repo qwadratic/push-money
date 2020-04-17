@@ -239,7 +239,7 @@ class Action(Resource):
         all_rewards = []
         for rewards in available_rewards.values():
             all_rewards.extend([r for r in rewards if r.get('status')])
-
+        logging.info(all_rewards)
         return {
             'rewards': all_rewards
         }
