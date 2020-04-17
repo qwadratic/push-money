@@ -178,7 +178,7 @@ def get_campaigns_by_video_id(video_id):
 @ttl_cache(ttl=ONE_HOUR)
 def get_available_rewards_video(video_id):
     if not video_id:
-        return []
+        return {}
     campaigns = get_campaigns_by_video_id(video_id)
     rewards = {}
     for action_type, models in campaigns.items():
