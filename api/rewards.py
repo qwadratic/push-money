@@ -260,7 +260,7 @@ class Action(Resource):
                     task['status'] = 'done'
                     task['push_link'] = 'abcdef'
 
-        if args['type'] in ['youtube-comment', 'youtube-like', 'youtube-subscribe']
+        if args['type'] in ['youtube-comment', 'youtube-like', 'youtube-subscribe']:
             for task in available_rewards.get(args['type'], []):
                 task['status'] = 'done'
                 task['push_link'] = 'abcdef'
