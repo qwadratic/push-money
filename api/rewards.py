@@ -12,7 +12,7 @@ from werkzeug.datastructures import FileStorage
 
 from api.models import RewardCampaign, RewardIcon
 from api.upload import images
-from config import YOUTUBE_APIKEY
+from config import YOUTUBE_APIKEY, YYY_PUSH_URL
 from helpers.misc import uuid
 from minter.helpers import TxDeeplink, to_pip, to_bip
 from minter.tx import estimate_custom_fee, send_coin_tx
@@ -259,12 +259,12 @@ class Action(Resource):
             for task in available_rewards['youtube-watch']:
                 if duration >= task['duration']:
                     task['status'] = 'done'
-                    task['push_link'] = 'abcdef'
+                    task['push_link'] = YYY_PUSH_URL + 'abcdef'
 
         if args['type'] in ['youtube-comment', 'youtube-like', 'youtube-subscribe']:
             for task in available_rewards.get(args['type'], []):
                 task['status'] = 'done'
-                task['push_link'] = 'abcdef'
+                task['push_link'] = YYY_PUSH_URL + 'abcdef'
 
         all_rewards = []
         for rewards in available_rewards.values():
