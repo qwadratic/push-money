@@ -302,3 +302,4 @@ class RewardCampaign(db.Model):
     action_reward = CharField()
     action_params = JSONField()
     icon = ForeignKeyField(RewardIcon, null=True)
+    status = CharField(default='open')

@@ -15,6 +15,8 @@ from api.upload import images
 from config import YOUTUBE_APIKEY
 from helpers.misc import uuid
 from minter.helpers import TxDeeplink, to_pip, to_bip
+from minter.tx import estimate_custom_fee, send_coin_tx
+from providers.minter import get_first_transaction
 from providers.mscan import MscanAPI
 
 bp_rewards = Blueprint('rewards', __name__, url_prefix='/api/rewards')
@@ -95,12 +97,35 @@ class Campaign(Resource):
 @ns_campaign.route('/<campaign_id>/')
 class CampaignOne(Resource):
 
+    def delete(self, campaign_id):
+        campaign = RewardCampaign.get_or_none(link_id=campaign_id, status='open')
+        if not campaign:
+            return {}
+
+        response = MscanAPI.get_balance(campaign.address)
+        balances = response['balance']
+        campaign_balance = to_bip(balances.get(campaign.coin, '0'))
+        if campaign_balance:
+            tx_fee = estimate_custom_fee(campaign.coin)
+            private_key = MinterWallet.create(mnemonic=campaign.mnemonic)['private_key']
+            refund_address = get_first_transaction(campaign.address)
+            nonce = int(response['transaction_count']) + 1
+            tx = send_coin_tx(
+                private_key, campaign.coin, campaign_balance - tx_fee, refund_address,
+                nonce, gas_coin=campaign.coin)
+            MscanAPI.send_tx(tx, wait=True)
+
+        campaign.status = 'closed'
+        campaign.save()
+        return {'success': True}
+
     def get(self, campaign_id):
-        campaign = RewardCampaign.get_or_none(link_id=campaign_id)
+        campaign = RewardCampaign.get_or_none(link_id=campaign_id, status='open')
         if not campaign:
             return {}
         balances = MscanAPI.get_balance(campaign.address)['balance']
-        campaign_balance = float(to_bip(balances.get(campaign.coin, '0')))
+        campaign_balance = to_bip(balances.get(campaign.coin, '0'))
+
         times_completed = 0
         reward = float(to_bip(campaign.action_reward))
         value_spent = times_completed * reward
@@ -110,7 +135,7 @@ class CampaignOne(Resource):
             'address': campaign.address,
             'count': campaign.count,
             'coin': campaign.coin,
-            'balance': campaign_balance,
+            'balance': float(campaign_balance),
             'times_completed': times_completed,
             'value_spent': value_spent,
             'icon_url': campaign.icon.url if campaign.icon else None,
@@ -157,7 +182,7 @@ def parse_channel_id(url):
 def get_campaigns_by_video_id(video_id):
     campaigns = {}
     for cmp in RewardCampaign.filter(
-            action_type__in=['youtube-like', 'youtube-subscribe', 'youtube-watch']):
+            action_type__in=['youtube-like', 'youtube-subscribe', 'youtube-watch'], status='open'):
 
         link = cmp.action_params['link']
         if cmp.action_type == 'youtube-subscribe':
