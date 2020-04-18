@@ -200,7 +200,7 @@ def get_campaigns_by_video_id(video_id):
     return campaigns
 
 
-@ttl_cache(ttl=ONE_HOUR)
+# @ttl_cache(ttl=ONE_HOUR)
 def get_available_rewards_video(video_id):
     if not video_id:
         return {}
@@ -216,7 +216,7 @@ def get_available_rewards_video(video_id):
                 params['video'] = cmp.action_params['link']
             if 'duration' in cmp.action_params and action_type == 'youtube-watch':
                 try:
-                    casted_duration = float(cmp.action_params['duration'])
+                    casted_duration = float(cmp.action_params['duration'].replace(',', '.'))
                 except Exception:
                     continue
                 params['duration'] = casted_duration
