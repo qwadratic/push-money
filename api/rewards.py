@@ -4,7 +4,7 @@ import requests
 from urllib.parse import parse_qs, urlparse
 
 from cachetools.func import ttl_cache
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_restx import Api, Resource, reqparse, fields
 from flask_uploads import extension
 from mintersdk.sdk.wallet import MinterWallet
@@ -227,6 +227,7 @@ def get_available_rewards_video(video_id):
                 'coin': cmp.coin,
                 'text': cmp.name,
                 'type': cmp.action_type,
+                'status': 'todo',
                 **params
             })
     return rewards
@@ -252,47 +253,22 @@ class Action(Resource):
             video_id = parse_video_id(args['video'])
             available_rewards = get_available_rewards_video(video_id)
 
-        if args['type'] in ['youtube-watch', 'youtube-visit'] and 'youtube-watch' in available_rewards:
+        if args['type'] == 'youtube-watch' and 'youtube-watch' in available_rewards:
             duration = args['duration'] or 0
             for task in available_rewards['youtube-watch']:
                 if duration >= task['duration']:
-                    task['status'] = 'pending'
+                    task['status'] = 'done'
                     task['push_link'] = 'abcdef'
-                else:
-                    task['status'] = 'todo'
+
+        if args['type'] in ['youtube-comment', 'youtube-like', 'youtube-subscribe']
+            for task in available_rewards.get(args['type'], []):
+                task['status'] = 'done'
+                task['push_link'] = 'abcdef'
 
         all_rewards = []
         for rewards in available_rewards.values():
-            all_rewards.extend([r for r in rewards if r.get('status')])
+            all_rewards.extend([r for r in rewards])
         logging.info(all_rewards)
         return {
             'rewards': all_rewards
         }
-            #[
-            #     {
-            #     'id': 'fasdadg',
-            #     'amount': 0.01,
-            #     'coin': 'POPE',
-            #     'text': 'Todo: Subscribe',
-            #     'status': 'todo',
-            #     'type': 'youtube-subscribe',
-            #     'channel': 'UC7Rtksgq4z0c9uqqz2JDWNQ',
-            # }, {
-            #     'id': 'asGEW',
-            #     'amount': 0.02,
-            #     'coin': 'POPE',
-            #     'text': 'Pending: Like',
-            #     'status': 'pending',
-            #     'type': 'youtube-like',
-            #     'video': 'iWHRfPuJPnc',
-            #     'push_link': '2SwMph'
-            # }, {
-            #     'id': 'XZBE00',
-            #     'amount': 0.03,
-            #     'coin': 'POPE',
-            #     'text': 'Done: Comment',
-            #     'status': 'done',
-            #     'type': 'youtube-comment',
-            #     'video': 'iWHRfPuJPnc',
-            # }
-            #]
