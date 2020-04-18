@@ -10,6 +10,7 @@ from flask_uploads import extension
 from mintersdk.sdk.wallet import MinterWallet
 from werkzeug.datastructures import FileStorage
 
+from api.logic.core import generate_and_save_wallet
 from api.models import RewardCampaign, RewardIcon
 from api.upload import images
 from config import YOUTUBE_APIKEY, YYY_PUSH_URL
@@ -126,7 +127,7 @@ class CampaignOne(Resource):
         balances = MscanAPI.get_balance(campaign.address)['balance']
         campaign_balance = to_bip(balances.get(campaign.coin, '0'))
 
-        times_completed = 0
+        times_completed = campaign.times_completed
         reward = float(to_bip(campaign.action_reward))
         value_spent = times_completed * reward
         return {
@@ -182,7 +183,7 @@ def parse_channel_id(url):
 def get_campaigns_by_video_id(video_id):
     campaigns = {}
     for cmp in RewardCampaign.filter(
-            action_type__in=['youtube-like', 'youtube-subscribe', 'youtube-watch'], status='open'):
+            action_type__in=['youtube-like', 'youtube-comment', 'youtube-subscribe', 'youtube-watch'], status='open'):
 
         link = cmp.action_params['link']
         if cmp.action_type == 'youtube-subscribe':
@@ -200,11 +201,12 @@ def get_campaigns_by_video_id(video_id):
     return campaigns
 
 
-# @ttl_cache(ttl=ONE_HOUR)
+@ttl_cache(ttl=ONE_HOUR)
 def get_available_rewards_video(video_id):
     if not video_id:
         return {}
     campaigns = get_campaigns_by_video_id(video_id)
+    campaigns_ = {}
     rewards = {}
     for action_type, models in campaigns.items():
         rewards.setdefault(action_type, [])
@@ -231,7 +233,41 @@ def get_available_rewards_video(video_id):
                 'status': 'todo',
                 **params
             })
-    return rewards
+            campaigns_[cmp.link_id] = cmp
+    return rewards, campaigns_
+
+
+def generate_push(campaign):
+    response = MscanAPI.get_balance(campaign.address)
+    balances = response['balance']
+    campaign_balance = to_bip(balances.get(campaign.coin, '0'))
+    if not campaign_balance:
+        logging.info(f'Campaign {campaign.link_id} {campaign.name}: balance too low {campaign_balance}')
+        return
+
+    tx_fee = estimate_custom_fee(campaign.coin)
+    reward = to_bip(campaign.action_reward)
+
+    if campaign_balance < reward + tx_fee:
+        logging.info(f'Campaign {campaign.link_id} {campaign.name}: balance too low {campaign_balance}')
+        return
+
+    push = generate_and_save_wallet()
+    private_key = MinterWallet.create(mnemonic=campaign.mnemonic)['private_key']
+    nonce = int(response['transaction_count']) + 1
+
+    tx = send_coin_tx(
+        private_key, campaign.coin, reward + tx_fee, push.address,
+        nonce, gas_coin=campaign.coin)
+    MscanAPI.send_tx(tx, wait=True)
+    logging.info(f'Campaign {campaign.link_id} {campaign.name} rewarded {reward} {campaign.coin}, fee {tx_fee}')
+
+    campaign.times_completed += 1
+    if campaign.times_completed == campaign.count:
+        campaign.status = 'close'
+        logging.info(f'Campaign {campaign.link_id} {campaign.name} finished!')
+    campaign.save()
+    return YYY_PUSH_URL + push.link_id
 
 
 @ns_action.route('/')
@@ -250,25 +286,34 @@ class Action(Resource):
         logging.info(f'##### {args}')
 
         available_rewards = {}
+        campaigns = {}
         if args['video']:
             video_id = parse_video_id(args['video'])
-            available_rewards = get_available_rewards_video(video_id)
+            available_rewards, campaigns = get_available_rewards_video(video_id)
 
         if args['type'] == 'youtube-watch' and 'youtube-watch' in available_rewards:
             duration = args['duration'] or 0
             for task in available_rewards['youtube-watch']:
                 if duration >= task['duration']:
+                    push_link = generate_push(campaigns[task['id']])
+                    if not push_link:
+                        task['status'] = 'errored'
+                        continue
                     task['status'] = 'done'
-                    task['push_link'] = YYY_PUSH_URL + 'abcdef'
+                    task['push_link'] = push_link
 
         if args['type'] in ['youtube-comment', 'youtube-like', 'youtube-subscribe']:
             for task in available_rewards.get(args['type'], []):
+                push_link = generate_push(campaigns[task['id']])
+                if not push_link:
+                    task['status'] = 'errored'
+                    continue
                 task['status'] = 'done'
-                task['push_link'] = YYY_PUSH_URL + 'abcdef'
+                task['push_link'] = push_link
 
         all_rewards = []
         for rewards in available_rewards.values():
-            all_rewards.extend([r for r in rewards])
+            all_rewards.extend([r for r in rewards if r['status'] != 'errored'])
         logging.info(all_rewards)
         return {
             'rewards': all_rewards

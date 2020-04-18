@@ -297,6 +297,7 @@ class RewardCampaign(db.Model):
     address = CharField()
     mnemonic = TextField()
     count = IntegerField()
+    times_completed = IntegerField(default=0)
     coin = CharField()
     action_type = CharField()
     action_reward = CharField()
