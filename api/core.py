@@ -69,7 +69,7 @@ def push_create():
     sender, recipient = payload.get('sender'), payload.get('recipient')
     password = payload.get('password')
     amount = payload.get('amount')
-    coin = payload.get('coin')
+    coin = payload.get('coin', 'BIP')
 
     customization_setting_id = payload.get('customization_setting_id')
     setting = CustomizationSetting.get_or_none(id=customization_setting_id)
