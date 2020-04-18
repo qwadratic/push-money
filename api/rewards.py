@@ -227,6 +227,7 @@ def get_available_rewards_video(video_id):
                 'coin': cmp.coin,
                 'text': cmp.name,
                 'type': cmp.action_type,
+                'icon': cmp.icon.url if cmp.icon else None,
                 'status': 'todo',
                 **params
             })
