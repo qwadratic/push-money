@@ -7,7 +7,7 @@ from minter.helpers import to_bip, effective_balance
 from providers.mscan import MscanAPI
 
 
-def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True):
+def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, gas_coin=None):
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
     response = MscanAPI.get_balance(wallet.address)
     nonce = int(response['transaction_count']) + 1
@@ -16,15 +16,23 @@ def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True):
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
     main_balance = float(to_bip(balances[main_coin]))
 
-    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=main_coin)
-    tx_fee = float(to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission']))
+    gas_coin_balance = main_balance
+    if gas_coin:
+        gas_coin_balance = to_bip(balances.get(gas_coin, 0))
+
+    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
+    tx_fee = to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission'])
+
+    if gas_coin_balance < tx_fee:
+        return 'Not enough balance to pay commission'
 
     # если в обычной пересылке пришлют сумму без учета комиссии - не будем мучать ошибками
-    amount = amount - tx_fee if amount == truncate(main_balance, 4) and not payload else amount
-
+    amount = amount - tx_fee if amount == truncate(main_balance, 4) \
+        and gas_coin == main_coin and not payload else amount
+    tx_fee = tx_fee if gas_coin == main_coin else 0
     if amount > main_balance - tx_fee:
         return 'Not enough balance'
-    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=main_coin)
+    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
     MscanAPI.send_tx(tx, wait=wait)
     return True
 
