@@ -8,7 +8,7 @@ from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, Minte
     MinterSetCandidateOnTx, MinterSetCandidateOffTx, MinterEditCandidateTx, MinterMultiSendCoinTx
 
 from config import TESTNET
-from minter.tx import send_coin_tx
+from minter.tx import send_coin_tx, estimate_custom_fee
 from providers.mscan import MscanAPI
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
@@ -38,12 +38,20 @@ def to_bip(pip):
     return MinterConvertor.convert_value(pip, 'bip')
 
 
-def effective_value(value, coin):
+def effective_value(value, coin, balances=None):
     wallet = MinterWallet.create()
     pk = wallet['private_key']
     to = wallet['address']
-    send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=coin)
+    gas_coin = coin
+
+    # ROUBLE workaround
+    if balances and balances.get('BIP'):
+        gas_coin = 'BIP'
+    send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=gas_coin)
     send_fee = to_bip(MscanAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
+    # ROUBLE workaround
+    if gas_coin != coin:
+        send_fee = 0
     if send_fee >= value:
         return Decimal(0)
     return Decimal(value) - send_fee
@@ -58,6 +66,9 @@ def effective_balance(balances):
         est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
         if int(balance) < int(comm_pip):
+            # ROUBLE workaround
+            if estimate_custom_fee(coin) > to_bip(balance):
+                return {coin: Decimal(0)}
             continue
         will_get_pip = int(will_get_pip) - to_pip(0.01)
         if will_get_pip > 0:

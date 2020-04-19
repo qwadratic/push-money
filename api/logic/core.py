@@ -1,4 +1,5 @@
 from decimal import Decimal
+from functools import partial
 
 from mintersdk.sdk.wallet import MinterWallet
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -49,7 +50,7 @@ def get_address_balance(address, virtual=None):
     local_fiat = 'RUB'
     local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
     coin_value = to_bip(balances[main_coin])
-    coin_value = truncate(float(effective_value(coin_value, main_coin)), 4)
+    coin_value = truncate(float(effective_value(coin_value, main_coin, balances=balances)), 4)
     return {
         'balance': {
             'coin': main_coin,
@@ -86,7 +87,7 @@ def push_resend(
 def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
-        'transfer-minter': send_coins,
+        'transfer-minter': partial(send_coins, gas_coin='BIP'),
         'resend': push_resend,
         'unu': unu_top_up,
         'timeloop': timeloop_top_up,
