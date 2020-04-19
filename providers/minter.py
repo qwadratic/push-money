@@ -18,10 +18,10 @@ def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, 
 
     gas_coin_balance = main_balance
     if gas_coin:
-        gas_coin_balance = to_bip(balances.get(gas_coin, 0))
+        gas_coin_balance = float(to_bip(balances.get(gas_coin, 0)))
 
     tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
-    tx_fee = to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission'])
+    tx_fee = float(to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission']))
 
     if gas_coin_balance < tx_fee:
         return 'Not enough balance to pay commission'
