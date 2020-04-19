@@ -7,6 +7,8 @@ import math
 
 from shortuuid import uuid as _uuid
 
+from config import LOG_LEVEL
+
 
 def retry(
         exceptions: Union[Exception, Iterable[Exception]], logger: Callable = print, tries=4, delay=3, backoff=2,
@@ -46,7 +48,7 @@ def retry(
 def setup_logging():
     config = dict(
         force=True,
-        level=logging.INFO,
+        level=getattr(logging, LOG_LEVEL),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
