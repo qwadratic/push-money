@@ -2,14 +2,14 @@ from mintersdk.sdk.wallet import MinterWallet
 
 from api.models import PushWallet
 from helpers.misc import truncate
-from minter.tx import send_coin_tx, estimate_payload_fee
+from minter.tx import send_coin_tx
 from minter.helpers import to_bip, effective_balance
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 
 
 def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, gas_coin=None):
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
-    response = MscanAPI.get_balance(wallet.address)
+    response = NodeAPI.get_balance(wallet.address)
     nonce = int(response['transaction_count']) + 1
     balances = response['balance']
     balances_bip = effective_balance(balances)
@@ -21,7 +21,7 @@ def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, 
         gas_coin_balance = float(to_bip(balances.get(gas_coin, 0)))
 
     tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
-    tx_fee = float(to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission']))
+    tx_fee = float(to_bip(NodeAPI.estimate_tx_comission(tx.signed_tx)['commission']))
 
     if gas_coin_balance < tx_fee:
         return 'Not enough balance to pay commission'
@@ -33,12 +33,12 @@ def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, 
     if amount > main_balance - tx_fee:
         return 'Not enough balance'
     tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
-    MscanAPI.send_tx(tx, wait=wait)
+    NodeAPI.send_tx(tx, wait=wait)
     return True
 
 
 def get_balance(address, coin='BIP', bip=True):
-    balance = MscanAPI.get_balance(address)['balance']
+    balance = NodeAPI.get_balance(address)['balance']
     balance_pip = balance[coin]
     return float(to_bip(balance_pip)) if bip else balance_pip
 
@@ -49,7 +49,7 @@ def ensure_balance(address, required_pip):
 
 
 def get_first_transaction(address):
-    tx = MscanAPI.get_transactions(f"tags.tx.to='{address[2:]}'", limit=1)
+    tx = NodeAPI.get_transactions(f"tags.tx.to='{address[2:]}'", limit=1)
     if not tx:
         return None
     return tx[0]['tags']['tx.from']

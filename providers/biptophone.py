@@ -5,7 +5,7 @@ from mintersdk.sdk.wallet import MinterWallet
 
 from api.models import PushWallet
 from config import BIP2PHONE_API_KEY
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 from minter.tx import send_coin_tx
 from minter.helpers import to_bip, effective_balance
 
@@ -26,7 +26,7 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     if not phone_reqs:
         return f'Phone number {phone} not supported or invalid'
 
-    response = MscanAPI.get_balance(wallet.address)
+    response = NodeAPI.get_balance(wallet.address)
     balance = response['balance']
     balances_bip = effective_balance(balance)
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
@@ -40,7 +40,7 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
         private_key, main_coin, to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'], gas_coin=main_coin)
     fee = to_bip(tx.get_fee()) if main_coin == 'BIP' \
-        else to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission'])
+        else to_bip(NodeAPI.estimate_tx_comission(tx.signed_tx)['commission'])
     min_topup = phone_reqs['min_bip_value'] + fee
     effective_topup = Decimal(to_send) - fee
 
@@ -52,7 +52,7 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     tx = send_coin_tx(
         private_key, main_coin, effective_topup, BIP2PHONE_PAYMENT_ADDRESS, nonce,
         payload=phone_reqs['payload'], gas_coin=main_coin)
-    MscanAPI.send_tx(tx, wait=True)
+    NodeAPI.send_tx(tx, wait=True)
     return True
 
 

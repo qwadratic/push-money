@@ -42,6 +42,9 @@ REMOTE_URL = 'https://{}push.money'.format('dev.' if DEV else '')
 YYY_PUSH_URL = 'https://{}yyy.cash/push/'.format('dev.' if DEV else '')
 YOUTUBE_APIKEY = os.environ.get('YOUTUBE_APIKEY')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
+NODE_API = os.getenv('NODE_API', 'funfasy')
+FUNFASY_PROJECT_ID = os.getenv('FUNFASY_PROJECT_ID', '')
+FUNFASY_PROJECT_SECRET = os.getenv('FUNFASY_PROJECT_SECRET', '')
 
 class FlaskConfig:
     LOCAL = LOCAL

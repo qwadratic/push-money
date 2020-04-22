@@ -18,7 +18,7 @@ from helpers.misc import uuid
 from minter.helpers import TxDeeplink, to_pip, to_bip
 from minter.tx import estimate_custom_fee, send_coin_tx
 from providers.minter import get_first_transaction
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 
 bp_rewards = Blueprint('rewards', __name__, url_prefix='/api/rewards')
 api = Api(bp_rewards, title="Rewards API", description="YYY Rewards API")
@@ -103,7 +103,7 @@ class CampaignOne(Resource):
         if not campaign:
             return {}
 
-        response = MscanAPI.get_balance(campaign.address)
+        response = NodeAPI.get_balance(campaign.address)
         balances = response['balance']
         campaign_balance = to_bip(balances.get(campaign.coin, '0'))
         if campaign_balance:
@@ -114,7 +114,7 @@ class CampaignOne(Resource):
             tx = send_coin_tx(
                 private_key, campaign.coin, campaign_balance - tx_fee, refund_address,
                 nonce, gas_coin=campaign.coin)
-            MscanAPI.send_tx(tx, wait=True)
+            NodeAPI.send_tx(tx, wait=True)
 
         campaign.status = 'closed'
         campaign.save()
@@ -124,7 +124,7 @@ class CampaignOne(Resource):
         campaign = RewardCampaign.get_or_none(link_id=campaign_id, status='open')
         if not campaign:
             return {}
-        balances = MscanAPI.get_balance(campaign.address)['balance']
+        balances = NodeAPI.get_balance(campaign.address)['balance']
         campaign_balance = to_bip(balances.get(campaign.coin, '0'))
         if not campaign_balance:
             return {}
@@ -239,7 +239,7 @@ def get_available_rewards_video(video_id):
 
 
 def generate_push(campaign):
-    response = MscanAPI.get_balance(campaign.address)
+    response = NodeAPI.get_balance(campaign.address)
     balances = response['balance']
     campaign_balance = to_bip(balances.get(campaign.coin, '0'))
     if not campaign_balance:
@@ -260,7 +260,7 @@ def generate_push(campaign):
     tx = send_coin_tx(
         private_key, campaign.coin, reward + tx_fee, push.address,
         nonce, gas_coin=campaign.coin)
-    MscanAPI.send_tx(tx, wait=True)
+    NodeAPI.send_tx(tx, wait=True)
     logging.info(f'Campaign {campaign.link_id} {campaign.name} rewarded {reward} {campaign.coin}, fee {tx_fee}')
 
     campaign.times_completed += 1

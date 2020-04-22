@@ -9,7 +9,7 @@ from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, Minte
 
 from config import TESTNET
 from minter.tx import send_coin_tx, estimate_custom_fee
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 
 BASE_COIN = 'MNT' if TESTNET else 'BIP'
 TX_TYPES = {
@@ -48,7 +48,7 @@ def effective_value(value, coin, balances=None):
     if balances and balances.get('BIP'):
         gas_coin = 'BIP'
     send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=gas_coin)
-    send_fee = to_bip(MscanAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
+    send_fee = to_bip(NodeAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
     # ROUBLE workaround
     if gas_coin != coin:
         send_fee = 0
@@ -63,7 +63,7 @@ def effective_balance(balances):
         if coin == BASE_COIN:
             balances_bip[coin] = max(Decimal(0), to_bip(balance) - Decimal(0.01))
             continue
-        est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, BASE_COIN)
+        est_sell_response = NodeAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
         if int(balance) < int(comm_pip):
             # ROUBLE workaround

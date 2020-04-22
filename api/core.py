@@ -10,7 +10,7 @@ from minter.helpers import to_bip, TxDeeplink
 from minter.tx import send_coin_tx
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from providers.minter import send_coins
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 
 bp_api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -86,7 +86,7 @@ def push_create():
     if amount:
         w = MinterWallet.create()
         tx = send_coin_tx(w['private_key'], coin, float(amount), w['address'], 1, gas_coin=coin)
-        tx_fee = float(to_bip(MscanAPI.estimate_tx_comission(tx.signed_tx)['commission']))
+        tx_fee = float(to_bip(NodeAPI.estimate_tx_comission(tx.signed_tx)['commission']))
         response['deeplink'] = TxDeeplink.create('send', to=wallet.address, value=float(amount) + tx_fee, coin=coin).mobile
     return jsonify(response)
 

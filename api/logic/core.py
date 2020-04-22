@@ -14,7 +14,7 @@ from providers.gift import gift_buy
 from providers.giftery import giftery_buy
 from providers.gratz import gratz_buy
 from providers.minter import send_coins
-from providers.mscan import MscanAPI
+from providers.nodeapi import NodeAPI
 from providers.biptophone import mobile_top_up
 from providers.timeloop import timeloop_top_up, bipgame_top_up
 from providers.unu import unu_top_up
@@ -39,7 +39,7 @@ def get_address_balance(address, virtual=None):
         balances = {'BIP': virtual}
         balances_bip = {'BIP': Decimal(to_bip(virtual))}
     else:
-        balances = MscanAPI.get_balance(address)['balance']
+        balances = NodeAPI.get_balance(address)['balance']
         balances_bip = effective_balance(balances)
 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
