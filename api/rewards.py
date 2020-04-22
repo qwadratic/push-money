@@ -126,8 +126,8 @@ class CampaignOne(Resource):
             return {}
         balances = NodeAPI.get_balance(campaign.address)['balance']
         campaign_balance = to_bip(balances.get(campaign.coin, '0'))
-        if not campaign_balance:
-            return {}
+        # if not campaign_balance:
+        #     return {}
         times_completed = campaign.times_completed
         reward = float(to_bip(campaign.action_reward))
         value_spent = times_completed * reward
