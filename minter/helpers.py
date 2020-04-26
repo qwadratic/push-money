@@ -35,7 +35,7 @@ def effective_balance(balances):
 
         # ROUBLE WORKAROUND
         coin_info = NodeAPI.get_coin_info(coin)
-        if coin_info['reserve_balance'] < to_pip(MIN_RESERVE_BIP + 0.01):
+        if coin_info['reserve_balance'] < to_pip(Decimal(MIN_RESERVE_BIP) + Decimal('0.01')):
             return {coin: Decimal(0)}
 
         est_sell_response = NodeAPI.estimate_coin_sell(coin, balance, BASE_COIN)
