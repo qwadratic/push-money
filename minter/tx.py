@@ -23,12 +23,12 @@ def estimate_payload_fee(payload, bip=False):
     return to_bip(fee_pip) if bip else fee_pip
 
 
-def estimate_custom_fee(coin):
+def estimate_custom_fee(coin, payload=''):
     if coin == BASE_COIN:
         return Decimal('0.01')
     coin_info = NodeAPI.get_coin_info(coin)
     if coin_info['reserve_balance'] < to_pip(MIN_RESERVE_BIP + 0.01):
         return
     w = MinterWallet.create()
-    tx = send_coin_tx(w['private_key'], coin, 0, w['address'], 1, gas_coin=coin)
+    tx = send_coin_tx(w['private_key'], coin, 0, w['address'], 1, gas_coin=coin, payload=payload)
     return to_bip(NodeAPI.estimate_tx_commission(tx.signed_tx)['commission'])

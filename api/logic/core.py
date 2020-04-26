@@ -88,7 +88,7 @@ def push_resend(
 def spend_balance(wallet: PushWallet, slug, confirm=True, **kwargs):
     spend_option_fns = {
         'mobile': mobile_top_up,
-        'transfer-minter': partial(send_coins, gas_coin='BIP'),
+        'transfer-minter': send_coins,
         'resend': push_resend,
         'unu': unu_top_up,
         'timeloop': timeloop_top_up,

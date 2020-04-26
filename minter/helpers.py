@@ -8,13 +8,14 @@ from minter.tx import estimate_custom_fee
 from providers.nodeapi import NodeAPI
 
 
-def find_gas_coin(balances):
+def find_gas_coin(balances, get_fee=False, payload=''):
     for coin, balance_pip in balances.items():
-        tx_fee = estimate_custom_fee(coin)
+        tx_fee = estimate_custom_fee(coin, payload=payload)
         if not tx_fee:
             continue
         if to_bip(balance_pip) - tx_fee >= 0:
-            return coin
+            return coin if not get_fee else (coin, tx_fee)
+    return None if not get_fee else (None, None)
 
 
 def effective_value(value, coin):

@@ -4,7 +4,7 @@ from api.models import PushWallet
 from helpers.misc import truncate
 from minter.tx import send_coin_tx
 from mintersdk.shortcuts import to_bip
-from minter.helpers import effective_balance
+from minter.helpers import effective_balance, find_gas_coin
 from providers.nodeapi import NodeAPI
 
 
@@ -17,23 +17,20 @@ def send_coins(wallet: PushWallet, to=None, amount=None, payload='', wait=True, 
     main_coin, main_balance_bip = max(balances_bip.items(), key=lambda i: i[1])
     main_balance = float(to_bip(balances[main_coin]))
 
-    gas_coin_balance = main_balance
-    if gas_coin:
-        gas_coin_balance = float(to_bip(balances.get(gas_coin, 0)))
+    gas_coin, tx_fee = find_gas_coin(balances, get_fee=True, payload=payload)
+    gas_coin_balance = float(to_bip(balances.get(gas_coin, 0)))
 
-    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
-    tx_fee = float(to_bip(NodeAPI.estimate_tx_commission(tx.signed_tx)['commission']))
-
-    if gas_coin_balance < tx_fee:
+    if not gas_coin or not tx_fee or gas_coin_balance < tx_fee:
         return 'Not enough balance to pay commission'
+    tx_fee = float(tx_fee)
 
     # если в обычной пересылке пришлют сумму без учета комиссии - не будем мучать ошибками
-    amount = amount - tx_fee if amount == truncate(main_balance, 4) \
+    amount = main_balance - tx_fee if amount == truncate(main_balance, 4) \
         and gas_coin == main_coin and not payload else amount
     tx_fee = tx_fee if gas_coin == main_coin else 0
     if amount > main_balance - tx_fee:
         return 'Not enough balance'
-    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin or main_coin)
+    tx = send_coin_tx(private_key, main_coin, amount, to, nonce, payload=payload, gas_coin=gas_coin)
     NodeAPI.send_tx(tx, wait=wait)
     return True
 
