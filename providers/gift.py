@@ -4,8 +4,8 @@ from time import sleep
 import requests
 from shortuuid import uuid
 
-from api.models import WebhookEvent, OrderHistory, Category
-from minter.helpers import to_pip
+from api.models import WebhookEvent, OrderHistory
+from mintersdk.shortcuts import to_pip
 from providers.minter import send_coins
 
 GIFT_WEBHOOK_URL = 'https://push.money/webhooks/gift/{}'

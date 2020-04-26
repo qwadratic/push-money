@@ -1,13 +1,15 @@
 import logging
+from http import HTTPStatus
 
 import requests
 from urllib.parse import parse_qs, urlparse
 
 from cachetools.func import ttl_cache
-from flask import Blueprint, request
+from flask import Blueprint
 from flask_restx import Api, Resource, reqparse, fields
 from flask_uploads import extension
 from mintersdk.sdk.wallet import MinterWallet
+from mintersdk.shortcuts import to_pip, to_bip
 from werkzeug.datastructures import FileStorage
 
 from api.logic.core import generate_and_save_wallet
@@ -15,7 +17,7 @@ from api.models import RewardCampaign, RewardIcon
 from api.upload import images
 from config import YOUTUBE_APIKEY, YYY_PUSH_URL
 from helpers.misc import uuid
-from minter.helpers import TxDeeplink, to_pip, to_bip
+from minter.helpers import TxDeeplink, find_gas_coin
 from minter.tx import estimate_custom_fee, send_coin_tx
 from providers.minter import get_first_transaction
 from providers.nodeapi import NodeAPI
@@ -71,8 +73,9 @@ class Campaign(Resource):
         campaign_id = uuid()
         wallet = MinterWallet.create()
         action_reward = float(action['reward'])
-        fees = 0
-        deeplink = TxDeeplink.create('send', to=wallet['address'], value=action_reward * count + fees, coin=coin)
+        one_tx_fee = estimate_custom_fee(coin) or 0
+        campaign_cost = (action_reward + one_tx_fee) * count
+        deeplink = TxDeeplink.create('send', to=wallet['address'], value=campaign_cost, coin=coin)
 
         icon_storage = args['icon']
         filename = images.save(icon_storage, name=f'{campaign_id}.{extension(icon_storage.filename)}')
@@ -101,16 +104,24 @@ class CampaignOne(Resource):
     def delete(self, campaign_id):
         campaign = RewardCampaign.get_or_none(link_id=campaign_id, status='open')
         if not campaign:
-            return {}
+            return {}, HTTPStatus.NOT_FOUND
 
         response = NodeAPI.get_balance(campaign.address)
         balances = response['balance']
         campaign_balance = to_bip(balances.get(campaign.coin, '0'))
         if campaign_balance:
             tx_fee = estimate_custom_fee(campaign.coin)
+            gas_coin = find_gas_coin(balances) if tx_fee is None else campaign.coin
+            if not gas_coin:
+                return {
+                    'error': f'Campaign coin not spendable.'
+                             f'Send any coin to campaign address {campaign.address} to pay fee'
+                }, HTTPStatus.BAD_REQUEST
             private_key = MinterWallet.create(mnemonic=campaign.mnemonic)['private_key']
             refund_address = get_first_transaction(campaign.address)
             nonce = int(response['transaction_count']) + 1
+
+            tx_fee = 0 if tx_fee is None else tx_fee
             tx = send_coin_tx(
                 private_key, campaign.coin, campaign_balance - tx_fee, refund_address,
                 nonce, gas_coin=campaign.coin)

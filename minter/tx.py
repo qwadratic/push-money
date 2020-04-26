@@ -1,11 +1,11 @@
+from decimal import Decimal
+
 from mintersdk import MinterHelper
 from mintersdk.sdk.transactions import MinterSendCoinTx, MinterTx
 from mintersdk.sdk.wallet import MinterWallet
-from mintersdk.shortcuts import to_bip
-from config import TESTNET
+from mintersdk.shortcuts import to_bip, to_pip
+from minter.consts import MIN_RESERVE_BIP, BASE_COIN
 from providers.nodeapi import NodeAPI
-
-BASE_COIN = 'MNT' if TESTNET else 'BIP'
 
 
 def send_coin_tx(pk, coin, value, to, nonce, gas_coin=BASE_COIN, payload=''):
@@ -24,6 +24,11 @@ def estimate_payload_fee(payload, bip=False):
 
 
 def estimate_custom_fee(coin):
+    if coin == BASE_COIN:
+        return Decimal('0.01')
+    coin_info = NodeAPI.get_coin_info(coin)
+    if coin_info['reserve_balance'] < to_pip(MIN_RESERVE_BIP + 0.01):
+        return
     w = MinterWallet.create()
     tx = send_coin_tx(w['private_key'], coin, 0, w['address'], 1, gas_coin=coin)
     return to_bip(NodeAPI.estimate_tx_commission(tx.signed_tx)['commission'])

@@ -2,13 +2,14 @@ from datetime import datetime
 from http import HTTPStatus
 from flask import Blueprint, jsonify, request, url_for
 from mintersdk.sdk.wallet import MinterWallet
-
+from mintersdk.shortcuts import to_bip
 from api.logic.core import generate_and_save_wallet, get_address_balance, spend_balance, \
     get_spend_list
 from api.models import PushWallet, PushCampaign, Recipient, CustomizationSetting
-from minter.helpers import to_bip, TxDeeplink
-from minter.tx import send_coin_tx
+from minter.helpers import TxDeeplink
+from minter.tx import send_coin_tx, estimate_custom_fee
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
+from providers.explorer import get_custom_coin_symbols
 from providers.minter import send_coins
 from providers.nodeapi import NodeAPI
 
@@ -22,7 +23,7 @@ def health():
 
 @bp_api.route('/custom-coins')
 def custom_coins():
-    return jsonify({"symbols": ["ROUBLE", "DICE", "TIME", "UNUCOIN", "PIZZA", "POPE"]})
+    return jsonify({"symbols": get_custom_coin_symbols()})
 
 
 @bp_api.route('/exchange-rates')
@@ -41,6 +42,7 @@ def deeplink():
     address = request.args.get('address')
     amount = request.args.get('amount')
     coin = request.args.get('coin')
+    nofee = 'nofee' in request.args
 
     if not address:
         return jsonify({'success': False, 'error': '"address" key is required'}), HTTPStatus.BAD_REQUEST
@@ -50,9 +52,12 @@ def deeplink():
         return jsonify({'success': False, 'error': '"coin" key is required'}), HTTPStatus.BAD_REQUEST
 
     address = address.strip()
-    amount = float(amount) + 0.01
+    fee = 0
+    if not nofee:
+        fee = float(estimate_custom_fee(coin) or 0)
+    amount = float(amount) + fee
     coin = coin.strip().upper()
-    link = TxDeeplink.create('send', to=address, value=amount, coin=coin)
+    link = TxDeeplink.create('send', to=address, value=amount, coin=coin, data_only=False)
     return {
         'success': True,
         'web': link.web,

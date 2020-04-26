@@ -2,11 +2,12 @@ from decimal import Decimal
 from functools import partial
 
 from mintersdk.sdk.wallet import MinterWallet
+from mintersdk.shortcuts import to_pip, to_bip
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 from helpers.misc import truncate, uuid
 from helpers.url import make_icon_url
-from minter.helpers import to_pip, to_bip, effective_balance, effective_value, BASE_COIN
+from minter.helpers import effective_balance, effective_value
 from providers.currency_rates import bip_to_usdt, fiat_to_usd_rates
 from api.models import PushWallet, Category, Shop
 from providers.flatfm import flatfm_top_up
@@ -50,7 +51,7 @@ def get_address_balance(address, virtual=None):
     local_fiat = 'RUB'
     local_fiat_value = truncate(usd_value_total * usd_rates[local_fiat], 4)
     coin_value = to_bip(balances[main_coin])
-    coin_value = truncate(float(effective_value(coin_value, main_coin, balances=balances)), 4)
+    coin_value = truncate(float(effective_value(coin_value, main_coin)), 4)
     return {
         'balance': {
             'coin': main_coin,

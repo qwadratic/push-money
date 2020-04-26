@@ -2,16 +2,19 @@ from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 import requests
 from mintersdk.sdk.wallet import MinterWallet
+from mintersdk.shortcuts import to_bip
 
 from api.models import PushWallet
 from config import BIP2PHONE_API_KEY
+from minter.api import MinterAPIException
+from providers.currency_rates import rub_to_bip
 from providers.nodeapi import NodeAPI
-from minter.tx import send_coin_tx
-from minter.helpers import to_bip, effective_balance
+from minter.tx import send_coin_tx, estimate_custom_fee
+from minter.helpers import effective_balance, find_gas_coin
 
-# BIP2PHONE_API_URL = 'https://biptophone.ru/api.php'
+BIP2PHONE_API_URL = 'https://biptophone.ru/api.php'
 # requests to my proxy, because my server doesn't see API host :)
-BIP2PHONE_API_URL = 'https://static.255.135.203.116.clients.your-server.de/api.php'
+# BIP2PHONE_API_URL = 'https://static.255.135.203.116.clients.your-server.de/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
 
 getcontext().prec = 6
@@ -36,13 +39,12 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
 
     private_key = MinterWallet.create(mnemonic=wallet.mnemonic)['private_key']
 
-    tx = send_coin_tx(
-        private_key, main_coin, to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
-        payload=phone_reqs['payload'], gas_coin=main_coin)
-    fee = to_bip(tx.get_fee()) if main_coin == 'BIP' \
-        else to_bip(NodeAPI.estimate_tx_comission(tx.signed_tx)['commission'])
-    min_topup = phone_reqs['min_bip_value'] + fee
-    effective_topup = Decimal(to_send) - fee
+    gas_coin = find_gas_coin(balance)
+    if not gas_coin:
+        return 'Coin not spendable. Send any coin to pay fee'
+    # fee = estimate_custom_fee(gas_coin)
+    min_topup = phone_reqs['min_bip_value']
+    effective_topup = rub_to_bip(to_send) if main_coin == 'ROUBLE' else main_balance_bip
 
     if balance_coin < to_send:
         return 'Not enough balance'
@@ -50,9 +52,12 @@ def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
         return f"Minimal top-up: {min_topup} BIP"
 
     tx = send_coin_tx(
-        private_key, main_coin, effective_topup, BIP2PHONE_PAYMENT_ADDRESS, nonce,
-        payload=phone_reqs['payload'], gas_coin=main_coin)
-    NodeAPI.send_tx(tx, wait=True)
+        private_key, main_coin, to_send, BIP2PHONE_PAYMENT_ADDRESS, nonce,
+        payload=phone_reqs['payload'], gas_coin=gas_coin)
+    try:
+        NodeAPI.send_tx(tx, wait=True)
+    except MinterAPIException as exc:
+        return exc.message
     return True
 
 

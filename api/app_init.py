@@ -11,6 +11,7 @@ from flask_security import PeeweeUserDatastore, Security, AnonymousUser
 from flask_security.utils import hash_password, get_identity_attributes, login_user
 from flask_uploads import configure_uploads, patch_request_class
 from flask_admin import Admin, helpers as admin_helpers
+from flask_cors import CORS
 from peewee import fn
 from social_core.exceptions import SocialAuthBaseException
 from social_flask.routes import social_auth
@@ -62,7 +63,8 @@ class ReverseProxied(object):
 def app_init():
     setup_logging()
     app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=2)
+    CORS(app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=1)
     app.config.from_object(FlaskConfig)
     if not app.config['LOCAL']:
         app.wsgi_app = ReverseProxied(app.wsgi_app)

@@ -1,116 +1,51 @@
 from decimal import Decimal
 
-from mintersdk import MinterConvertor
-from mintersdk.sdk.wallet import MinterWallet
+from mintersdk.shortcuts import to_bip, to_pip
 from mintersdk.sdk.deeplink import MinterDeeplink
-from mintersdk.sdk.transactions import MinterSendCoinTx, MinterSellCoinTx, MinterSellAllCoinTx, MinterBuyCoinTx, \
-    MinterCreateCoinTx, MinterDeclareCandidacyTx, MinterDelegateTx, MinterUnbondTx, MinterRedeemCheckTx, \
-    MinterSetCandidateOnTx, MinterSetCandidateOffTx, MinterEditCandidateTx, MinterMultiSendCoinTx
 
-from config import TESTNET
-from minter.tx import send_coin_tx, estimate_custom_fee
+from minter.consts import BASE_COIN, TX_TYPES, MIN_RESERVE_BIP
+from minter.tx import estimate_custom_fee
 from providers.nodeapi import NodeAPI
 
-BASE_COIN = 'MNT' if TESTNET else 'BIP'
-TX_TYPES = {
-    'send':	MinterSendCoinTx,
-    'sell': MinterSellCoinTx,
-    'sellall': MinterSellAllCoinTx,
-    'buy': MinterBuyCoinTx,
-    'mint': MinterCreateCoinTx,
-    'declare': MinterDeclareCandidacyTx,
-    'delegate': MinterDelegateTx,
-    'unbond': MinterUnbondTx,
-    'redeem': MinterRedeemCheckTx,
-    'on': MinterSetCandidateOnTx,
-    'off': MinterSetCandidateOffTx,
-    'edit': MinterEditCandidateTx,
-    'multisig': NotImplemented,
-    'multisend': MinterMultiSendCoinTx,
-}
+
+def find_gas_coin(balances):
+    for coin, balance_pip in balances.items():
+        tx_fee = estimate_custom_fee(coin)
+        if not tx_fee:
+            continue
+        if to_bip(balance_pip) - tx_fee >= 0:
+            return coin
 
 
-def to_pip(bip):
-    return MinterConvertor.convert_value(bip, 'pip')
-
-
-def to_bip(pip):
-    return MinterConvertor.convert_value(pip, 'bip')
-
-
-def effective_value(value, coin, balances=None):
-    wallet = MinterWallet.create()
-    pk = wallet['private_key']
-    to = wallet['address']
-    gas_coin = coin
-
-    # ROUBLE workaround
-    if balances and balances.get('BIP'):
-        gas_coin = 'BIP'
-    send_tx = send_coin_tx(pk, coin, value, to, nonce=0, gas_coin=gas_coin)
-    send_fee = to_bip(NodeAPI.estimate_tx_commission(send_tx.signed_tx)['commission'])
-    # ROUBLE workaround
-    if gas_coin != coin:
-        send_fee = 0
-    if send_fee >= value:
+def effective_value(value, coin):
+    tx_fee = estimate_custom_fee(coin)
+    if tx_fee is None:
+        return value
+    if tx_fee >= value:
         return Decimal(0)
-    return Decimal(value) - send_fee
+    return Decimal(value) - tx_fee
 
 
 def effective_balance(balances):
     balances_bip = {}
     for coin, balance in balances.items():
         if coin == BASE_COIN:
-            balances_bip[coin] = max(Decimal(0), to_bip(balance) - Decimal(0.01))
+            balances_bip[coin] = max(Decimal(0), to_bip(balance) - Decimal('0.01'))
             continue
+
+        # ROUBLE WORKAROUND
+        coin_info = NodeAPI.get_coin_info(coin)
+        if coin_info['reserve_balance'] < to_pip(MIN_RESERVE_BIP + 0.01):
+            return {coin: Decimal(0)}
+
         est_sell_response = NodeAPI.estimate_coin_sell(coin, balance, BASE_COIN)
         will_get_pip, comm_pip = est_sell_response['will_get'], est_sell_response['commission']
         if int(balance) < int(comm_pip):
-            # ROUBLE workaround
-            if estimate_custom_fee(coin) > to_bip(balance):
-                return {coin: Decimal(0)}
             continue
         will_get_pip = int(will_get_pip) - to_pip(0.01)
         if will_get_pip > 0:
             balances_bip[coin] = to_bip(will_get_pip)
     return balances_bip or {'BIP': Decimal(0)}
-
-
-def calc_bip_values(balances, subtract_fee=True, base_coin=BASE_COIN):
-    """
-    Get BIP (MNT for testnet) equivalent for each coin balance
-    If `subtract_fee`=True:
-      - take coin conversion fee into account
-      - balances less than conversion fee are considered zero
-
-    :param balances: <dict>
-        { 'BIP': '112233323144', 'CUSTOM': '21234325366' }
-        as returned by CustomMinterAPI.get_balance('Mx...')
-
-    :param subtract_fee: <bool> take into account coin conversion fee
-    :param base_coin: <str>
-    :return: { coin: <Decimal> BIP value }
-    """
-
-    result = {}
-    for coin, balance in balances.items():
-        # result.setdefault(coin, {})
-        if coin == base_coin:
-            result[coin] = to_bip(balance)
-            continue
-
-        # !!! TMP disable custom coin support
-
-        # est_sell_response = MscanAPI.estimate_coin_sell(coin, balance, base_coin)
-        # will_get_pip, comm_pip = int(est_sell_response['will_get']), int(est_sell_response['commission'])
-        # if subtract_fee and int(balance) <= comm_pip:
-        #     # ignore "dust" balances
-        #     result[coin] = Decimal(0)
-        #     continue
-        # will_get_pip = will_get_pip - to_pip(0.1) if subtract_fee else will_get_pip
-        # result[coin] = to_bip(will_get_pip)
-
-    return result
 
 
 class TxDeeplink(MinterDeeplink):
@@ -120,11 +55,12 @@ class TxDeeplink(MinterDeeplink):
 
     @staticmethod
     def create(tx_type, **kwargs):
-        kwargs.setdefault('nonce', None)
+        kwargs.setdefault('nonce', 0)
         kwargs.setdefault('coin', 'BIP')
         kwargs.setdefault('gas_coin', BASE_COIN)
+        data_only = kwargs.pop('data_only', True)
         tx = TX_TYPES[tx_type](**kwargs)
-        return TxDeeplink(tx)
+        return TxDeeplink(tx, data_only=data_only)
 
     @property
     def mobile(self):

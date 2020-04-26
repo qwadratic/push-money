@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 
 from mintersdk.minterapi import MinterAPI
@@ -7,7 +8,10 @@ from helpers.misc import retry
 
 
 class MinterAPIException(Exception):
-    pass
+    def __init__(self, response):
+        err = response['error']
+        self.code = err.get('tx_result', {}).get('code') or err.get('code')
+        self.message = err.get('tx_result', {}).get('log') or err.get('message')
 
 
 class CustomMinterAPI(MinterAPI):
@@ -28,7 +32,8 @@ class CustomMinterAPI(MinterAPI):
     def _request(self, command, request_type='get', **kwargs):
         r = super()._request(command, request_type=request_type, **kwargs)
         if 'result' not in r:
-            raise MinterAPIException(r.get('error') or r)
+            logging.info(f'Minter API Exception {r}')
+            raise MinterAPIException(r)
         return r['result']
 
     def get_addresses(self, addresses):
@@ -39,7 +44,7 @@ class CustomMinterAPI(MinterAPI):
     def send_tx(self, tx, wait=False):
         r = super().send_transaction(tx.signed_tx)
         if wait:
-            self._wait_tx(r['hash'])
+            self._wait_tx(r['hash'].lower())
         r['hash'] = 'Mt' + r['hash'].lower()
         return r
 

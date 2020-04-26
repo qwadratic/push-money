@@ -23,6 +23,7 @@ social-auth-core==3.2.0
 -e git://github.com/dmlb2000/social-storage-peewee.git@fix-2-define-jsonfield#egg=social-auth-storage-peewee
 #social-auth-storage-peewee==1.1.0
 
+flask-cors==3.0.8
 flask-restx==0.1.1
 flask-swagger==0.2.14
 Flask-Uploads==0.2.1

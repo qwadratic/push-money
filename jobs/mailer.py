@@ -8,7 +8,7 @@ from api.models import PushCampaign, PushWallet, OrderHistory, CustomizationSett
 from api.upload import images
 from config import EMAIL_PASS, SMTP_HOST, EMAIL_SENDER, GRATZ_OWNER_EMAIL, DEV_EMAIL, SMTP_PORT
 from jobs.scheduler import scheduler
-from minter.helpers import to_bip
+from mintersdk.shortcuts import to_bip
 
 SHARING_MSG_TMPL = open('content/mail-pixel.html').read()
 SHARING_TMPL_DEFAULT_VARS = {
