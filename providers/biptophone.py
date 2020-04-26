@@ -17,9 +17,6 @@ BIP2PHONE_API_URL = 'https://biptophone.ru/api.php'
 # BIP2PHONE_API_URL = 'https://static.255.135.203.116.clients.your-server.de/api.php'
 BIP2PHONE_PAYMENT_ADDRESS = 'Mx403b763ab039134459448ca7875c548cd5e80f77'
 
-getcontext().prec = 6
-getcontext().rounding = ROUND_HALF_DOWN
-
 
 def mobile_top_up(wallet: PushWallet, phone=None, amount=None, confirm=True):
     if not confirm:
