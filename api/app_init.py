@@ -63,9 +63,10 @@ class ReverseProxied(object):
 def app_init():
     setup_logging()
     app = Flask(__name__)
-    CORS(app)
     app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=1)
     app.config.from_object(FlaskConfig)
+    if app.config['LOCAL']:
+        CORS(app)
     if not app.config['LOCAL']:
         app.wsgi_app = ReverseProxied(app.wsgi_app)
     for bp in blueprints:
