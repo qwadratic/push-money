@@ -129,7 +129,7 @@ def get_mnemonic(link_id):
     return jsonify({'mnemonic': wallet.mnemonic})
 
 
-@bp_api.route('/push/<link_id>/balance', methods=['POST'])
+@bp_api.route('/push/<link_id>/balance', methods=['POST', 'GET'])
 def push_balance(link_id):
     """
     swagger: swagger/core/push-balance.yml
