@@ -73,7 +73,7 @@ class Campaign(Resource):
         campaign_id = uuid()
         wallet = MinterWallet.create()
         action_reward = float(action['reward'])
-        one_tx_fee = estimate_custom_fee(coin) or 0
+        one_tx_fee = float(estimate_custom_fee(coin) or 0)
         campaign_cost = (action_reward + one_tx_fee) * count
         deeplink = TxDeeplink.create('send', to=wallet['address'], value=campaign_cost, coin=coin)
 
