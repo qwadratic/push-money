@@ -143,7 +143,7 @@ def get_spend_list():
                 'price_type': 'custom',
                 'inputs': [
                     {'type': 'amount', 'param_name': 'amount'},
-                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.fm username', 'suggest_last': True}
+                    {'type': 'text', 'param_name': 'profile', 'placeholder': 'Flat.audio username', 'suggest_last': True}
                 ]
             }
         },
@@ -179,7 +179,7 @@ def get_spend_list():
             'color': '#5C28B3'
         },
         'flatfm': {
-            'title': {'ru': 'flat.fm', 'en': 'flat.fm'},
+            'title': {'ru': 'flat.audio', 'en': 'flat.audio'},
             'icon': make_icon_url('shop', 'flatfm_fav'),
             'icon_fav': make_icon_url('shop', 'flatfm_fav')
         },
